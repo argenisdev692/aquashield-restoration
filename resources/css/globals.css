@@ -1,0 +1,251 @@
+/* ══════════════════════════════════════════════════════════════════
+   AquaShield CRM — Global Design Tokens
+   Following: rules-styles.md (Dark Developer UI)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── AquaShield Brand Palette ── */
+:root {
+    --color-navy: #0c2340;
+    --color-navy-light: #1a3a5c;
+    --color-navy-dark: #081829;
+    --color-aqua: #00b5e2;
+    --color-aqua-light: #33c4e8;
+    --color-aqua-dark: #0091b5;
+    --color-silver: #e6e7e8;
+    --color-silver-light: #f5f5f6;
+    --color-white: #ffffff;
+}
+
+/* ── Design System Tokens (Dark Mode Default — AquaShield) ── */
+:root {
+    color-scheme: light dark;
+
+    /* ── backgrounds ── */
+    --bg-app: #060e1a;
+    --bg-surface: #0c2340;
+    --bg-card: #122d4f;
+    --bg-hover: #1a3a5c;
+    --bg-dashboard: #0a1a30;
+
+    /* ── borders ── */
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --border-default: rgba(255, 255, 255, 0.1);
+    --border-hover: rgba(255, 255, 255, 0.18);
+
+    /* ── text ── */
+    --text-primary: #e8ecf0;
+    --text-secondary: #b0bcc8;
+    --text-muted: #7a8a9a;
+    --text-disabled: #4a5a6a;
+
+    /* ── accents (mapped to brand) ── */
+    --accent-primary: #00b5e2;
+    --accent-secondary: #33c4e8;
+    --accent-success: #22c55e;
+    --accent-warning: #f59e0b;
+    --accent-error: #ef4444;
+    --accent-info: #38bdf8;
+
+    /* ── typography ── */
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+    /* ── radii & transitions ── */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --transition: 0.2s ease;
+
+    /* ── Input tokens ── */
+    --input-bg: var(--bg-card);
+    --input-bg-disabled: color-mix(in srgb, var(--bg-card) 50%, var(--bg-app));
+    --input-border: var(--border-default);
+    --input-border-hover: var(--border-hover);
+    --input-border-focus: var(--accent-primary);
+    --input-border-error: var(--accent-error);
+    --input-border-success: var(--accent-success);
+    --input-text: var(--text-primary);
+    --input-placeholder: var(--text-muted);
+    --input-label: var(--text-secondary);
+    --input-helper: var(--text-muted);
+    --input-error-text: var(--accent-error);
+    --input-height: 44px;
+    --input-padding-x: 14px;
+    --input-font-size: 14px;
+    --input-radius: var(--radius-md);
+}
+
+/* ── Light Mode ── */
+[data-theme="light"] {
+    --bg-app: #f5f5f6;
+    --bg-surface: #ffffff;
+    --bg-card: #f0f2f4;
+    --bg-hover: #e4e8ec;
+    --bg-dashboard: #e8edf4;
+
+    --border-subtle: rgba(12, 35, 64, 0.05);
+    --border-default: rgba(12, 35, 64, 0.12);
+    --border-hover: rgba(12, 35, 64, 0.2);
+
+    --text-primary: #0c2340;
+    --text-secondary: #3a5068;
+    --text-muted: #6a7a8a;
+    --text-disabled: #9aaaba;
+
+    --accent-primary: #0091b5;
+    --accent-secondary: #00b5e2;
+    --accent-success: #16a34a;
+    --accent-warning: #d97706;
+    --accent-error: #dc2626;
+    --accent-info: #0284c7;
+}
+
+/* ── System preference fallback ── */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme]) {
+        --bg-app: #f5f5f6;
+        --bg-surface: #ffffff;
+        --bg-card: #f0f2f4;
+        --bg-hover: #e4e8ec;
+        --bg-dashboard: #e8edf4;
+
+        --border-subtle: rgba(12, 35, 64, 0.05);
+        --border-default: rgba(12, 35, 64, 0.12);
+        --border-hover: rgba(12, 35, 64, 0.2);
+
+        --text-primary: #0c2340;
+        --text-secondary: #3a5068;
+        --text-muted: #6a7a8a;
+        --text-disabled: #9aaaba;
+
+        --accent-primary: #0091b5;
+        --accent-secondary: #00b5e2;
+        --accent-success: #16a34a;
+        --accent-warning: #d97706;
+        --accent-error: #dc2626;
+        --accent-info: #0284c7;
+    }
+}
+
+/* ── Accessibility ── */
+:focus {
+    outline: none;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-app);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-aqua-dark);
+    border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-aqua);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-aqua-dark) var(--bg-app);
+}
+
+/* ── Base ── */
+html,
+body {
+    background: var(--bg-app);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Components & Utilities ── */
+.btn-modern {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 14px;
+    transition: all var(--transition);
+    border: 1px solid transparent;
+}
+
+.btn-modern-primary {
+    background: var(--accent-primary);
+    color: #ffffff;
+    box-shadow: 0 2px 8px
+        color-mix(in srgb, var(--accent-primary) 25%, transparent);
+}
+
+.btn-modern-primary:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px
+        color-mix(in srgb, var(--accent-primary) 35%, transparent);
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-default);
+    background: color-mix(in srgb, var(--bg-surface) 40%, transparent);
+    color: var(--text-muted);
+    transition: all var(--transition);
+}
+
+.btn-action:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+    transform: scale(1.05);
+}
+
+.btn-action-edit {
+    color: var(--color-aqua);
+}
+
+.btn-action-delete {
+    color: var(--accent-error);
+}
+
+.btn-action-restore {
+    color: var(--accent-success);
+}
+
+.card-modern {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+}
