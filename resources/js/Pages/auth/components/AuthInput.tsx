@@ -25,8 +25,8 @@ export function AuthInput({
     <div className="space-y-1.5">
       <label
         htmlFor={inputId}
-        className="block text-xs font-semibold uppercase tracking-wider"
-        style={{ color: 'var(--text-muted)' }}
+        className="block text-xs font-semibold uppercase tracking-wider cursor-pointer"
+        style={{ color: 'var(--text-secondary)' }}
       >
         {label}
       </label>
@@ -35,17 +35,17 @@ export function AuthInput({
           id={inputId}
           className={cn(
             'h-11 w-full rounded-lg border px-4 text-sm transition-all duration-200',
-            'placeholder:text-(--text-disabled)',
+            'placeholder:text-(--text-secondary)',
             'focus:outline-none focus:ring-2 focus:ring-offset-1',
             error
               ? 'border-(--accent-error) focus:ring-(--accent-error)/20'
-              : 'focus:border-(--color-aqua) focus:ring-(--color-aqua)/20',
+              : 'focus:border-(--purple-500) focus:ring-(--purple-500)/20',
             rightElement && 'pr-12',
             className,
           )}
           style={{
             background: 'rgba(255, 255, 255, 0.06)',
-            borderColor: error ? 'var(--accent-error)' : 'rgba(255, 255, 255, 0.12)',
+            borderColor: error ? 'var(--accent-error)' : 'color-mix(in srgb, var(--purple-500) 25%, transparent)',
             color: 'var(--color-white)',
           }}
           aria-invalid={!!error}

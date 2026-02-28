@@ -806,7 +806,7 @@ cat > "resources/views/exports/pdf/${MODULE_SNAKE}.blade.php" << BLADE_EOF
     </table>
 
     <div class="footer">
-        AquaShield CRM - Page <span class="pagenum"></span>
+        Vidula CRM - Page <span class="pagenum"></span>
     </div>
 </body>
 </html>

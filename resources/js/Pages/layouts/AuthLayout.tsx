@@ -6,14 +6,14 @@ interface AuthLayoutProps {
 
 /**
  * AuthLayout — Unauthenticated layout for Login, Register, Forgot Password.
- * Full-screen centered card with AquaShield branding.
+ * Full-screen centered card with Vidula branding.
  */
 export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Element {
   return (
     <div
       className="flex min-h-screen items-center justify-center px-4 py-8"
       style={{
-        background: 'linear-gradient(135deg, var(--color-navy-dark) 0%, var(--color-navy) 50%, var(--color-navy-light) 100%)',
+        background: 'radial-gradient(circle at top right, var(--purple-900), transparent), radial-gradient(circle at bottom left, var(--blue-950), var(--bg-void))',
       }}
     >
       {/* Decorative background circles */}
@@ -23,11 +23,11 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
       >
         <div
           className="absolute -top-40 -right-40 h-96 w-96 rounded-full opacity-10"
-          style={{ background: 'var(--color-aqua)' }}
+          style={{ background: 'var(--purple-500)' }}
         />
         <div
           className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full opacity-8"
-          style={{ background: 'var(--color-aqua-light)' }}
+          style={{ background: 'var(--blue-500)' }}
         />
       </div>
 
@@ -37,14 +37,14 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
           <div
             className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl"
             style={{
-              background: 'linear-gradient(135deg, var(--color-navy-light) 0%, var(--color-navy-dark) 100%)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-              border: '1px solid var(--border-subtle)',
+              background: 'var(--bg-surface)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              border: '1px solid var(--border-strong)',
             }}
           >
             <img 
               src="/img/Logo PNG.png" 
-              alt="AquaShield Logo" 
+              alt="Vidula Logo" 
               className="h-14 w-auto object-contain drop-shadow-md"
             />
           </div>
@@ -52,7 +52,7 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
             className="mt-4 text-2xl font-bold tracking-tight"
             style={{ color: 'var(--color-white)' }}
           >
-            AquaShield
+            Vidula
           </h1>
           <p
             className="mt-1 text-sm"
@@ -80,7 +80,7 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
           className="mt-6 text-center text-xs"
           style={{ color: 'var(--text-disabled)' }}
         >
-          © {new Date().getFullYear()} AquaShield. All rights reserved.
+          © {new Date().getFullYear()} Vidula. All rights reserved.
         </p>
       </div>
     </div>

@@ -176,7 +176,7 @@ export default function ProfilePage(): React.JSX.Element {
 
   return (
     <>
-      <Head title="Profile — AquaShield" />
+      <Head title="Profile — Vidula" />
       <AppLayout>
         <div className="mx-auto max-w-3xl space-y-6">
           {/* Page Header */}
@@ -185,9 +185,9 @@ export default function ProfilePage(): React.JSX.Element {
             <div
               className="flex h-16 w-16 items-center justify-center rounded-2xl text-xl font-bold"
               style={{
-                background: 'linear-gradient(135deg, var(--color-aqua) 0%, var(--color-aqua-dark) 100%)',
+                background: 'var(--grad-primary)',
                 color: 'var(--color-white)',
-                boxShadow: '0 8px 24px rgba(0, 181, 226, 0.25)',
+                boxShadow: '0 8px 24px var(--blue-glow)',
               }}
             >
               {(user.name?.[0] ?? 'U').toUpperCase()}
@@ -211,9 +211,9 @@ export default function ProfilePage(): React.JSX.Element {
                       key={role}
                       className="inline-block rounded-full px-3 py-0.5 text-xs font-semibold uppercase tracking-wider"
                       style={{
-                        background: 'color-mix(in srgb, var(--color-aqua) 13%, transparent)',
-                        color: 'var(--color-aqua)',
-                        border: '1px solid color-mix(in srgb, var(--color-aqua) 27%, transparent)',
+                        background: 'color-mix(in srgb, var(--blue-500) 13%, transparent)',
+                        color: 'var(--blue-400)',
+                        border: '1px solid color-mix(in srgb, var(--blue-500) 27%, transparent)',
                       }}
                     >
                       {role}
@@ -389,9 +389,9 @@ export default function ProfilePage(): React.JSX.Element {
                   disabled={profileStatus === 'loading'}
                   className="flex h-10 items-center justify-center rounded-lg px-6 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60"
                   style={{
-                    background: 'linear-gradient(135deg, var(--color-aqua) 0%, var(--color-aqua-dark) 100%)',
-                    color: 'var(--color-white)',
-                    boxShadow: '0 4px 16px rgba(0, 181, 226, 0.2)',
+                    background: 'var(--grad-primary)',
+                    color: '#ffffff',
+                    boxShadow: '0 4px 16px var(--blue-glow)',
                   }}
                 >
                   {profileStatus === 'loading' ? (
@@ -471,9 +471,9 @@ export default function ProfilePage(): React.JSX.Element {
                   disabled={passwordStatus === 'loading'}
                   className="flex h-10 items-center justify-center rounded-lg px-6 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60"
                   style={{
-                    background: 'linear-gradient(135deg, var(--color-aqua) 0%, var(--color-aqua-dark) 100%)',
-                    color: 'var(--color-white)',
-                    boxShadow: '0 4px 16px rgba(0, 181, 226, 0.2)',
+                    background: 'var(--grad-primary)',
+                    color: '#ffffff',
+                    boxShadow: '0 4px 16px var(--blue-glow)',
                   }}
                 >
                   {passwordStatus === 'loading' ? (

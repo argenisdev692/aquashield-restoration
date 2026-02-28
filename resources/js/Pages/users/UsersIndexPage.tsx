@@ -2,14 +2,14 @@ import * as React from 'react';
 import { Link } from '@inertiajs/react';
 import { type RowSelectionState } from '@tanstack/react-table';
 import AppLayout from '@/Pages/layouts/AppLayout';
-import { fetchUsers } from '@/modules/users/hooks/useUsers';
+import { useUsers } from '@/modules/users/hooks/useUsers';
 import { deleteUser, bulkDeleteUsers } from '@/modules/users/hooks/useUserMutations';
 import UsersTable from './components/UsersTable';
 import { DataTableBulkActions } from '@/components/ui/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/components/ui/DeleteConfirmModal';
 import { DataTableDateRangeFilter } from '@/components/common/data-table/DataTableDateRangeFilter';
 import { ExportButton } from '@/components/common/export/ExportButton';
-import type { UserListItem, PaginatedResponse, UserFilters } from '@/types/users';
+import type { UserFilters } from '@/types/users';
 
 // ══════════════════════════════════════════════════════════════
 // Icons
@@ -28,19 +28,19 @@ const IconChevRight = () => <svg {...ic} width={14} height={14}><polyline points
 // UsersIndexPage
 // ══════════════════════════════════════════════════════════════
 export default function UsersIndexPage(): React.JSX.Element {
-  const [users, setUsers] = React.useState<UserListItem[]>([]);
-  const [meta, setMeta] = React.useState<PaginatedResponse<UserListItem>['meta']>({
-    currentPage: 1, lastPage: 1, perPage: 15, total: 0,
-  });
-  const [loading, setLoading] = React.useState<boolean>(true);
-  const [isDeleting, setIsDeleting] = React.useState<boolean>(false);
-  const [search, setSearch] = React.useState<string>('');
   const [filters, setFilters] = React.useState<UserFilters>({ page: 1, perPage: 15 });
+  const [search, setSearch] = React.useState<string>('');
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const [pendingDelete, setPendingDelete] = React.useState<{ uuid: string; name: string } | null>(null);
   
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isExporting, setIsExporting] = React.useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = React.useState<boolean>(false);
+
+  // ── Fetch users via TanStack Query ──
+  const { data, isPending, isError, refetch } = useUsers(filters);
+  const users = data?.data ?? [];
+  const meta = data?.meta ?? { currentPage: 1, lastPage: 1, perPage: 15, total: 0 };
 
   // ── Export function ──
   async function handleExport(format: 'excel' | 'pdf'): Promise<void> {
@@ -48,8 +48,8 @@ export default function UsersIndexPage(): React.JSX.Element {
     try {
       const params = new URLSearchParams();
       if (filters.search) params.append('search', filters.search);
-      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
-      if (filters.dateTo) params.append('dateTo', filters.dateTo);
+      if (filters.dateFrom) params.append('date_from', filters.dateFrom);
+      if (filters.dateTo) params.append('date_to', filters.dateTo);
       params.append('format', format);
 
       window.open(`/api/users/export?${params.toString()}`, '_blank');
@@ -59,24 +59,6 @@ export default function UsersIndexPage(): React.JSX.Element {
       setIsExporting(false);
     }
   }
-
-  // ── Fetch users ──
-  const loadUsers = React.useCallback(async (f: UserFilters) => {
-    setLoading(true);
-    try {
-      const res = await fetchUsers(f);
-      setUsers(res.data);
-      setMeta(res.meta);
-    } catch (err) {
-      console.error('Failed to fetch users', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    void loadUsers(filters);
-  }, [filters, loadUsers]);
 
   // ── Search debounce ──
   function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -99,7 +81,7 @@ export default function UsersIndexPage(): React.JSX.Element {
     try {
       await deleteUser(pendingDelete.uuid);
       setPendingDelete(null);
-      await loadUsers(filters);
+      await refetch();
     } catch (err) {
       console.error('Failed to delete user', err);
     } finally {
@@ -116,7 +98,7 @@ export default function UsersIndexPage(): React.JSX.Element {
     try {
       await bulkDeleteUsers(selectedUuids);
       setRowSelection({});
-      await loadUsers(filters);
+      await refetch();
     } catch (err) {
       console.error('Failed to bulk delete users', err);
     } finally {
@@ -129,8 +111,11 @@ export default function UsersIndexPage(): React.JSX.Element {
     setFilters((prev) => ({ ...prev, page }));
   }
 
-  const initials = (name: string, lastName: string | null): string =>
-    `${name[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
+  const initials = React.useCallback((name: string, lastName: string | null): string => {
+    const f = name?.charAt(0) ?? '';
+    const l = lastName?.charAt(0) ?? '';
+    return (f + l).toUpperCase() || '?';
+  }, []);
 
   return (
     <AppLayout>
@@ -142,10 +127,10 @@ export default function UsersIndexPage(): React.JSX.Element {
               className="text-2xl font-bold tracking-tight"
               style={{ color: 'var(--text-primary)' }}
             >
-              Users
+              System Users
             </h1>
             <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-              Manage all system users — {meta.total} total
+              Manage all platform users — {meta.total} total
             </p>
           </div>
           <Link
@@ -170,7 +155,7 @@ export default function UsersIndexPage(): React.JSX.Element {
               type="text"
               value={search}
               onChange={handleSearchChange}
-              placeholder="Search users..."
+              placeholder="Search by name, email or username..."
               className="flex-1 bg-transparent text-sm outline-none"
               style={{
                 color: 'var(--text-primary)',
@@ -209,7 +194,8 @@ export default function UsersIndexPage(): React.JSX.Element {
         <div className="card-modern shadow-lg">
           <UsersTable
             data={users}
-            isLoading={loading}
+            isLoading={isPending}
+            isError={isError}
             onDelete={handleDeleteClick}
             initials={initials}
             rowSelection={rowSelection}

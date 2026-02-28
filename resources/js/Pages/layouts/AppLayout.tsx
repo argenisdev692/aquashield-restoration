@@ -27,28 +27,37 @@ function useTheme(): [Theme, () => void] {
   return [theme, toggle];
 }
 
-// ══════════════════════════════════════════════════════════════════
-// Icons
-// ══════════════════════════════════════════════════════════════════
-const ic = {
-  w: 18, h: 18, viewBox: '0 0 24 24', fill: 'none',
-  stroke: 'currentColor', strokeWidth: 2,
-  strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
-};
+import { 
+  LayoutDashboard, 
+  Users, 
+  Building2, 
+  Sun, 
+  Moon, 
+  LogOut, 
+  Search, 
+  ChevronDown, 
+  ShieldCheck, 
+  Menu, 
+  Settings, 
+  ArrowLeft, 
+  X 
+} from 'lucide-react';
 
-const IconGrid    = () => <svg {...ic}><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>;
-const IconUsers   = () => <svg {...ic}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>;
-const IconSun     = () => <svg {...ic}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
-const IconMoon    = () => <svg {...ic}><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>;
-const IconLogout  = () => <svg {...ic} width={16} height={16}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
-const IconSearch  = () => <svg {...ic} width={14} height={14}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
-const IconCaret   = () => <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>;
-const IconShield  = () => <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
-const IconMenu    = () => <svg {...ic} width={20} height={20}><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>;
-const IconSettings = () => <svg {...ic} width={16} height={16}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>;
-const IconArrowLeft = () => <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>;
-const IconClose = () => <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
-const IconBuilding = () => <svg {...ic}><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>;
+const icSize = 18;
+
+const IconGrid    = () => <LayoutDashboard size={icSize} />;
+const IconUsers   = () => <Users size={icSize} />;
+const IconSun     = () => <Sun size={icSize} />;
+const IconMoon    = () => <Moon size={icSize} />;
+const IconLogout  = () => <LogOut size={16} />;
+const IconSearch  = () => <Search size={14} />;
+const IconCaret   = () => <ChevronDown size={14} />;
+const IconShield  = () => <ShieldCheck size={20} className="text-white" />;
+const IconMenu    = () => <Menu size={icSize} />;
+const IconSettings = () => <Settings size={icSize} />;
+const IconArrowLeft = () => <ArrowLeft size={16} />;
+const IconClose = () => <X size={16} />;
+const IconBuilding = () => <Building2 size={icSize} />;
 
 // ══════════════════════════════════════════════════════════════════
 // Nav Items — Profile removed (accessible via avatar dropdown)
@@ -91,8 +100,8 @@ function ExpandableSearch(): React.JSX.Element {
           onClick={open}
           className="absolute left-0 z-10 flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-200"
           style={{
-            color: expanded ? 'var(--color-aqua)' : 'var(--text-muted)',
-            background: expanded ? 'color-mix(in srgb, var(--color-aqua) 10%, transparent)' : 'var(--bg-card)',
+            color: expanded ? 'var(--blue-400)' : 'var(--text-muted)',
+            background: expanded ? 'color-mix(in srgb, var(--blue-500) 10%, transparent)' : 'var(--bg-elevated)',
             border: '1px solid var(--border-default)',
           }}
           aria-label="Search"
@@ -143,7 +152,7 @@ function ExpandableSearch(): React.JSX.Element {
             boxShadow: '0 4px 20px color-mix(in srgb, #000 30%, transparent)',
           }}
         >
-          <span style={{ color: 'var(--color-aqua)' }}><IconSearch /></span>
+          <span style={{ color: 'var(--blue-400)' }}><IconSearch /></span>
           <input
             ref={mobileInputRef}
             type="text"
@@ -221,8 +230,8 @@ function AvatarDropdown(): React.JSX.Element {
           <div
             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-bold"
             style={{
-              background: 'linear-gradient(135deg, var(--color-aqua) 0%, var(--color-aqua-dark) 100%)',
-              color: 'var(--color-white)',
+              background: 'var(--grad-primary)',
+              color: '#ffffff',
             }}
           >
             {initials}
@@ -301,7 +310,7 @@ function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () => void }
   return (
     <button
       onClick={onToggle}
-      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-150"
+      className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-150"
       style={{ color: 'var(--text-muted)', border: '1px solid transparent', fontFamily: 'var(--font-sans)' }}
       onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)'; }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
@@ -321,12 +330,12 @@ function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () => void }
       {/* Animated pill */}
       <span className="relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-200"
         style={{
-          background: theme === 'light' ? 'color-mix(in srgb, var(--color-aqua) 30%, transparent)' : 'var(--bg-hover)',
+          background: theme === 'light' ? 'color-mix(in srgb, var(--blue-500) 30%, transparent)' : 'var(--bg-overlay)',
           border: '1px solid var(--border-default)',
         }}>
         <span className="inline-block h-3.5 w-3.5 rounded-full transition-transform duration-200"
           style={{
-            background: theme === 'light' ? 'var(--color-aqua)' : 'var(--text-disabled)',
+            background: theme === 'light' ? 'var(--blue-500)' : 'var(--text-disabled)',
             transform: theme === 'light' ? 'translate(18px, 2px)' : 'translate(2px, 2px)',
           }} />
       </span>
@@ -347,16 +356,16 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
         style={{ borderBottom: '1px solid var(--border-subtle)' }}>
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-            style={{ background: 'linear-gradient(135deg, var(--color-aqua) 0%, var(--color-aqua-dark) 100%)' }}>
+            style={{ background: 'var(--grad-primary)' }}>
             <IconShield />
           </div>
           <div>
             <span className="block text-[13px] font-bold tracking-tight leading-none"
               style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
-              AquaShield
-            </span>
+            Vidula
+          </span>
             <span className="block text-[10px] font-semibold uppercase tracking-widest leading-none mt-0.5"
-              style={{ color: 'var(--color-aqua)' }}>
+              style={{ color: 'var(--purple-500)' }}>
               CRM
             </span>
           </div>
@@ -389,8 +398,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
         </span>
       </div>
 
-      {/* Nav items */}
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="flex-1 space-y-1.5 px-3 uppercase text-xs tracking-wide">
         {NAV_ITEMS.map((item) => {
           const active = currentPath === item.href || currentPath.startsWith(item.href + '/');
           return (
@@ -398,30 +406,28 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
               key={item.href}
               href={item.href}
               onClick={onClose}
-              className="group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-150"
+              className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-300 ${active ? 'sidebar-active shadow-sm' : ''}`}
               style={{
-                background: active ? 'color-mix(in srgb, var(--color-aqua) 10%, transparent)' : 'transparent',
-                color: active ? 'var(--color-aqua)' : 'var(--text-muted)',
-                border: active ? '1px solid color-mix(in srgb, var(--color-aqua) 20%, transparent)' : '1px solid transparent',
+                color: active ? 'var(--text-primary)' : 'var(--text-muted)',
               }}
             >
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all duration-150"
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300"
                 style={{
-                  background: active ? 'color-mix(in srgb, var(--color-aqua) 15%, transparent)' : 'var(--bg-hover)',
-                  color: active ? 'var(--color-aqua)' : 'var(--text-muted)',
+                  background: active ? 'var(--grad-primary)' : 'rgba(255, 255, 255, 0.03)',
+                  color: active ? '#ffffff' : 'var(--text-muted)',
+                  border: active ? 'none' : '1px solid var(--border-default)'
                 }}>
                 {item.icon}
               </span>
               <div className="min-w-0 flex-1">
                 <span className="block text-[13px] font-semibold leading-none"
-                  style={{ color: active ? 'var(--color-aqua)' : 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
+                  style={{ color: active ? 'var(--text-primary)' : 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
                   {item.label}
                 </span>
-                <span className="block text-[11px] leading-none mt-0.5" style={{ color: 'var(--text-disabled)' }}>
+                <span className="block text-[10px] normal-case leading-none mt-1" style={{ color: active ? 'var(--purple-400)' : 'var(--text-disabled)' }}>
                   {item.description}
                 </span>
               </div>
-              {active && <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: 'var(--color-aqua)' }} />}
             </Link>
           );
         })}
@@ -523,9 +529,9 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
           {/* Center: logo on mobile */}
           <div className="flex items-center gap-2 lg:hidden">
             <span className="text-[13px] font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
-              AquaShield
-            </span>
-          </div>
+            Vidula
+          </span>
+        </div>
 
           {/* Right side: search + avatar */}
           <div className="ml-auto flex items-center gap-3">

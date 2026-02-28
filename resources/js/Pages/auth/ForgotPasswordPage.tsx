@@ -239,7 +239,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
 
   return (
     <>
-      <Head title="Forgot Password — AquaShield" />
+      <Head title="Forgot Password — Vidula" />
       <AuthLayout>
         <div className="mb-6 text-center">
           <h2 className="text-xl font-bold" style={{ color: 'var(--color-white)' }}>

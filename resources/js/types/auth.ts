@@ -1,4 +1,5 @@
 import type { AuthUser } from './api';
+export type { AuthUser };
 
 // ── Auth modes ─────────────────────────────────────────────────
 export type AuthMode = 'otp' | 'password';

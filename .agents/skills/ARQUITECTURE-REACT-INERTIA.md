@@ -651,6 +651,15 @@ resources/js/
 
 ---
 
+## UI / UX Patterns
+
+- **Icons:** Always use the `lucide-react` library for all icons instead of raw inline SVGs. Keep them proportionally sized (e.g., 14px for tight tables, 18px for menus).
+- **Interactive Pointers:** Any clickable UI element (buttons, tabs, theme toggles, exports) MUST have `cursor: pointer` applied via CSS (`cursor-pointer`).
+- **Data Tables:** All CRUD tables MUST have text and actions strictly centered (`text-center align-middle` for cells, `justify-center` for flex containers).
+- **Active Navigation:** Sidebar links representing the active route must not just change color; they must have a distinct background, border, and rounded corners (e.g., `.sidebar-active`).
+
+---
+
 ## Quick Reference: Where Does This File Go?
 
 | What you're creating                         | Directory                                        |

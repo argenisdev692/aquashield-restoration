@@ -55,7 +55,7 @@ export function ExportButton({ onExport, isExporting }: ExportButtonProps): Reac
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isExporting}
-        className="flex h-10 items-center justify-center gap-2 rounded-lg border px-4 text-sm font-medium transition-all hover:shadow-sm"
+        className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 text-sm font-medium transition-all hover:shadow-sm"
         style={{
           background: 'var(--bg-card)',
           borderColor: 'var(--border-default)',
@@ -83,7 +83,7 @@ export function ExportButton({ onExport, isExporting }: ExportButtonProps): Reac
               onExport('excel');
               setIsOpen(false);
             }}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-muted"
+            className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-muted"
             style={{ color: 'var(--text-primary)' }}
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500/10 text-green-500">
@@ -100,7 +100,7 @@ export function ExportButton({ onExport, isExporting }: ExportButtonProps): Reac
               onExport('pdf');
               setIsOpen(false);
             }}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-muted"
+            className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-muted"
             style={{ color: 'var(--text-primary)' }}
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 text-red-500">

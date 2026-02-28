@@ -57,9 +57,9 @@ final class SuspiciousLoginAttemptNotification extends Notification implements S
         $browser = $this->parseBrowser($this->userAgent);
 
         return (new MailMessage())
-            ->subject('⚠️ Suspicious Login Activity — AquaShield')
+            ->subject('⚠️ Suspicious Login Activity — Vidula')
             ->greeting("Hello {$userName},")
-            ->line('We detected multiple failed login attempts on your AquaShield account.')
+            ->line('We detected multiple failed login attempts on your Vidula account.')
             ->line('**Attempt Details:**')
             ->line("• **IP Address:** {$this->ipAddress}")
             ->line("• **Browser:** {$browser}")
@@ -71,7 +71,7 @@ final class SuspiciousLoginAttemptNotification extends Notification implements S
             ->line('2. Enable two-factor authentication (2FA)')
             ->line('3. Contact our support team')
             ->action('Secure My Account', url('/login'))
-            ->salutation('— AquaShield Security Team');
+            ->salutation('— Vidula Security Team');
     }
 
     /**

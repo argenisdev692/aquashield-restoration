@@ -2,29 +2,35 @@ import * as React from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import AppLayout from '@/Pages/layouts/AppLayout';
 import type { AuthPageProps } from '@/types/auth';
+import {
+  Area,
+  AreaChart,
+  Pie,
+  PieChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Label
+} from "recharts";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 // ══════════════════════════════════════════════════════════════════
-// Types
+// Types & Data
 // ══════════════════════════════════════════════════════════════════
-
-type KanbanColumnId = 'backlog' | 'todo' | 'in_progress' | 'done';
-
-interface KanbanTask {
-  id: string;
-  title: string;
-  description: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  assignee: string;
-  dueDate: string;
-}
-
-interface KanbanColumn {
-  id: KanbanColumnId;
-  title: string;
-  color: string;
-  dotColor: string;
-  tasks: KanbanTask[];
-}
 
 interface MetricCard {
   title: string;
@@ -35,54 +41,6 @@ interface MetricCard {
   gradient: string;
 }
 
-// ══════════════════════════════════════════════════════════════════
-// Sample Data
-// ══════════════════════════════════════════════════════════════════
-
-const INITIAL_COLUMNS: KanbanColumn[] = [
-  {
-    id: 'backlog',
-    title: 'Backlog',
-    color: 'var(--text-muted)',
-    dotColor: 'var(--text-disabled)',
-    tasks: [
-      { id: 'T-001', title: 'Setup monitoring alerts', description: 'Configure OTel spans for auth flows', priority: 'medium', assignee: 'JD', dueDate: 'Mar 5' },
-      { id: 'T-002', title: 'Database backup automation', description: 'Schedule nightly encrypted backups', priority: 'high', assignee: 'MK', dueDate: 'Mar 8' },
-    ],
-  },
-  {
-    id: 'todo',
-    title: 'To Do',
-    color: 'var(--accent-info)',
-    dotColor: '#38bdf8',
-    tasks: [
-      { id: 'T-003', title: 'Implement user export', description: 'Excel + PDF export with date range filters', priority: 'high', assignee: 'AS', dueDate: 'Mar 1' },
-      { id: 'T-004', title: 'Design contractor dashboard', description: 'Wireframe + Figma prototype', priority: 'medium', assignee: 'LP', dueDate: 'Mar 3' },
-      { id: 'T-005', title: 'API rate limiting review', description: 'Audit all public endpoints', priority: 'low', assignee: 'JD', dueDate: 'Mar 10' },
-    ],
-  },
-  {
-    id: 'in_progress',
-    title: 'In Progress',
-    color: 'var(--accent-warning)',
-    dotColor: '#f59e0b',
-    tasks: [
-      { id: 'T-006', title: 'Claims module backend', description: 'CQRS implementation with domain events', priority: 'urgent', assignee: 'MK', dueDate: 'Feb 28' },
-      { id: 'T-007', title: 'Auth interface frontend', description: 'Login, OTP, Forgot Password pages', priority: 'high', assignee: 'AS', dueDate: 'Feb 27' },
-    ],
-  },
-  {
-    id: 'done',
-    title: 'Done',
-    color: 'var(--accent-success)',
-    dotColor: '#22c55e',
-    tasks: [
-      { id: 'T-008', title: 'User model + migrations', description: 'Complete with soft deletes and roles', priority: 'high', assignee: 'MK', dueDate: 'Feb 25' },
-      { id: 'T-009', title: 'Email templates branded', description: 'OTP, password reset, credentials', priority: 'medium', assignee: 'LP', dueDate: 'Feb 24' },
-    ],
-  },
-];
-
 const METRIC_CARDS: MetricCard[] = [
   {
     title: 'Total Users',
@@ -90,7 +48,7 @@ const METRIC_CARDS: MetricCard[] = [
     change: '+12.5%',
     changeType: 'positive',
     icon: 'users',
-    gradient: 'linear-gradient(135deg, var(--color-aqua) 0%, var(--color-aqua-dark) 100%)',
+    gradient: 'linear-gradient(135deg, var(--color-chart-1) 0%, oklch(0.5 0.2 264) 100%)',
   },
   {
     title: 'Active Claims',
@@ -98,7 +56,7 @@ const METRIC_CARDS: MetricCard[] = [
     change: '+8.2%',
     changeType: 'positive',
     icon: 'file',
-    gradient: 'linear-gradient(135deg, var(--accent-success) 0%, #16a34a 100%)',
+    gradient: 'linear-gradient(135deg, var(--color-chart-2) 0%, oklch(0.6 0.15 162) 100%)',
   },
   {
     title: 'Revenue',
@@ -106,7 +64,7 @@ const METRIC_CARDS: MetricCard[] = [
     change: '-2.4%',
     changeType: 'negative',
     icon: 'dollar',
-    gradient: 'linear-gradient(135deg, var(--accent-warning) 0%, #d97706 100%)',
+    gradient: 'linear-gradient(135deg, var(--color-chart-3) 0%, oklch(0.6 0.2 70) 100%)',
   },
   {
     title: 'Completion Rate',
@@ -114,36 +72,63 @@ const METRIC_CARDS: MetricCard[] = [
     change: '+1.8%',
     changeType: 'positive',
     icon: 'check',
-    gradient: 'linear-gradient(135deg, var(--accent-secondary) 0%, #7c3aed 100%)',
+    gradient: 'linear-gradient(135deg, var(--color-chart-4) 0%, oklch(0.5 0.25 303) 100%)',
   },
 ];
 
-// ══════════════════════════════════════════════════════════════════
-// Priority Badge
-// ══════════════════════════════════════════════════════════════════
+const REVENUE_DATA = [
+  { month: "Jan", revenue: 15400, target: 14000 },
+  { month: "Feb", revenue: 22100, target: 18000 },
+  { month: "Mar", revenue: 18500, target: 20000 },
+  { month: "Apr", revenue: 28900, target: 25000 },
+  { month: "May", revenue: 35200, target: 30000 },
+  { month: "Jun", revenue: 48520, target: 40000 },
+];
 
-function PriorityBadge({ priority }: { priority: KanbanTask['priority'] }): React.JSX.Element {
-  const config = {
-    low:    { tint: 'var(--accent-info)',    label: 'Low'    },
-    medium: { tint: 'var(--accent-warning)', label: 'Medium' },
-    high:   { tint: 'var(--accent-error)',   label: 'High'   },
-    urgent: { tint: 'var(--accent-error)',   label: 'Urgent' },
-  };
-  const c = config[priority];
+const TASK_STATUS_DATA = [
+  { status: "Backlog", count: 12, fill: "var(--color-chart-1)" },
+  { status: "To Do", count: 8, fill: "var(--color-chart-2)" },
+  { status: "In Progress", count: 5, fill: "var(--color-chart-3)" },
+  { status: "Done", count: 14, fill: "var(--color-chart-4)" },
+];
 
-  return (
-    <span
-      className="inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
-      style={{
-        background: `color-mix(in srgb, ${c.tint} ${priority === 'urgent' ? '20%' : '12%'}, transparent)`,
-        color: c.tint,
-        border: `1px solid color-mix(in srgb, ${c.tint} 28%, transparent)`,
-      }}
-    >
-      {c.label}
-    </span>
-  );
-}
+const USER_DIST_DATA = [
+  { role: "Contractors", count: 45, fill: "var(--color-chart-4)" },
+  { role: "Clients", count: 30, fill: "var(--color-chart-1)" },
+  { role: "Managers", count: 15, fill: "var(--color-chart-2)" },
+  { role: "Admins", count: 10, fill: "var(--color-chart-5)" },
+];
+
+const revenueChartConfig = {
+  revenue: {
+    label: "Revenue",
+    color: "var(--color-chart-4)",
+  },
+  target: {
+    label: "Target",
+    color: "var(--color-chart-5)",
+  },
+} satisfies ChartConfig;
+
+const taskChartConfig = {
+  count: { label: "Tasks" },
+  Backlog: { label: "Backlog", color: "var(--color-chart-1)" },
+  "To Do": { label: "To Do", color: "var(--color-chart-2)" },
+  "In Progress": { label: "In Progress", color: "var(--color-chart-3)" },
+  Done: { label: "Done", color: "var(--color-chart-4)" },
+} satisfies ChartConfig;
+
+const userChartConfig = {
+  count: { label: "Users" },
+  Contractors: { label: "Contractors", color: "var(--color-chart-4)" },
+  Clients: { label: "Clients", color: "var(--color-chart-1)" },
+  Managers: { label: "Managers", color: "var(--color-chart-2)" },
+  Admins: { label: "Admins", color: "var(--color-chart-5)" },
+} satisfies ChartConfig;
+
+// ══════════════════════════════════════════════════════════════════
+// Metric Card Icon
+// ══════════════════════════════════════════════════════════════════
 
 // ══════════════════════════════════════════════════════════════════
 // Metric Card Icon
@@ -167,69 +152,106 @@ function CardIcon({ name }: { name: string }): React.JSX.Element {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// Premium Metric Card Component (2026 Edition)
+// ══════════════════════════════════════════════════════════════════
+
+interface MetricCardProps {
+  card: MetricCard;
+}
+
+function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
+  return (
+    <div
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/5 p-6 transition-all duration-500 hover:-translate-y-2"
+      style={{
+        background: 'linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+        backdropFilter: 'blur(12px)',
+      }}
+    >
+      {/* Background Glow Effect */}
+      <div 
+        className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-10"
+        style={{ background: card.gradient }}
+      />
+      
+      {/* Top Border Glow */}
+      <div 
+        className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+      />
+
+      <div className="flex items-center justify-between">
+        <div 
+          className="flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg"
+          style={{ 
+            background: card.gradient,
+            boxShadow: '0 8px 16px -4px rgba(0,0,0,0.3)'
+          }}
+        >
+          <div className="text-white">
+            <CardIcon name={card.icon} />
+          </div>
+        </div>
+        
+        <div 
+          className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold tracking-tight shadow-sm"
+          style={{
+            background: card.changeType === 'positive' 
+              ? 'rgba(16, 217, 136, 0.1)' 
+              : card.changeType === 'negative' 
+                ? 'rgba(244, 63, 94, 0.1)' 
+                : 'rgba(255, 255, 255, 0.05)',
+            color: card.changeType === 'positive' 
+              ? 'var(--accent-success)' 
+              : card.changeType === 'negative' 
+                ? 'var(--accent-error)' 
+                : 'var(--text-muted)',
+            border: `1px solid \${
+              card.changeType === 'positive' 
+                ? 'rgba(16, 217, 136, 0.15)' 
+                : card.changeType === 'negative' 
+                  ? 'rgba(244, 63, 94, 0.15)' 
+                  : 'rgba(255, 255, 255, 0.1)'
+            }`
+          }}
+        >
+          {card.changeType === 'positive' ? '↑' : card.changeType === 'negative' ? '↓' : '•'}
+          {card.change.replace(/[+-]/, '')}
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <p className="text-xs font-medium uppercase tracking-widest text-cyan-400/70" style={{ color: 'var(--text-secondary)' }}>
+          {card.title}
+        </p>
+        <div className="flex items-baseline gap-2 mt-1">
+          <h3 className="text-3xl font-black tracking-tighter text-white">
+            {card.value}
+          </h3>
+          <span className="text-[10px] font-medium text-white/30 uppercase tracking-widest">
+            USD
+          </span>
+        </div>
+      </div>
+
+      {/* Decorative Wave/Ambient Light (2026 aesthetics) */}
+      <div 
+        className="absolute -bottom-10 -right-10 h-32 w-32 rounded-full blur-[60px] opacity-20 transition-all duration-700 group-hover:scale-150 group-hover:opacity-40"
+        style={{ background: card.gradient }}
+      />
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════
 // Dashboard Page
 // ══════════════════════════════════════════════════════════════════
 
 export default function DashboardPage(): React.JSX.Element {
   const { auth } = usePage<AuthPageProps>().props;
-  const [columns, setColumns] = React.useState<KanbanColumn[]>(INITIAL_COLUMNS);
-
-  // ── Drag State ──
-  const [draggedTask, setDraggedTask] = React.useState<KanbanTask | null>(null);
-  const [dragSourceCol, setDragSourceCol] = React.useState<KanbanColumnId | null>(null);
-  const [dragOverCol, setDragOverCol] = React.useState<KanbanColumnId | null>(null);
-
-  /** ── Drag Handlers ── */
-  function handleDragStart(task: KanbanTask, sourceColId: KanbanColumnId): void {
-    setDraggedTask(task);
-    setDragSourceCol(sourceColId);
-  }
-
-  function handleDragOver(e: React.DragEvent, colId: KanbanColumnId): void {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setDragOverCol(colId);
-  }
-
-  function handleDragLeave(): void {
-    setDragOverCol(null);
-  }
-
-  function handleDrop(e: React.DragEvent, targetColId: KanbanColumnId): void {
-    e.preventDefault();
-    setDragOverCol(null);
-
-    if (!draggedTask || !dragSourceCol || dragSourceCol === targetColId) {
-      setDraggedTask(null);
-      setDragSourceCol(null);
-      return;
-    }
-
-    setColumns((prev) =>
-      prev.map((col) => {
-        if (col.id === dragSourceCol) {
-          return { ...col, tasks: col.tasks.filter((t) => t.id !== draggedTask.id) };
-        }
-        if (col.id === targetColId) {
-          return { ...col, tasks: [...col.tasks, draggedTask] };
-        }
-        return col;
-      }),
-    );
-
-    setDraggedTask(null);
-    setDragSourceCol(null);
-  }
-
-  function handleDragEnd(): void {
-    setDraggedTask(null);
-    setDragSourceCol(null);
-    setDragOverCol(null);
-  }
 
   return (
     <>
-      <Head title="Dashboard — AquaShield" />
+      <Head title="Dashboard — Vidula" />
       <AppLayout>
           {/* ── Header ── */}
           <div className="mb-6">
@@ -237,240 +259,200 @@ export default function DashboardPage(): React.JSX.Element {
               Welcome back, {auth.user?.name ?? 'User'} 👋
             </h1>
             <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-              Here's what's happening with your projects today.
+              Here's your projects and revenue overview for today.
             </p>
           </div>
 
           {/* ═══════════════════════════════════════
-              METRIC CARDS
+              METRIC CARDS (Upgraded to Modern 2026 Style)
               ═══════════════════════════════════════ */}
-          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
             {METRIC_CARDS.map((card) => (
-              <div
-                key={card.title}
-                className="group relative overflow-hidden rounded-xl p-5 cursor-pointer"
-                style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-default)',
-                  transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLDivElement;
-                  el.style.transform = 'translateY(-4px)';
-                  el.style.borderColor = 'var(--color-aqua)';
-                  el.style.boxShadow = '0 12px 32px color-mix(in srgb, var(--color-aqua) 20%, transparent), 0 0 0 1px color-mix(in srgb, var(--color-aqua) 25%, transparent)';
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLDivElement;
-                  el.style.transform = 'translateY(0)';
-                  el.style.borderColor = 'var(--border-default)';
-                  el.style.boxShadow = 'none';
-                }}
-              >
-                {/* Gradient accent bar */}
-                <div
-                  className="absolute left-0 top-0 h-1 w-full"
-                  style={{ background: card.gradient }}
-                />
-
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p
-                      className="text-xs font-semibold uppercase tracking-wider"
-                      style={{ color: 'var(--text-muted)' }}
-                    >
-                      {card.title}
-                    </p>
-                    <p
-                      className="mt-2 text-3xl font-extrabold tracking-tight"
-                      style={{ color: 'var(--text-primary)' }}
-                    >
-                      {card.value}
-                    </p>
-                    <div className="mt-2 flex items-center gap-1">
-                      <span
-                        className="text-xs font-semibold"
-                        style={{
-                          color:
-                            card.changeType === 'positive'
-                              ? 'var(--accent-success)'
-                              : card.changeType === 'negative'
-                                ? 'var(--accent-error)'
-                                : 'var(--text-muted)',
-                        }}
-                      >
-                        {card.change}
-                      </span>
-                      <span className="text-xs" style={{ color: 'var(--text-disabled)' }}>
-                        vs last month
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Icon — scales on group hover */}
-                  <div
-                    className="flex h-11 w-11 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110"
-                    style={{
-                      background: card.gradient,
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                      color: 'white',
-                    }}
-                  >
-                    <CardIcon name={card.icon} />
-                  </div>
-                </div>
-              </div>
+              <PremiumMetricCard key={card.title} card={card} />
             ))}
           </div>
 
           {/* ═══════════════════════════════════════
-              KANBAN BOARD
+              DASHBOARD CHARTS (Replaces Kanban)
               ═══════════════════════════════════════ */}
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
-                Project Board
-              </h2>
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                Drag and drop tasks between columns
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium" style={{ color: 'var(--text-disabled)' }}>
-                {columns.reduce((acc, col) => acc + col.tasks.length, 0)} tasks
-              </span>
-            </div>
-          </div>
-
-          {/* Horizontally scrollable on mobile, grid on larger screens */}
-          <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:overflow-visible md:px-0">
-          <div className="grid min-w-[700px] grid-cols-4 gap-4 md:min-w-0 md:grid-cols-2 xl:grid-cols-4">
-            {columns.map((column) => (
-              <div
-                key={column.id}
-                className="flex flex-col rounded-xl transition-all duration-200"
-                style={{
-                  background: dragOverCol === column.id
-                    ? 'color-mix(in srgb, var(--bg-card) 90%, var(--color-aqua))'
-                    : 'var(--bg-card)',
-                  border: dragOverCol === column.id
-                    ? '1px solid var(--color-aqua)'
-                    : '1px solid var(--border-default)',
-                  minHeight: '400px',
-                }}
-                onDragOver={(e) => handleDragOver(e, column.id)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, column.id)}
-              >
-                {/* Column Header */}
-                <div
-                  className="flex items-center justify-between px-4 py-3"
-                  style={{ borderBottom: '1px solid var(--border-subtle)' }}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{ background: column.dotColor }}
-                    />
-                    <span
-                      className="text-sm font-semibold"
-                      style={{ color: 'var(--text-primary)' }}
-                    >
-                      {column.title}
-                    </span>
-                  </div>
-                  <span
-                    className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.06)',
-                      color: 'var(--text-muted)',
-                    }}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            
+            {/* Linear Chart - Wide (Takes 2 columns on desktop) */}
+            <Card className="col-span-1 md:col-span-2 shadow-sm border-border bg-card">
+              <CardHeader>
+                <CardTitle>Revenue & Targets</CardTitle>
+                <CardDescription>
+                  Tracking revenue growth for the last 6 months
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={revenueChartConfig} className="h-[300px] w-full">
+                  <AreaChart
+                    accessibilityLayer
+                    data={REVENUE_DATA}
+                    margin={{ left: 12, right: 12 }}
                   >
-                    {column.tasks.length}
-                  </span>
-                </div>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="month"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      tickFormatter={(value) => `$${value}`}
+                    />
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent indicator="dot" />}
+                    />
+                    <Area
+                      dataKey="target"
+                      type="monotone"
+                      fill="var(--color-chart-5)"
+                      fillOpacity={0.1}
+                      stroke="var(--color-chart-5)"
+                      strokeWidth={2}
+                    />
+                    <Area
+                      dataKey="revenue"
+                      type="monotone"
+                      fill="var(--color-chart-4)"
+                      fillOpacity={0.4}
+                      stroke="var(--color-chart-4)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
 
-                {/* Tasks */}
-                <div className="flex-1 space-y-2.5 p-3">
-                  {column.tasks.map((task) => (
-                    <div
-                      key={task.id}
-                      draggable
-                      onDragStart={() => handleDragStart(task, column.id)}
-                      onDragEnd={handleDragEnd}
-                      className="cursor-grab rounded-lg p-3.5 transition-all duration-150 active:cursor-grabbing active:scale-[0.97]"
-                      style={{
-                        background: 'var(--bg-surface)',
-                        border: '1px solid var(--border-subtle)',
-                        opacity: draggedTask?.id === task.id ? 0.4 : 1,
-                      }}
-                    >
-                      {/* Task ID + Priority */}
-                      <div className="mb-2 flex items-center justify-between">
-                        <span
-                          className="text-[10px] font-bold tracking-wider"
-                          style={{ color: 'var(--text-disabled)', fontFamily: 'var(--font-mono)' }}
-                        >
-                          {task.id}
-                        </span>
-                        <PriorityBadge priority={task.priority} />
-                      </div>
-
-                      {/* Title */}
-                      <h4
-                        className="text-sm font-semibold leading-tight"
-                        style={{ color: 'var(--text-primary)' }}
+            <div className="flex flex-col gap-4">
+              {/* Circular Chart 1 - Donut */}
+              <Card className="flex-1 flex flex-col shadow-sm border-border bg-card">
+                <CardHeader className="items-center pb-0">
+                  <CardTitle>Task Status</CardTitle>
+                  <CardDescription>Current sprint</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 pb-0 mt-4">
+                  <ChartContainer
+                    config={taskChartConfig}
+                    className="mx-auto aspect-4/3 max-h-[220px]"
+                  >
+                    <PieChart>
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent hideLabel />}
+                      />
+                      <Pie
+                        data={TASK_STATUS_DATA}
+                        dataKey="count"
+                        nameKey="status"
+                        innerRadius={50}
+                        outerRadius={75}
+                        strokeWidth={2}
+                        stroke="var(--background)"
                       >
-                        {task.title}
-                      </h4>
+                        <Label
+                          content={({ viewBox }) => {
+                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                              return (
+                                <text
+                                  x={viewBox.cx}
+                                  y={viewBox.cy}
+                                  textAnchor="middle"
+                                  dominantBaseline="middle"
+                                >
+                                  <tspan
+                                    x={viewBox.cx}
+                                    y={viewBox.cy}
+                                    className="fill-foreground text-3xl font-bold"
+                                  >
+                                    39
+                                  </tspan>
+                                  <tspan
+                                    x={viewBox.cx}
+                                    y={(viewBox.cy || 0) + 24}
+                                    className="fill-muted-foreground text-xs"
+                                  >
+                                    Total
+                                  </tspan>
+                                </text>
+                              )
+                            }
+                          }}
+                        />
+                      </Pie>
+                    </PieChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
 
-                      {/* Description */}
-                      <p
-                        className="mt-1 text-xs leading-relaxed"
-                        style={{ color: 'var(--text-muted)' }}
+              {/* Circular Chart 2 - Donut */}
+              <Card className="flex-1 flex flex-col shadow-sm border-border bg-card">
+                <CardHeader className="items-center pb-0">
+                  <CardTitle>User Distribution</CardTitle>
+                  <CardDescription>Active platform roles</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 pb-0 mt-4">
+                  <ChartContainer
+                    config={userChartConfig}
+                    className="mx-auto aspect-4/3 max-h-[220px]"
+                  >
+                    <PieChart>
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent hideLabel />}
+                      />
+                      <Pie
+                        data={USER_DIST_DATA}
+                        dataKey="count"
+                        nameKey="role"
+                        innerRadius={50}
+                        outerRadius={75}
+                        strokeWidth={2}
+                        stroke="var(--background)"
                       >
-                        {task.description}
-                      </p>
-
-                      {/* Footer: Assignee + Due */}
-                      <div className="mt-3 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <div
-                            className="flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold"
-                            style={{
-                              background: 'linear-gradient(135deg, var(--color-aqua) 0%, var(--color-aqua-dark) 100%)',
-                              color: 'var(--color-white)',
-                            }}
-                          >
-                            {task.assignee}
-                          </div>
-                        </div>
-                        <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--text-disabled)' }}>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                            <line x1="16" y1="2" x2="16" y2="6" />
-                            <line x1="8" y1="2" x2="8" y2="6" />
-                            <line x1="3" y1="10" x2="21" y2="10" />
-                          </svg>
-                          {task.dueDate}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Empty state */}
-                  {column.tasks.length === 0 && (
-                    <div className="flex h-24 items-center justify-center rounded-lg border-2 border-dashed" style={{ borderColor: 'var(--border-subtle)' }}>
-                      <p className="text-xs" style={{ color: 'var(--text-disabled)' }}>
-                        Drop tasks here
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+                        <Label
+                          content={({ viewBox }) => {
+                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                              return (
+                                <text
+                                  x={viewBox.cx}
+                                  y={viewBox.cy}
+                                  textAnchor="middle"
+                                  dominantBaseline="middle"
+                                >
+                                  <tspan
+                                    x={viewBox.cx}
+                                    y={viewBox.cy}
+                                    className="fill-foreground text-3xl font-bold"
+                                  >
+                                    100
+                                  </tspan>
+                                  <tspan
+                                    x={viewBox.cx}
+                                    y={(viewBox.cy || 0) + 24}
+                                    className="fill-muted-foreground text-xs"
+                                  >
+                                    Users
+                                  </tspan>
+                                </text>
+                              )
+                            }
+                          }}
+                        />
+                      </Pie>
+                    </PieChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+            </div>
+            
           </div>
-        </div>{/* end scroll wrapper */}
       </AppLayout>
     </>
   );

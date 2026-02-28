@@ -200,8 +200,8 @@
     <div class="container">
         <!-- Brand Header -->
         <div class="header">
-            <img src="{{ asset('img/Logo PNG.png') }}" alt="AquaShield Logo">
-            <h1>AquaShield</h1>
+            <img src="{{ asset('img/Logo PNG.png') }}" alt="Vidula Logo">
+            <h1>Vidula</h1>
             <div class="subtitle">Security Alert</div>
         </div>
 
@@ -217,7 +217,7 @@
 
             <p>Hello <strong>{{ $user->name }}</strong>,</p>
 
-            <p>We detected <strong>multiple failed login attempts</strong> on your AquaShield account. This may indicate
+            <p>We detected <strong>multiple failed login attempts</strong> on your Vidula account. This may indicate
                 that someone is trying to access your account without authorization.</p>
 
             <!-- Attempt Details -->
@@ -270,16 +270,16 @@
         <!-- Footer -->
         <div class="footer">
             <div class="social-links">
-                <a href="https://facebook.com/aquashieldcrm">
+                <a href="https://facebook.com/vidulacrm">
                     <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" alt="Facebook">
                 </a>
-                <a href="https://instagram.com/aquashieldcrm">
+                <a href="https://instagram.com/vidulacrm">
                     <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram">
                 </a>
-                <a href="https://twitter.com/aquashieldcrm">
+                <a href="https://twitter.com/vidulacrm">
                     <img src="https://cdn-icons-png.flaticon.com/512/124/124021.png" alt="Twitter">
                 </a>
-                <a href="https://linkedin.com/company/aquashieldcrm">
+                <a href="https://linkedin.com/company/vidulacrm">
                     <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn">
                 </a>
             </div>
@@ -296,7 +296,7 @@
             </div>
 
             <div class="copyright">
-                © {{ date('Y') }} AquaShield CRM. All rights reserved.
+                © {{ date('Y') }} Vidula CRM. All rights reserved.
             </div>
         </div>
     </div>

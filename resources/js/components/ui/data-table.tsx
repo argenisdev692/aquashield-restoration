@@ -61,7 +61,7 @@ export function DataTable<TData, TValue>({
                 return (
                   <TableHead
                     key={header.id}
-                    className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider h-auto"
+                    className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider h-auto"
                     style={{ color: 'var(--text-disabled)' }}
                   >
                     {header.isPlaceholder
@@ -108,7 +108,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="transition-colors duration-150 group"
+                  className="transition-colors duration-150 group text-center"
                   style={{
                     borderBottom: '1px solid var(--border-subtle)',
                     ...(isDeleted && {
@@ -118,7 +118,7 @@ export function DataTable<TData, TValue>({
                   }}
                 >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="px-4 py-3 h-auto">
+                  <TableCell key={cell.id} className="px-4 py-3 h-auto text-center align-middle">
                     {flexRender(
                       cell.column.columnDef.cell,
                       cell.getContext()
