@@ -98,7 +98,7 @@ export default function UsersIndexPage(): React.JSX.Element {
               System Users
             </h1>
             <p className="text-sm mt-1 text-(--text-muted) font-medium">
-              Oversee and manage platform accounts — <span className="text-(--accent-primary)">{meta.total} users</span> recorded
+              Oversee and manage platform accounts — <span className="text-(--accent-primary)">{meta.total} {meta.total === 1 ? 'user' : 'users'}</span> recorded
             </p>
           </div>
           <Link
@@ -124,8 +124,6 @@ export default function UsersIndexPage(): React.JSX.Element {
           </div>
 
           <div className="flex w-full items-center gap-4 sm:w-auto">
-            <div className="h-8 w-px bg-(--border-subtle) hidden sm:block" />
-            
             <DataTableDateRangeFilter
               dateFrom={filters.date_from}
               dateTo={filters.date_to}
@@ -136,6 +134,25 @@ export default function UsersIndexPage(): React.JSX.Element {
                 page: 1 
               }))}
             />
+
+            <select
+              value={filters.status || "all"}
+              onChange={(e) =>
+                setFilters((p) => ({
+                  ...p,
+                  status:
+                    e.target.value === "all"
+                      ? undefined
+                      : e.target.value,
+                  page: 1,
+                }))
+              }
+              className="px-3 py-2 rounded-lg text-sm outline-none bg-(--bg-subtle) text-(--text-primary) border border-(--border-default)"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="deleted">Deleted</option>
+            </select>
 
             <div className="h-8 w-px bg-(--border-subtle) hidden sm:block" />
 

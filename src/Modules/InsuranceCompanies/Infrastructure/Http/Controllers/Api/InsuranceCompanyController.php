@@ -42,10 +42,12 @@ final class InsuranceCompanyController
 
         return response()->json([
             'data' => array_map(fn($item) => new InsuranceCompanyResource($item), $result['data']),
-            'total' => $result['total'],
-            'perPage' => $result['perPage'],
-            'currentPage' => $result['currentPage'],
-            'lastPage' => $result['lastPage'],
+            'meta' => [
+                'total' => $result['total'],
+                'perPage' => $result['perPage'],
+                'currentPage' => $result['currentPage'],
+                'lastPage' => $result['lastPage'],
+            ],
         ]);
     }
 

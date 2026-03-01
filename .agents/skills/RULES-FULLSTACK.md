@@ -609,15 +609,114 @@ export function {Entities}Table({ data, isLoading, onDeleteClick, onRestoreClick
 
 Every `{Entities}IndexPage.tsx` must include ALL of:
 
-- Total records counter: `{data?.meta.total ?? 0} total records`
+- Total records counter with singular/plural: `{data?.meta.total ?? 0} {data?.meta.total === 1 ? 'record' : 'records'} found`
 - Search filter
-- Status filter
+- Status filter dropdown (`<select>` with options: All Status, Active, Deleted)
 - Date range filter (`DataTableDateRangeFilter`)
-- Export button (`ExportButton`)
+- Export button (`ExportButton` with `onExport` callback)
+- Bulk delete functionality with checkboxes (TanStack Table `rowSelection`)
+- `DataTableBulkActions` component for bulk operations
 - `DeleteConfirmModal` — for soft deletes (never `window.confirm()`)
 - `RestoreConfirmModal` — for restoring soft-deleted records
 - Table with 3 action icons (View / Edit / Delete for active rows; View / Restore for deleted rows)
+- "Created" column with formatted dates using `formatDateShort()` utility
 - Soft-deleted rows with red-tinted background + reduced opacity (via CSS tokens, not hardcoded colors)
+
+### Date Formatting Convention
+
+All dates displayed in tables MUST use the `formatDateShort()` utility from `@/utils/dateFormatter`:
+
+```ts
+// utils/dateFormatter.ts
+export function formatDateShort(dateString: string | undefined | null): string {
+    if (!dateString) return '—';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '—';
+    
+    const options: Intl.DateTimeFormatOptions = {
+        month: 'short',  // Month FIRST (English standard)
+        day: 'numeric',
+        year: 'numeric'
+    };
+    
+    return date.toLocaleDateString('en-US', options);
+}
+// Output: "Feb 16, 2026" (month first, comma after day)
+```
+
+**Table column usage:**
+```tsx
+columnHelper.accessor('createdAt', {
+    header: 'Created',
+    cell: (info) => (
+        <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            {formatDateShort(info.getValue())}
+        </span>
+    ),
+}),
+```
+
+### Status Filter Pattern
+
+```tsx
+<select
+    value={filters.status || "all"}
+    onChange={(e) =>
+        setFilters((p) => ({
+            ...p,
+            status: e.target.value === "all" ? undefined : e.target.value,
+            page: 1,
+        }))
+    }
+    className="px-3 py-2 rounded-lg text-sm outline-none bg-(--bg-subtle) text-(--text-primary) border border-(--border-default)"
+>
+    <option value="all">All Status</option>
+    <option value="active">Active</option>
+    <option value="deleted">Deleted</option>
+</select>
+```
+
+### Bulk Delete Pattern
+
+```tsx
+// State management
+const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+// Handler using Inertia router for CSRF
+const handleBulkDelete = () => {
+    const selectedUuids = Object.keys(rowSelection)
+        .filter((key) => rowSelection[key])
+        .map((index) => data[parseInt(index)]?.uuid)
+        .filter(Boolean);
+
+    if (selectedUuids.length === 0) return;
+
+    router.post(
+        "/{module}/data/admin/bulk-delete",
+        { uuids: selectedUuids },
+        {
+            preserveScroll: true,
+            onSuccess: () => setRowSelection({}),
+        }
+    );
+};
+
+// UI Component
+<DataTableBulkActions
+    count={Object.keys(rowSelection).length}
+    onDelete={handleBulkDelete}
+    isDeleting={deleteMutation.isPending}
+/>
+
+// Table with selection
+<{Entities}Table
+    data={data?.data ?? []}
+    rowSelection={rowSelection}
+    onRowSelectionChange={setRowSelection}
+/>
+```
+
+### Complete Index Page Template
 
 ```tsx
 // pages/{module}/{Entities}IndexPage.tsx

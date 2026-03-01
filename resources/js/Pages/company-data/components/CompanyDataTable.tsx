@@ -3,6 +3,7 @@ import { createColumnHelper, type ColumnDef, type RowSelectionState, type OnChan
 import { Link } from '@inertiajs/react';
 import { DataTable } from '@/shadcn/data-table';
 import type { CompanyDataListItem } from '@/types/api';
+import { formatDateShort } from '@/utils/dateFormatter';
 
 import { Building2, Eye, Pencil, Trash2 } from 'lucide-react';
 
@@ -89,14 +90,11 @@ export default function CompanyDataTable({
     }),
     columnHelper.accessor('created_at', {
       header: 'Created',
-      cell: (info) => {
-        const val = info.getValue();
-        return (
-          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            {val ? new Date(val).toLocaleDateString() : '—'}
-          </span>
-        );
-      },
+      cell: (info) => (
+        <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          {formatDateShort(info.getValue())}
+        </span>
+      ),
     }),
     columnHelper.display({
       id: 'actions',

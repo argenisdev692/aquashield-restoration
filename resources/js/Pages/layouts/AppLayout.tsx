@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import type { AuthPageProps } from '@/types/auth';
+import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 
 // ══════════════════════════════════════════════════════════════════
 // Theme Hook
@@ -41,7 +42,10 @@ import {
   Settings, 
   ArrowLeft, 
   X,
-  Kanban
+  Kanban,
+  Package,
+  Home,
+  ChevronRight
 } from 'lucide-react';
 
 const icSize = 18;
@@ -60,18 +64,36 @@ const IconSettings = () => <Settings size={icSize} />;
 const IconArrowLeft = () => <ArrowLeft size={16} />;
 const IconClose = () => <X size={16} />;
 const IconBuilding = () => <Building2 size={icSize} />;
+const IconPackage = () => <Package size={icSize} />;
+const IconHome = () => <Home size={icSize} />;
 
 // ══════════════════════════════════════════════════════════════════
 // Nav Items — Profile removed (accessible via avatar dropdown)
 // ══════════════════════════════════════════════════════════════════
-interface NavItem { label: string; href: string; icon: React.ReactNode; description: string; }
+interface NavItem { 
+  label: string; 
+  href?: string; 
+  icon: React.ReactNode; 
+  description: string;
+  children?: NavItem[];
+  permission?: string;
+}
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <IconGrid />, description: 'Overview & metrics' },
   { label: 'Kanban', href: '/kanban', icon: <IconKanban />, description: 'Project board' },
-  { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users' },
-  { label: 'Company Profiles', href: '/company-data', icon: <IconBuilding />, description: 'Corporate entities' },
-  { label: 'Insurance Companies', href: '/insurance-companies', icon: <ShieldCheck size={icSize} />, description: 'Manage insurance carriers' },
+  { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users', permission: 'READ_USER' },
+  { 
+    label: 'Companies', 
+    icon: <IconBuilding />, 
+    description: 'Manage all companies',
+    children: [
+      { label: 'Company Profiles', href: '/company-data', icon: <IconBuilding />, description: 'Corporate entities', permission: 'READ_COMPANY_DATA' },
+      { label: 'Insurance Companies', href: '/insurance-companies', icon: <ShieldCheck size={icSize} />, description: 'Insurance carriers', permission: 'READ_INSURANCE_COMPANY' },
+      { label: 'Mortgage Companies', href: '/mortgage-companies', icon: <IconHome />, description: 'Mortgage lenders', permission: 'READ_MORTGAGE_COMPANY' },
+    ]
+  },
+  { label: 'Products', href: '/products', icon: <IconPackage />, description: 'Product catalog', permission: 'READ_PRODUCT' },
 ];
 
 // ══════════════════════════════════════════════════════════════════
@@ -365,6 +387,19 @@ function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () => void }
 // ══════════════════════════════════════════════════════════════════
 function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Element {
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+  const [expandedItems, setExpandedItems] = React.useState<Set<string>>(new Set());
+
+  const toggleExpanded = (label: string) => {
+    setExpandedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(label)) {
+        next.delete(label);
+      } else {
+        next.add(label);
+      }
+      return next;
+    });
+  };
 
   return (
     <>
@@ -415,38 +450,173 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
         </span>
       </div>
 
-      <nav className="flex-1 space-y-1.5 px-3 uppercase text-xs tracking-wide">
+      <nav className="flex-1 space-y-1.5 px-3 uppercase text-xs tracking-wide overflow-y-auto">
         {NAV_ITEMS.map((item) => {
-          const active = currentPath === item.href || currentPath.startsWith(item.href + '/');
-          return (
+          // If item has children, render dropdown
+          if (item.children) {
+            const isExpanded = expandedItems.has(item.label);
+            const hasActiveChild = item.children.some(child => 
+              child.href && (currentPath === child.href || currentPath.startsWith(child.href + '/'))
+            );
+
+            return (
+              <div key={item.label}>
+                <button
+                  onClick={() => toggleExpanded(item.label)}
+                  className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-300"
+                  style={{
+                    color: hasActiveChild ? 'var(--text-primary)' : 'var(--text-muted)',
+                  }}
+                >
+                  <span 
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300"
+                    style={{
+                      background: hasActiveChild ? 'var(--grad-primary)' : 'rgba(255, 255, 255, 0.03)',
+                      color: hasActiveChild ? '#ffffff' : 'var(--text-muted)',
+                      border: hasActiveChild ? 'none' : '1px solid var(--border-default)'
+                    }}
+                  >
+                    {item.icon}
+                  </span>
+                  <div className="min-w-0 flex-1 text-left">
+                    <span 
+                      className="block text-[13px] font-semibold leading-none"
+                      style={{ 
+                        color: hasActiveChild ? 'var(--text-primary)' : 'var(--text-secondary)', 
+                        fontFamily: 'var(--font-sans)' 
+                      }}
+                    >
+                      {item.label}
+                    </span>
+                    <span 
+                      className="block text-[10px] normal-case leading-none mt-1" 
+                      style={{ 
+                        color: hasActiveChild ? 'var(--accent-secondary)' : 'var(--text-secondary)' 
+                      }}
+                    >
+                      {item.description}
+                    </span>
+                  </div>
+                  <ChevronRight 
+                    size={14} 
+                    className="transition-transform duration-200"
+                    style={{ 
+                      transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                      color: 'var(--text-disabled)'
+                    }}
+                  />
+                </button>
+
+                {/* Dropdown children */}
+                {isExpanded && (
+                  <div className="ml-4 mt-1 space-y-1">
+                    {item.children.map((child) => {
+                      const childActive = child.href && (currentPath === child.href || currentPath.startsWith(child.href + '/'));
+                      
+                      const childLink = (
+                        <Link
+                          key={child.href}
+                          href={child.href!}
+                          onClick={onClose}
+                          className="group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 transition-all duration-200"
+                          style={{
+                            color: childActive ? 'var(--text-primary)' : 'var(--text-muted)',
+                            background: childActive ? 'color-mix(in srgb, var(--accent-primary) 8%, transparent)' : 'transparent',
+                          }}
+                        >
+                          <span 
+                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all"
+                            style={{
+                              background: childActive ? 'var(--accent-primary)' : 'transparent',
+                              color: childActive ? '#ffffff' : 'var(--text-disabled)',
+                            }}
+                          >
+                            {child.icon}
+                          </span>
+                          <span 
+                            className="text-[12px] font-semibold"
+                            style={{ 
+                              color: childActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                              fontFamily: 'var(--font-sans)' 
+                            }}
+                          >
+                            {child.label}
+                          </span>
+                        </Link>
+                      );
+
+                      // Wrap with PermissionGuard if permission is defined
+                      if (child.permission) {
+                        return (
+                          <PermissionGuard key={child.href} permissions={[child.permission]}>
+                            {childLink}
+                          </PermissionGuard>
+                        );
+                      }
+
+                      return childLink;
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          // Regular item without children
+          const active = item.href && (currentPath === item.href || currentPath.startsWith(item.href + '/'));
+          
+          const linkElement = (
             <Link
               key={item.href}
-              href={item.href}
+              href={item.href!}
               onClick={onClose}
               className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-300 ${active ? 'sidebar-active shadow-sm' : ''}`}
               style={{
                 color: active ? 'var(--text-primary)' : 'var(--text-muted)',
               }}
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300"
+              <span 
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300"
                 style={{
                   background: active ? 'var(--grad-primary)' : 'rgba(255, 255, 255, 0.03)',
                   color: active ? '#ffffff' : 'var(--text-muted)',
                   border: active ? 'none' : '1px solid var(--border-default)'
-                }}>
+                }}
+              >
                 {item.icon}
               </span>
               <div className="min-w-0 flex-1">
-                <span className="block text-[13px] font-semibold leading-none"
-                  style={{ color: active ? 'var(--text-primary)' : 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
+                <span 
+                  className="block text-[13px] font-semibold leading-none"
+                  style={{ 
+                    color: active ? 'var(--text-primary)' : 'var(--text-secondary)', 
+                    fontFamily: 'var(--font-sans)' 
+                  }}
+                >
                   {item.label}
                 </span>
-                <span className="block text-[10px] normal-case leading-none mt-1" style={{ color: active ? 'var(--accent-secondary)' : 'var(--text-secondary)' }}>
+                <span 
+                  className="block text-[10px] normal-case leading-none mt-1" 
+                  style={{ 
+                    color: active ? 'var(--accent-secondary)' : 'var(--text-secondary)' 
+                  }}
+                >
                   {item.description}
                 </span>
               </div>
             </Link>
           );
+          
+          // Wrap with PermissionGuard if permission is defined
+          if (item.permission) {
+            return (
+              <PermissionGuard key={item.href} permissions={[item.permission]}>
+                {linkElement}
+              </PermissionGuard>
+            );
+          }
+          
+          return linkElement;
         })}
       </nav>
     </>

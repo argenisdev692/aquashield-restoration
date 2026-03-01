@@ -5,6 +5,7 @@ import { DataTable } from '@/shadcn/data-table';
 import UserStatusBadge from '@/modules/users/components/UserStatusBadge';
 import type { UserListItem } from '@/types/users';
 import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
+import { formatDateShort } from '@/utils/dateFormatter';
 
 import { Eye, Pencil, Trash2, CheckCircle } from 'lucide-react';
 
@@ -52,17 +53,17 @@ export default function UsersTable({
         />
       ),
     }),
-    columnHelper.accessor('full_name', {
+    columnHelper.accessor('fullName', {
       header: 'User',
       cell: (info) => {
         const user = info.row.original;
-        const displayName = user.full_name?.trim() || user.name || user.username || 'Unknown User';
+        const displayName = user.fullName?.trim() || user.name || user.username || 'Unknown User';
         
         return (
           <div className="flex items-center gap-3 text-left">
-            {user.profile_photo_path ? (
+            {user.profilePhotoPath ? (
               <img
-                src={user.profile_photo_path}
+                src={user.profilePhotoPath}
                 alt={displayName}
                 className="h-9 w-9 rounded-lg object-cover border border-(--border-default)"
               />
@@ -74,14 +75,14 @@ export default function UsersTable({
                   color: '#ffffff',
                 }}
               >
-                {initials(user.name, user.last_name)}
+                {initials(user.name, user.lastName)}
               </div>
             )}
             <div>
               <p className="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-100">
                 {displayName}
               </p>
-              {user.username && user.full_name?.trim() && (
+              {user.username && user.fullName?.trim() && (
                 <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-disabled)' }}>
                   @{user.username}
                 </p>
@@ -107,15 +108,13 @@ export default function UsersTable({
       header: 'Status',
       cell: (info) => <UserStatusBadge status={info.getValue()} />,
     }),
-    columnHelper.accessor('created_at', {
+    columnHelper.accessor('createdAt', {
       header: 'Created',
       cell: (info) => {
         const val = info.getValue() as string | undefined;
-        if (!val) return '—';
-        const date = new Date(val);
         return (
           <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            {date.toLocaleDateString()}
+            {formatDateShort(val)}
           </span>
         );
       },
@@ -125,7 +124,7 @@ export default function UsersTable({
       header: 'Actions',
       cell: (info) => {
         const user = info.row.original;
-        const isDeleted = !!user.deleted_at;
+        const isDeleted = !!user.deletedAt;
         
         return (
           <div className="flex items-center justify-end gap-1.5">
@@ -158,7 +157,7 @@ export default function UsersTable({
               </button>
             ) : (
               <button
-                 onClick={() => onDelete(user.uuid, user.full_name, user.email)}
+                 onClick={() => onDelete(user.uuid, user.fullName, user.email)}
                  className="btn-action btn-action-delete"
                  title="Delete User"
               >

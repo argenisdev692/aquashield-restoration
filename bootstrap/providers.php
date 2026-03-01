@@ -14,4 +14,6 @@ return [
     Modules\CompanyData\Providers\CompanyDataServiceProvider::class,
     Modules\Blog\Providers\BlogServiceProvider::class,
     Modules\InsuranceCompanies\Providers\InsuranceCompaniesServiceProvider::class,
+    Modules\MortgageCompanies\Providers\MortgageCompaniesServiceProvider::class,
+    Src\Modules\Products\Providers\ProductsServiceProvider::class,
 ];

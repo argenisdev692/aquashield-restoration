@@ -225,3 +225,38 @@ export interface UpdatePasswordDTO {
   password_confirmation: string;
 }
 
+
+// ── Mortgage Company ────────────────────────────────────────────
+
+export interface MortgageCompanyListItem {
+  uuid: string;
+  mortgageCompanyName: string;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  createdAt: string; // ISO 8601
+  deletedAt: string | null;
+}
+
+export interface MortgageCompanyDetail {
+  uuid: string;
+  mortgageCompanyName: string;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  userId: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface MortgageCompanyFilters {
+  page?: number;
+  perPage?: number;
+  search?: string;
+  status?: 'active' | 'deleted' | '';
+  dateFrom?: string;
+  dateTo?: string;
+}

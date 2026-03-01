@@ -52,7 +52,15 @@ final class AdminUserController
         $filters = UserFilterDTO::from($request->validated());
         $result = $this->listHandler->handle(new ListUsersQuery($filters));
 
-        return response()->json($result);
+        return response()->json([
+            'data' => $result['data'],
+            'meta' => [
+                'currentPage' => $result['currentPage'],
+                'lastPage' => $result['lastPage'],
+                'perPage' => $result['perPage'],
+                'total' => $result['total'],
+            ],
+        ]);
     }
 
     public function show(string $uuid): JsonResponse

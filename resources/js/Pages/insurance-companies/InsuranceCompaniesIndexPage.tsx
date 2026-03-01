@@ -68,7 +68,7 @@ export default function InsuranceCompaniesIndexPage(): React.JSX.Element {
                                 Insurance Companies
                             </h1>
                             <p className="text-sm mt-1 text-(--text-muted) font-medium">
-                                Manage your insurance carriers — <span className="text-(--accent-primary)">{meta.total} companies</span> found
+                                Manage your insurance carriers — <span className="text-(--accent-primary)">{meta.total} {meta.total === 1 ? 'carrier' : 'carriers'}</span> found
                             </p>
                         </div>
                         <Link
@@ -103,6 +103,26 @@ export default function InsuranceCompaniesIndexPage(): React.JSX.Element {
                                     page: 1 
                                 }))}
                             />
+                            
+                            <select
+                                value={filters.status || "all"}
+                                onChange={(e) =>
+                                    setFilters((p) => ({
+                                        ...p,
+                                        status:
+                                            e.target.value === "all"
+                                                ? undefined
+                                                : e.target.value,
+                                        page: 1,
+                                    }))
+                                }
+                                className="px-3 py-2 rounded-lg text-sm outline-none bg-(--bg-subtle) text-(--text-primary) border border-(--border-default)"
+                            >
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="deleted">Deleted</option>
+                            </select>
+                            
                             <div className="h-8 w-px bg-(--border-subtle) hidden sm:block" />
                             <ExportButton 
                                 onExport={handleExport} 

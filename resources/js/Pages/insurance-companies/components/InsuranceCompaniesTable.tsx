@@ -4,6 +4,7 @@ import { Link } from '@inertiajs/react';
 import { DataTable } from '@/shadcn/data-table';
 import { InsuranceCompany } from '@/modules/insurance-companies/types';
 import { useInsuranceCompanyMutations } from '@/modules/insurance-companies/hooks/useInsuranceCompanyMutations';
+import { formatDateShort } from '@/utils/dateFormatter';
 import { Eye, Pencil, Trash2, RotateCcw } from 'lucide-react';
 
 interface InsuranceCompaniesTableProps {
@@ -76,6 +77,14 @@ export default function InsuranceCompaniesTable({
                     </a>
                 );
             },
+        }),
+        columnHelper.accessor('created_at', {
+            header: 'Created',
+            cell: (info) => (
+                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                    {formatDateShort(info.getValue())}
+                </span>
+            ),
         }),
         columnHelper.display({
             id: 'actions',
