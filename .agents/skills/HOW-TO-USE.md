@@ -170,6 +170,28 @@ return response()->json([...]);
 
 > The **Mapper** is the ONLY class in the entire codebase allowed to import both the Domain Entity and the EloquentModel simultaneously.
 
+---
+
+## Key Differences vs Full Enterprise Architecture
+
+| Feature | This (Intermediate) | Full Enterprise |
+|---|---|---|
+| CommandBus / QueryBus | ❌ Direct handler calls | ✅ Formal Bus with middleware |
+| IntegrationEvents | ❌ Laravel Events | ✅ Dedicated IntegrationEvent layer |
+| Anti-Corruption Layer (ACL) | ❌ Not needed for 2 devs | ✅ Between every context |
+| Contracts / Published Lang. | ❌ Not needed for 2 devs | ✅ Per context |
+| PHPArkitect tests | ❌ PHPStan is enough | ✅ CI layer boundary tests |
+| Domain Subscribers | ❌ Laravel Event Listeners | ✅ Synchronous domain subscribers |
+| Bounded Contexts | Modules (lighter) | Full DDD Bounded Contexts |
+| Team size | 2 senior devs | 6-10+ devs |
+
+**When to upgrade to the full architecture:**
+- Team grows to 4+ developers
+- Two devs need to work on the same module without conflicts
+- Modules have business rules that genuinely conflict
+- Parts of the system need to scale independently
+
+---
 
 ## Composer Packages → Architecture Mapping
 

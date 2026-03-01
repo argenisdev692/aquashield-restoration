@@ -28,7 +28,7 @@ createInertiaApp({
             <QueryClientProvider client={queryClient}>
                 <App {...props} />
                 <Toaster 
-                    theme="system"
+                    position="top-right"
                     options={{
                         fill: 'var(--bg-card)',
                         roundness: 8,

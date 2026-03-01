@@ -13,4 +13,5 @@ return [
     Modules\Users\Providers\UsersServiceProvider::class,
     Modules\CompanyData\Providers\CompanyDataServiceProvider::class,
     Modules\Blog\Providers\BlogServiceProvider::class,
+    Modules\InsuranceCompanies\Providers\InsuranceCompaniesServiceProvider::class,
 ];

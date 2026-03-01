@@ -56,7 +56,11 @@ export function DataTable<TData, TValue>({
       <Table className="w-full min-w-[700px]">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} style={{ borderBottom: '1px solid var(--border-subtle)' }} className="hover:bg-transparent">
+            <TableRow 
+              key={headerGroup.id} 
+              style={{ borderBottom: '1px solid var(--border-subtle)' }} 
+              className="hover:bg-transparent bg-(--bg-void)/50"
+            >
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead

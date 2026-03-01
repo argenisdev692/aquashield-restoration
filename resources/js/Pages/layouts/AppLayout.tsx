@@ -71,6 +71,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Kanban', href: '/kanban', icon: <IconKanban />, description: 'Project board' },
   { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users' },
   { label: 'Company Profiles', href: '/company-data', icon: <IconBuilding />, description: 'Corporate entities' },
+  { label: 'Insurance Companies', href: '/insurance-companies', icon: <ShieldCheck size={icSize} />, description: 'Manage insurance carriers' },
 ];
 
 // ══════════════════════════════════════════════════════════════════
