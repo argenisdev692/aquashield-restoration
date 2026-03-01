@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Head, router } from '@inertiajs/react';
-import AuthLayout from '@/Pages/layouts/AuthLayout';
+import AuthLayout from '@/pages/layouts/AuthLayout';
 import { AuthInput } from './components/AuthInput';
 import { OtpInput } from './components/OtpInput';
 import { PasswordStrengthBar } from './components/PasswordStrengthBar';
@@ -239,7 +239,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
 
   return (
     <>
-      <Head title="Forgot Password — Vidula" />
+      <Head title="Forgot Password — AquaShield" />
       <AuthLayout>
         <div className="mb-6 text-center">
           <h2 className="text-xl font-bold" style={{ color: 'var(--color-white)' }}>

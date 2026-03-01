@@ -14,7 +14,7 @@
 
     <!--
         Theme init — runs BEFORE first paint to avoid flash.
-        Default: dark (Vidula branding).
+        Default: dark (AquaShield branding).
         Persisted in localStorage under key 'aq-theme'.
     -->
     <script>

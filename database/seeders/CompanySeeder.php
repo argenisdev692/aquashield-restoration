@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Src\Contexts\CompanyData\Infrastructure\Persistence\Eloquent\Models\CompanyDataEloquentModel as CompanyData;
+use App\Models\CompanyData;
 use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Uuid;
 
@@ -34,23 +34,23 @@ class CompanySeeder extends Seeder
     private function createMainCompany(): void
     {
         CompanyData::firstOrCreate(
-            ['email' => 'argenis692@gmail.com'],
+            ['email' => 'info@vgeneralcontractors.com'],
             [
                 'uuid' => Uuid::uuid4()->toString(),
-                'name' => 'Argenis Gonzalez',
-                'company_name' => 'Vidula',
-                'signature_path' => null,
-                'email' => 'argenis692@gmail.com',
-                'phone' => '+15555555555',
-                'address' => '123 Random Web Dev St, Suite 404, Tech City',
-                'website' => 'https://vidula.com',
+                'name' => 'Victor Lara',
+                'company_name' => 'V General Contractors',
+                'signature_path' => '/signatures/victor_lara_signature.png',
+                'email' => 'info@vgeneralcontractors.com',
+                'phone' => '+17135876423',
+                'address' => '1302 Waugh Dr # 810 Houston TX 77019',
+                'website' => 'https://vgeneralcontractors.com',
                 'latitude' => 29.75516,
                 'longitude' => -95.3984135,
                 'user_id' => 1,
-                'facebook_link' => 'https://www.facebook.com/vidula/',
-                'instagram_link' => 'https://www.instagram.com/vidula/',
-                'linkedin_link' => 'https://www.linkedin.com/company/vidula/',
-                'twitter_link' => 'https://twitter.com/vidula'
+                'facebook_link' => 'https://www.facebook.com/vgeneralcontractors/',
+                'instagram_link' => 'https://www.instagram.com/vgeneralcontractors/',
+                'linkedin_link' => 'https://www.linkedin.com/company/v-general-contractors/',
+                'twitter_link' => 'https://twitter.com/vgeneralcontractors'
             ]
         );
     }
@@ -81,19 +81,19 @@ class CompanySeeder extends Seeder
             [
                 'uuid' => Uuid::uuid4()->toString(),
                 'name' => 'Carlos Martinez',
-                'company_name' => 'V Services',
+                'company_name' => 'V Restoration Services',
                 'signature_path' => '/signatures/carlos_martinez_signature.png',
-                'email' => 'services@vgeneralcontractors.com',
+                'email' => 'restoration@vgeneralcontractors.com',
                 'phone' => '+1 (555) 123-4569',
                 'address' => '125 Construction Ave, Miami, FL 33101',
-                'website' => 'https://vservices.com',
+                'website' => 'https://vrestorationservices.com',
                 'latitude' => 25.7617,
                 'longitude' => -80.1918,
                 'user_id' => 3,
-                'facebook_link' => 'https://www.facebook.com/vservices/',
-                'instagram_link' => 'https://www.instagram.com/vservices/',
-                'linkedin_link' => 'https://www.linkedin.com/company/v-services/',
-                'twitter_link' => 'https://twitter.com/vservices'
+                'facebook_link' => 'https://www.facebook.com/vrestorationservices/',
+                'instagram_link' => 'https://www.instagram.com/vrestorationservices/',
+                'linkedin_link' => 'https://www.linkedin.com/company/v-restoration-services/',
+                'twitter_link' => 'https://twitter.com/vrestorationservices'
             ],
         ];
 

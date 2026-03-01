@@ -6,7 +6,7 @@ interface AuthLayoutProps {
 
 /**
  * AuthLayout — Unauthenticated layout for Login, Register, Forgot Password.
- * Full-screen centered card with Vidula branding.
+ * Full-screen centered card with AquaShield branding.
  */
 export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Element {
   return (
@@ -44,7 +44,7 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
           >
             <img 
               src="/img/Logo PNG.png" 
-              alt="Vidula Logo" 
+              alt="AquaShield Logo" 
               className="h-14 w-auto object-contain drop-shadow-md"
             />
           </div>
@@ -52,7 +52,7 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
             className="mt-4 text-2xl font-bold tracking-tight"
             style={{ color: 'var(--color-white)' }}
           >
-            Vidula
+            AquaShield
           </h1>
           <p
             className="mt-1 text-sm"
@@ -80,7 +80,7 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
           className="mt-6 text-center text-xs"
           style={{ color: 'var(--text-disabled)' }}
         >
-          © {new Date().getFullYear()} Vidula. All rights reserved.
+          © {new Date().getFullYear()} AquaShield. All rights reserved.
         </p>
       </div>
     </div>

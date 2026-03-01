@@ -40,13 +40,15 @@ import {
   Menu, 
   Settings, 
   ArrowLeft, 
-  X 
+  X,
+  Kanban
 } from 'lucide-react';
 
 const icSize = 18;
 
 const IconGrid    = () => <LayoutDashboard size={icSize} />;
 const IconUsers   = () => <Users size={icSize} />;
+const IconKanban  = () => <Kanban size={icSize} />;
 const IconSun     = () => <Sun size={icSize} />;
 const IconMoon    = () => <Moon size={icSize} />;
 const IconLogout  = () => <LogOut size={16} />;
@@ -66,6 +68,7 @@ interface NavItem { label: string; href: string; icon: React.ReactNode; descript
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <IconGrid />, description: 'Overview & metrics' },
+  { label: 'Kanban', href: '/kanban', icon: <IconKanban />, description: 'Project board' },
   { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users' },
   { label: 'Company Profiles', href: '/company-data', icon: <IconBuilding />, description: 'Corporate entities' },
 ];
@@ -270,6 +273,19 @@ function AvatarDropdown(): React.JSX.Element {
             </p>
           </div>
 
+          {/* Company Identity → /profile (includes company data) */}
+          <Link
+            href="/profile"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
+            style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--bg-hover)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'; }}
+          >
+            <IconBuilding />
+            My Company
+          </Link>
+
           {/* Settings → /profile */}
           <Link
             href="/profile"
@@ -362,7 +378,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
           <div>
             <span className="block text-[13px] font-bold tracking-tight leading-none"
               style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
-            Vidula
+            AquaShield
           </span>
             <span className="block text-[10px] font-semibold uppercase tracking-widest leading-none mt-0.5"
               style={{ color: 'var(--purple-500)' }}>
@@ -424,7 +440,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
                   style={{ color: active ? 'var(--text-primary)' : 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
                   {item.label}
                 </span>
-                <span className="block text-[10px] normal-case leading-none mt-1" style={{ color: active ? 'var(--purple-400)' : 'var(--text-disabled)' }}>
+                <span className="block text-[10px] normal-case leading-none mt-1" style={{ color: active ? 'var(--accent-secondary)' : 'var(--text-secondary)' }}>
                   {item.description}
                 </span>
               </div>
@@ -529,7 +545,7 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
           {/* Center: logo on mobile */}
           <div className="flex items-center gap-2 lg:hidden">
             <span className="text-[13px] font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
-            Vidula
+            AquaShield
           </span>
         </div>
 

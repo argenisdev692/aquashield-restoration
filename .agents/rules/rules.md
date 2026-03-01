@@ -18,6 +18,7 @@ trigger: always_on
 | React / Inertia frontend | `.agents/skills/ARQUITECTURE-REACT-INERTIA.md` |
 | CSS / Styles / UI        | `.agents/skills/rules-styles.md`               |
 | PHP coding rules         | `.agents/skills/RULES-PHP-2026.md`             |
+| Business Logic / CRUD    | `.agents/skills/HOW-TO-USE.md`                 |
 
 > **Rule:** If a skill file covers the task, read it FIRST — no exceptions.
 
@@ -46,6 +47,7 @@ trigger: always_on
 
 # [MUST] Laravel / PHP
 
+- Business logic rules and new CRUD/backend development MUST strictly follow `.agents/skills/HOW-TO-USE.md`.
 - Domain logic lives in `src/Contexts/<Module>/Domain/`.
 - No business logic in Controllers — only orchestration.
 - Use Commands + Handlers (CQRS) for writes, Queries for reads.

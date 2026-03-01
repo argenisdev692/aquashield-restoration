@@ -111,7 +111,7 @@
     </table>
 
     <div class="footer">
-        Vidula CRM - Page <span class="pagenum"></span>
+        AquaShield CRM - Page <span class="pagenum"></span>
     </div>
 </body>
 
