@@ -91,6 +91,8 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Company Profiles', href: '/company-data', icon: <IconBuilding />, description: 'Corporate entities', permission: 'READ_COMPANY_DATA' },
       { label: 'Insurance Companies', href: '/insurance-companies', icon: <ShieldCheck size={icSize} />, description: 'Insurance carriers', permission: 'READ_INSURANCE_COMPANY' },
       { label: 'Mortgage Companies', href: '/mortgage-companies', icon: <IconHome />, description: 'Mortgage lenders', permission: 'READ_MORTGAGE_COMPANY' },
+      { label: 'Public Companies', href: '/public-companies', icon: <Building2 size={icSize} />, description: 'Public companies', permission: 'READ_PUBLIC_COMPANY' },
+      { label: 'Alliance Companies', href: '/alliance-companies', icon: <Building2 size={icSize} />, description: 'Alliance partners', permission: 'READ_ALLIANCE_COMPANY' },
     ]
   },
   { label: 'Products', href: '/products', icon: <IconPackage />, description: 'Product catalog', permission: 'READ_PRODUCT' },

@@ -728,120 +728,45 @@ export function useSafeTransition(transition: object) {
 
 ## 10. Toast Notifications — Sileo React
 
-Use **Sileo** (`sileo`) for all toast notifications. Do not use Sonner, react-hot-toast, or any other toast library.
+Use **Sileo React** (`sileo`) for all toast notifications. Do not use Sonner, react-hot-toast, or any other toast library.
 
 ```bash
 npm install sileo
 ```
 
-### Setup
-
 ```tsx
-// In root layout (app.tsx) — place once
-import { Toaster } from "sileo";
-import 'sileo/styles.css';
-
-<Toaster position="top-right" />
+// In root layout — place once
+import { SileoProvider } from "sileo";
+<SileoProvider position="bottom-right" theme="dark" />
 ```
 
-### Usage in components
-
 ```tsx
-import { sileo } from "sileo";
+// Usage in components
+import { toast } from "sileo";
 
-// Basic toasts
-sileo.success({ title: "User created successfully" });
-sileo.error({ title: "Failed to delete user" });
-sileo.warning({ title: "This action cannot be undone" });
-sileo.info({ title: "Syncing data..." });
-
-// With description
-sileo.success({
-    title: "Profile updated",
-    description: "Your changes have been saved successfully."
-});
-
-// Promise toast (loading → success/error)
-sileo.promise(
-    fetch('/api/save'),
-    {
-        loading: { title: "Saving..." },
-        success: { title: "Saved successfully!" },
-        error: { title: "Failed to save" }
-    }
-);
-
-// Action toast with button
-sileo.action({
-    title: "New message",
-    description: "You have a new message from John",
-    button: {
-        title: "View",
-        onClick: () => router.visit('/messages')
-    }
-});
+toast.success("User created successfully");
+toast.error("Failed to delete user");
+toast.warning("This action cannot be undone");
+toast.info("Syncing data...");
+toast.loading("Exporting PDF...");
 ```
 
-### Customization with design tokens
+Configure Sileo to use design tokens in `globals.css`:
 
-Configure Sileo to use your design system tokens:
-
-```tsx
-// In app.tsx Toaster configuration
-<Toaster 
-    position="top-right"
-    options={{
-        fill: 'var(--bg-card)',
-        roundness: 8,
-        styles: {
-            title: 'text-[14px] font-sans font-semibold text-[var(--text-primary)]',
-            description: 'text-[13px] font-sans text-[var(--text-muted)]'
-        }
-    }}
-/>
-
-// Per-toast customization
-sileo.success({
-    title: "Success",
-    fill: 'var(--bg-card)',
-    styles: {
-        title: 'text-[var(--accent-success)]',
-        description: 'text-[var(--text-muted)]'
-    }
-});
+```css
+/* Override Sileo default vars to match design system tokens */
+[data-sileo-container] {
+    --sileo-bg:            var(--bg-card);
+    --sileo-border:        var(--border-default);
+    --sileo-text:          var(--text-primary);
+    --sileo-success-color: var(--accent-success);
+    --sileo-error-color:   var(--accent-error);
+    --sileo-warning-color: var(--accent-warning);
+    --sileo-info-color:    var(--accent-info);
+    font-family:           var(--font-sans);
+    font-size:             13px;
+}
 ```
-
-### Available positions
-
-- `top-left`, `top-center`, `top-right`
-- `bottom-left`, `bottom-center`, `bottom-right`
-
-### API Reference
-
-| Method | Description |
-|--------|-------------|
-| `sileo.success(options)` | Green success toast |
-| `sileo.error(options)` | Red error toast |
-| `sileo.warning(options)` | Amber warning toast |
-| `sileo.info(options)` | Blue info toast |
-| `sileo.action(options)` | Toast with action button |
-| `sileo.promise(promise, opts)` | Loading → success/error flow |
-| `sileo.dismiss(id)` | Dismiss specific toast |
-| `sileo.clear(position?)` | Clear all toasts |
-
-### Options
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `title` | string | — | Toast heading (required) |
-| `description` | ReactNode \| string | — | Body content, supports JSX |
-| `position` | string | Toaster default | Override position |
-| `duration` | number \| null | 6000 | Auto-dismiss ms. `null` = sticky |
-| `icon` | ReactNode | null | Custom icon in badge |
-| `fill` | string | "#FFFFFF" | SVG fill color (use CSS tokens) |
-| `styles` | object | — | Class overrides for sub-elements |
-| `roundness` | number | 16 | Border radius in pixels |
-| `button` | object | — | Action button config |
 
 ---
 
