@@ -34,23 +34,23 @@ class CompanySeeder extends Seeder
     private function createMainCompany(): void
     {
         CompanyData::firstOrCreate(
-            ['email' => 'info@vgeneralcontractors.com'],
+            ['email' => 'info@aquashieldrestorationusa.com'],
             [
                 'uuid' => Uuid::uuid4()->toString(),
                 'name' => 'Victor Lara',
-                'company_name' => 'V General Contractors',
+                'company_name' => 'Aquashield Restoration USA',
                 'signature_path' => '/signatures/victor_lara_signature.png',
-                'email' => 'info@vgeneralcontractors.com',
+                'email' => 'info@aquashieldrestorationusa.com',
                 'phone' => '+17135876423',
-                'address' => '1302 Waugh Dr # 810 Houston TX 77019',
-                'website' => 'https://vgeneralcontractors.com',
+                'address' => '1321 Upland Dr. PMB 4455, Houston, TX 77043',
+                'website' => 'https://aquashieldrestorationusa.com',
                 'latitude' => 29.75516,
                 'longitude' => -95.3984135,
                 'user_id' => 1,
-                'facebook_link' => 'https://www.facebook.com/vgeneralcontractors/',
-                'instagram_link' => 'https://www.instagram.com/vgeneralcontractors/',
+                'facebook_link' => 'https://www.facebook.com/aquashieldrestorationusa/',
+                'instagram_link' => 'https://www.instagram.com/aquashieldrestorationusa/',
                 'linkedin_link' => 'https://www.linkedin.com/company/v-general-contractors/',
-                'twitter_link' => 'https://twitter.com/vgeneralcontractors'
+                'twitter_link' => 'https://twitter.com/aquashieldrestorationusa'
             ]
         );
     }
@@ -66,7 +66,7 @@ class CompanySeeder extends Seeder
                 'name' => 'Maria Rodriguez',
                 'company_name' => 'V Roofing Solutions',
                 'signature_path' => '/signatures/maria_rodriguez_signature.png',
-                'email' => 'roofing@vgeneralcontractors.com',
+                'email' => 'roofing@aquashieldrestorationusa.com',
                 'phone' => '+1 (555) 123-4568',
                 'address' => '124 Construction Ave, Miami, FL 33101',
                 'website' => 'https://vroofingsolutions.com',
@@ -83,7 +83,7 @@ class CompanySeeder extends Seeder
                 'name' => 'Carlos Martinez',
                 'company_name' => 'V Restoration Services',
                 'signature_path' => '/signatures/carlos_martinez_signature.png',
-                'email' => 'restoration@vgeneralcontractors.com',
+                'email' => 'restoration@aquashieldrestorationusa.com',
                 'phone' => '+1 (555) 123-4569',
                 'address' => '125 Construction Ave, Miami, FL 33101',
                 'website' => 'https://vrestorationservices.com',
