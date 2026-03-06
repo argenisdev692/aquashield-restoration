@@ -7,7 +7,7 @@ export const useInsuranceCompany = (uuid: string | null) => {
         queryKey: ['insurance-company', uuid],
         queryFn: async () => {
             if (!uuid) return null;
-            const { data } = await axios.get<{ data: InsuranceCompany }>(`/insurance-companies/data/${uuid}`);
+            const { data } = await axios.get<{ data: InsuranceCompany }>(`/insurance-companies/data/admin/${uuid}`);
             return data.data;
         },
         enabled: !!uuid,

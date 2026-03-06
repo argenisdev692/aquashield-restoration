@@ -9,7 +9,7 @@ export const useInsuranceCompanyMutations = () => {
 
     const createMutation = useMutation({
         mutationFn: async (data: Partial<InsuranceCompany>) => {
-            const response = await axios.post('/insurance-companies/data', data);
+            const response = await axios.post('/insurance-companies/data/admin', data);
             return response.data.data;
         },
         onSuccess: () => {
@@ -24,7 +24,7 @@ export const useInsuranceCompanyMutations = () => {
 
     const updateMutation = useMutation({
         mutationFn: async ({ uuid, data }: { uuid: string; data: Partial<InsuranceCompany> }) => {
-            const response = await axios.put(`/insurance-companies/data/${uuid}`, data);
+            const response = await axios.put(`/insurance-companies/data/admin/${uuid}`, data);
             return response.data.data;
         },
         onSuccess: (data) => {
@@ -40,7 +40,7 @@ export const useInsuranceCompanyMutations = () => {
 
     const deleteMutation = useMutation({
         mutationFn: async (uuid: string) => {
-            await axios.delete(`/insurance-companies/data/${uuid}`);
+            await axios.delete(`/insurance-companies/data/admin/${uuid}`);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['insurance-companies'] });
@@ -53,7 +53,7 @@ export const useInsuranceCompanyMutations = () => {
 
     const restoreMutation = useMutation({
         mutationFn: async (uuid: string) => {
-            await axios.patch(`/insurance-companies/data/${uuid}/restore`);
+            await axios.patch(`/insurance-companies/data/admin/${uuid}/restore`);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['insurance-companies'] });

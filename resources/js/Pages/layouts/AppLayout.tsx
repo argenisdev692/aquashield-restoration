@@ -89,7 +89,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <IconGrid />, description: 'Overview & metrics' },
   { label: 'Kanban', href: '/kanban', icon: <IconKanban />, description: 'Project board' },
-  { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users', permission: 'VIEW_USERS' },
+  { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users', roles: 'SUPER_ADMIN' },
   { 
     label: 'Companies', 
     icon: <IconBuilding />, 
@@ -409,6 +409,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
   const { auth } = usePage<AuthPageProps>().props;
   const userRoles = auth.user?.roles ?? [];
   const userPermissions = auth.user?.permissions ?? [];
+  const isSuperAdmin = userRoles.includes('SUPER_ADMIN');
   const [expandedItems, setExpandedItems] = React.useState<Set<string>>(() => {
     if (typeof window === 'undefined') {
       return new Set();
@@ -434,11 +435,15 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
   }, [expandedItems]);
 
   const canAccessNavItem = React.useCallback((item: NavItem): boolean => {
+    if (isSuperAdmin) {
+      return true;
+    }
+
     const allowedByRoles = !item.roles || (Array.isArray(item.roles) ? item.roles : [item.roles]).some((role) => userRoles.includes(role));
     const allowedByPermissions = !item.permission || (Array.isArray(item.permission) ? item.permission : [item.permission]).some((permission) => userPermissions.includes(permission));
 
     return allowedByRoles && allowedByPermissions;
-  }, [userPermissions, userRoles]);
+  }, [isSuperAdmin, userPermissions, userRoles]);
 
   const toggleExpanded = (label: string) => {
     setExpandedItems(prev => {

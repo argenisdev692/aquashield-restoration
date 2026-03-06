@@ -7,7 +7,7 @@ export const useInsuranceCompanies = (filters: InsuranceCompanyFilters = {}) => 
     return useQuery({
         queryKey: ['insurance-companies', filters],
         queryFn: async () => {
-            const { data } = await axios.get<PaginatedResponse<InsuranceCompany>>('/insurance-companies/data', {
+            const { data } = await axios.get<PaginatedResponse<InsuranceCompany>>('/insurance-companies/data/admin', {
                 params: filters,
             });
             return data;

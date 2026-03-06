@@ -53,7 +53,7 @@ export default function InsuranceCompaniesIndexPage(): React.JSX.Element {
             if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
             if (filters.dateTo) params.append('dateTo', filters.dateTo);
             params.append('format', format);
-            window.open(`/insurance-companies/data/export?${params.toString()}`, '_blank');
+            window.open(`/insurance-companies/data/admin/export?${params.toString()}`, '_blank');
         });
     };
 

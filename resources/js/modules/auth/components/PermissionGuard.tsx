@@ -30,6 +30,10 @@ export function PermissionGuard({
   const userRoles: string[] = (auth.user as { roles?: string[] }).roles ?? [];
   const userPermissions: string[] = (auth.user as { permissions?: string[] }).permissions ?? [];
 
+  if (userRoles.includes('SUPER_ADMIN')) {
+    return children as React.JSX.Element;
+  }
+
   // Check role match (at least one)
   if (roles && roles.length > 0) {
     const hasRole = roles.some((role) => userRoles.includes(role));
