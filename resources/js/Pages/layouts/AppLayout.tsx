@@ -83,18 +83,19 @@ interface NavItem {
   description: string;
   children?: NavItem[];
   permission?: string | string[];
+  roles?: string | string[];
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <IconGrid />, description: 'Overview & metrics' },
   { label: 'Kanban', href: '/kanban', icon: <IconKanban />, description: 'Project board' },
-  { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users', permission: 'READ_USER' },
+  { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users', permission: 'VIEW_USERS' },
   { 
     label: 'Companies', 
     icon: <IconBuilding />, 
     description: 'Manage all companies',
     children: [
-      { label: 'Company Profiles', href: '/company-data', icon: <IconBuilding />, description: 'Corporate entities', permission: 'READ_COMPANY_DATA' },
+      { label: 'Company Profiles', href: '/company-data', icon: <IconBuilding />, description: 'Corporate entities', permission: 'VIEW_COMPANY_DATA' },
       { label: 'Insurance Companies', href: '/insurance-companies', icon: <ShieldCheck size={icSize} />, description: 'Insurance carriers', permission: 'READ_INSURANCE_COMPANY' },
       { label: 'Mortgage Companies', href: '/mortgage-companies', icon: <IconHome />, description: 'Mortgage lenders', permission: 'READ_MORTGAGE_COMPANY' },
       { label: 'Public Companies', href: '/public-companies', icon: <Building2 size={icSize} />, description: 'Public companies', permission: 'READ_PUBLIC_COMPANY' },
@@ -106,9 +107,9 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Blog',
     icon: <IconBlog />,
     description: 'Manage blog structure',
-    permission: ['READ_BLOG_CATEGORY', 'READ_POST', 'VIEW_POST'],
+    roles: 'SUPER_ADMIN',
     children: [
-      { label: 'Categories', href: '/blog-categories', icon: <IconTags />, description: 'Blog taxonomy', permission: 'READ_BLOG_CATEGORY' },
+      { label: 'Categories', href: '/blog-categories', icon: <IconTags />, description: 'Blog taxonomy', roles: 'SUPER_ADMIN' },
       { label: 'Posts', href: '/posts', icon: <IconPost />, description: 'Editorial content', permission: 'VIEW_POST' },
     ]
   },
@@ -255,7 +256,7 @@ function AvatarDropdown(): React.JSX.Element {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((p) => !p)}
-        className="flex items-center gap-2 rounded-lg p-1 pr-2 transition-all duration-150"
+        className="flex cursor-pointer items-center gap-2 rounded-lg p-1 pr-2 transition-all duration-150"
         style={{
           background: open ? 'var(--bg-hover)' : 'transparent',
           border: '1px solid',
@@ -346,7 +347,7 @@ function AvatarDropdown(): React.JSX.Element {
           {/* Logout */}
           <button
             onClick={() => router.post('/logout')}
-            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
             style={{ color: 'var(--accent-error)', fontFamily: 'var(--font-sans)' }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--accent-error) 10%, transparent)'; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
@@ -405,6 +406,9 @@ function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () => void }
 // ══════════════════════════════════════════════════════════════════
 function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Element {
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+  const { auth } = usePage<AuthPageProps>().props;
+  const userRoles = auth.user?.roles ?? [];
+  const userPermissions = auth.user?.permissions ?? [];
   const [expandedItems, setExpandedItems] = React.useState<Set<string>>(() => {
     if (typeof window === 'undefined') {
       return new Set();
@@ -428,6 +432,13 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
   React.useEffect(() => {
     window.localStorage.setItem('aq-sidebar-expanded-items', JSON.stringify(Array.from(expandedItems)));
   }, [expandedItems]);
+
+  const canAccessNavItem = React.useCallback((item: NavItem): boolean => {
+    const allowedByRoles = !item.roles || (Array.isArray(item.roles) ? item.roles : [item.roles]).some((role) => userRoles.includes(role));
+    const allowedByPermissions = !item.permission || (Array.isArray(item.permission) ? item.permission : [item.permission]).some((permission) => userPermissions.includes(permission));
+
+    return allowedByRoles && allowedByPermissions;
+  }, [userPermissions, userRoles]);
 
   const toggleExpanded = (label: string) => {
     setExpandedItems(prev => {
@@ -494,8 +505,18 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
         {NAV_ITEMS.map((item) => {
           // If item has children, render dropdown
           if (item.children) {
+            if (!canAccessNavItem(item)) {
+              return null;
+            }
+
+            const visibleChildren = item.children.filter((child) => canAccessNavItem(child));
+
+            if (visibleChildren.length === 0) {
+              return null;
+            }
+
             const isExpanded = expandedItems.has(item.label);
-            const hasActiveChild = item.children.some(child => 
+            const hasActiveChild = visibleChildren.some(child => 
               child.href && (currentPath === child.href || currentPath.startsWith(child.href + '/'))
             );
 
@@ -503,7 +524,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
               <div key={item.label}>
                 <button
                   onClick={() => toggleExpanded(item.label)}
-                  className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-300"
+                  className="group flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-300"
                   style={{
                     color: hasActiveChild ? 'var(--text-primary)' : 'var(--text-muted)',
                   }}
@@ -550,7 +571,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
                 {/* Dropdown children */}
                 {isExpanded && (
                   <div className="ml-4 mt-1 space-y-1">
-                    {item.children.map((child) => {
+                    {visibleChildren.map((child) => {
                       const childActive = child.href && (currentPath === child.href || currentPath.startsWith(child.href + '/'));
                       
                       const childLink = (
@@ -586,9 +607,13 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
                       );
 
                       // Wrap with PermissionGuard if permission is defined
-                      if (child.permission) {
+                      if (child.permission || child.roles) {
                         return (
-                          <PermissionGuard key={child.href} permissions={Array.isArray(child.permission) ? child.permission : [child.permission]}>
+                          <PermissionGuard
+                            key={child.href}
+                            permissions={child.permission ? (Array.isArray(child.permission) ? child.permission : [child.permission]) : undefined}
+                            roles={child.roles ? (Array.isArray(child.roles) ? child.roles : [child.roles]) : undefined}
+                          >
                             {childLink}
                           </PermissionGuard>
                         );
@@ -601,9 +626,13 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
               </div>
             );
 
-            if (item.permission) {
+            if (item.permission || item.roles) {
               return (
-                <PermissionGuard key={item.label} permissions={Array.isArray(item.permission) ? item.permission : [item.permission]}>
+                <PermissionGuard
+                  key={item.label}
+                  permissions={item.permission ? (Array.isArray(item.permission) ? item.permission : [item.permission]) : undefined}
+                  roles={item.roles ? (Array.isArray(item.roles) ? item.roles : [item.roles]) : undefined}
+                >
                   {groupElement}
                 </PermissionGuard>
               );
@@ -613,6 +642,10 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
           }
 
           // Regular item without children
+          if (!canAccessNavItem(item)) {
+            return null;
+          }
+
           const active = item.href && (currentPath === item.href || currentPath.startsWith(item.href + '/'));
           
           const linkElement = (
@@ -658,9 +691,13 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
           );
           
           // Wrap with PermissionGuard if permission is defined
-          if (item.permission) {
+          if (item.permission || item.roles) {
             return (
-              <PermissionGuard key={item.href} permissions={Array.isArray(item.permission) ? item.permission : [item.permission]}>
+              <PermissionGuard
+                key={item.href}
+                permissions={item.permission ? (Array.isArray(item.permission) ? item.permission : [item.permission]) : undefined}
+                roles={item.roles ? (Array.isArray(item.roles) ? item.roles : [item.roles]) : undefined}
+              >
                 {linkElement}
               </PermissionGuard>
             );
