@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\CompanyData\Infrastructure\Http\Export;
 
-use App\Models\CompanyData as CompanyDataEloquentModel;
-use Illuminate\Database\Eloquent\Builder;
+
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -13,8 +12,9 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Modules\CompanyData\Application\DTOs\CompanyDataFilterDTO;
+use Modules\CompanyData\Infrastructure\Persistence\Eloquent\Models\CompanyDataEloquentModel;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 final class CompanyDataExcelExport implements
     FromQuery,
@@ -27,14 +27,13 @@ final class CompanyDataExcelExport implements
     use Exportable;
 
     public function __construct(
-        private readonly CompanyDataFilterDTO $filters
+        private readonly CompanyDataFilterDTO $filters,
     ) {
     }
 
-    public function query(): Builder
+    public function query()
     {
-        /** @var Builder $query */
-        $query = CompanyDataEloquentModel::query()
+        return CompanyDataEloquentModel::query()
             ->select([
                 'id',
                 'uuid',
@@ -46,20 +45,19 @@ final class CompanyDataExcelExport implements
                 'website',
                 'created_at',
             ])
-            ->whereNull('deleted_at')
+            ->where('deleted_at', '=', null)
             ->when(
                 $this->filters->search,
-                fn($q, $s) =>
-                $q->where('company_name', 'like', "%{$s}%")
-                    ->orWhere('name', 'like', "%{$s}%")
+                fn($q, $s) => $q->where(function ($q) use ($s): void {
+                    $q->where('company_name', 'like', "%{$s}%")
+                        ->orWhere('name', 'like', "%{$s}%");
+                }),
             )
             ->when(
                 $this->filters->dateFrom || $this->filters->dateTo,
-                fn($q) => $q->inDateRange($this->filters->dateFrom, $this->filters->dateTo)
+                fn($q) => $q->inDateRange($this->filters->dateFrom, $this->filters->dateTo),
             )
             ->orderBy($this->filters->sortBy ?? 'created_at', $this->filters->sortDir ?? 'desc');
-
-        return $query;
     }
 
     public function headings(): array
@@ -83,12 +81,12 @@ final class CompanyDataExcelExport implements
             $company->id,
             $company->uuid,
             $company->company_name,
-            $company->name,
-            $company->email,
-            $company->phone,
-            $company->address,
-            $company->website,
-            $company->created_at?->toIso8601String(),
+            $company->name ?? '—',
+            $company->email ?? '—',
+            $company->phone ?? '—',
+            $company->address ?? '—',
+            $company->website ?? '—',
+            $company->created_at?->format('F j, Y') ?? '—',
         ];
     }
 

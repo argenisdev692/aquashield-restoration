@@ -59,7 +59,7 @@ final readonly class ListUsersHandler
                 phone: $user->phone,
                 status: $user->status->value,
                 profilePhotoPath: $user->profilePhotoPath,
-                role: null, // To be implemented with RBAC service
+                role: $user->role,
                 createdAt: $user->createdAt ?? '',
                 updatedAt: $user->updatedAt ?? '',
                 deletedAt: $user->deletedAt,

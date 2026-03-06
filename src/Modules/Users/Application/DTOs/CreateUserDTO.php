@@ -4,11 +4,28 @@ declare(strict_types=1);
 
 namespace Modules\Users\Application\DTOs;
 
+use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
- * CreateUserDTO — Data Transfer Object for user creation.
+ * @OA\Schema(
+ *     schema="CreateUserDTO",
+ *     required={"name", "email"},
+ *     @OA\Property(property="name", type="string", example="John"),
+ *     @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+ *     @OA\Property(property="last_name", type="string", nullable=true, example="Doe"),
+ *     @OA\Property(property="username", type="string", nullable=true, example="johndoe"),
+ *     @OA\Property(property="phone", type="string", nullable=true, example="5551234"),
+ *     @OA\Property(property="address", type="string", nullable=true, example="123 Main St"),
+ *     @OA\Property(property="city", type="string", nullable=true, example="Miami"),
+ *     @OA\Property(property="state", type="string", nullable=true, example="Florida"),
+ *     @OA\Property(property="country", type="string", nullable=true, example="USA"),
+ *     @OA\Property(property="zip_code", type="string", nullable=true, example="33101"),
+ *     @OA\Property(property="role", type="string", nullable=true, example="user")
+ * )
  */
+#[MapInputName(SnakeCaseMapper::class)]
 final class CreateUserDTO extends Data
 {
     public function __construct(

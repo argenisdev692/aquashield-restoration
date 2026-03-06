@@ -16,8 +16,12 @@ final class AvatarStorageAdapter implements StoragePort
     private const AVATARS_DISK = 'public';
     private const AVATARS_DIR = 'avatars';
 
-    public function upload(UploadedFile $file): string
+    public function upload(mixed $file): string
     {
+        if (! $file instanceof UploadedFile) {
+            throw new \InvalidArgumentException('Avatar upload requires an uploaded file instance.');
+        }
+
         $path = $file->store(self::AVATARS_DIR, self::AVATARS_DISK);
 
         if (!$path) {

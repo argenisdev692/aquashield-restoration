@@ -34,6 +34,7 @@ final class UserMapper
             state: $model->state,
             country: $model->country,
             zipCode: $model->zip_code,
+            role: $model->roles->pluck('name')->first(),
             status: $status,
             setupToken: $model->setup_token,
             setupTokenExpiresAt: $model->setup_token_expires_at?->toIso8601String(),

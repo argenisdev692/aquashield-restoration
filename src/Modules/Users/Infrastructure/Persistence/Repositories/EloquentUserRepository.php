@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Users\Infrastructure\Persistence\Repositories;
 
 use Modules\Users\Domain\Entities\User;
+use Modules\Users\Domain\Enums\UserStatus;
 use Modules\Users\Domain\Ports\UserRepositoryPort;
 use Modules\Users\Infrastructure\Persistence\Mappers\UserMapper;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
@@ -39,6 +40,8 @@ final class EloquentUserRepository implements UserRepositoryPort
     public function findByUuid(string $uuid): ?User
     {
         $model = UserEloquentModel::query()
+            ->withTrashed()
+            ->with('roles:id,name')
             ->select(self::SELECT_COLUMNS)
             ->where('uuid', $uuid)
             ->first();
@@ -49,6 +52,7 @@ final class EloquentUserRepository implements UserRepositoryPort
     public function findByEmail(string $email): ?User
     {
         $model = UserEloquentModel::query()
+            ->with('roles:id,name')
             ->select(self::SELECT_COLUMNS)
             ->where('email', $email)
             ->first();
@@ -63,10 +67,26 @@ final class EloquentUserRepository implements UserRepositoryPort
     public function findAllPaginated(array $filters = [], int $page = 1, int $perPage = 15): array
     {
         $query = UserEloquentModel::query()
+            ->withTrashed()
+            ->with('roles:id,name')
             ->select(self::SELECT_COLUMNS)
             ->when(
+                ($filters['status'] ?? null) === null,
+                static fn($q) => $q->whereNull('deleted_at')
+            )
+            ->when(
                 $filters['status'] ?? null,
-                fn($q, $status) => $q->where('status', $status)
+                static function ($q, $status) {
+                    $statusValue = $status instanceof UserStatus ? $status->value : (string) $status;
+
+                    if ($statusValue === 'deleted') {
+                        return $q->onlyTrashed();
+                    }
+
+                    return $q
+                        ->whereNull('deleted_at')
+                        ->where('status', $statusValue);
+                }
             )
             ->when(
                 $filters['search'] ?? null,
@@ -103,6 +123,7 @@ final class EloquentUserRepository implements UserRepositoryPort
     public function search(string $query, int $limit = 10): array
     {
         return UserEloquentModel::query()
+            ->with('roles:id,name')
             ->select(self::SELECT_COLUMNS)
             ->where('name', 'like', "%{$query}%")
             ->orWhere('email', 'like', "%{$query}%")
@@ -119,7 +140,7 @@ final class EloquentUserRepository implements UserRepositoryPort
     {
         $model = UserEloquentModel::query()->create($data);
 
-        return UserMapper::toDomain($model);
+        return UserMapper::toDomain($model->load('roles:id,name'));
     }
 
     /**
@@ -129,7 +150,7 @@ final class EloquentUserRepository implements UserRepositoryPort
     {
         $model = UserEloquentModel::query()->where('uuid', $uuid)->firstOrFail();
         $model->update($data);
-        $model->refresh();
+        $model->refresh()->load('roles:id,name');
 
         return UserMapper::toDomain($model);
     }

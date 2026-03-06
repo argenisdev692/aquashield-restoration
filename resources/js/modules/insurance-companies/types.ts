@@ -13,6 +13,7 @@ export interface InsuranceCompany {
 
 export interface InsuranceCompanyFilters {
     search?: string;
+    status?: 'active' | 'deleted';
     dateFrom?: string;
     dateTo?: string;
     onlyTrashed?: boolean;

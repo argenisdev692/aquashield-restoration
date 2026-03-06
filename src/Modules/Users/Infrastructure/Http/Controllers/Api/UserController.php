@@ -103,7 +103,6 @@ final class UserController
             state: $validated['state'] ?? null,
             country: $validated['country'] ?? null,
             zipCode: $validated['zip_code'] ?? null,
-            password: $validated['password'] ?? null,
         );
 
         $user = $this->createHandler->handle(new CreateUserCommand($dto));

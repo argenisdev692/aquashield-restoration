@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace Src\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Modules\Auth\Domain\Events\OtpGenerated;
+use Modules\Auth\Domain\Events\PasswordChanged;
+use Modules\Auth\Domain\Events\UserLoggedIn;
+use Modules\Auth\Infrastructure\Listeners\AuditOtpGeneratedListener;
+use Modules\Auth\Infrastructure\Listeners\AuditPasswordChangedListener;
+use Modules\Auth\Infrastructure\Listeners\AuditUserLoggedInListener;
 
 final class EventServiceProvider extends ServiceProvider
 {
@@ -14,7 +20,15 @@ final class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        // Global events
+        OtpGenerated::class => [
+            AuditOtpGeneratedListener::class,
+        ],
+        UserLoggedIn::class => [
+            AuditUserLoggedInListener::class,
+        ],
+        PasswordChanged::class => [
+            AuditPasswordChangedListener::class,
+        ],
     ];
 
     /**

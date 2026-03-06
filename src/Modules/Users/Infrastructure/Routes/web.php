@@ -32,6 +32,7 @@ Route::prefix('data')->group(function () {
         Route::get('/export', UserExportController::class)->name('users.data.export');
         Route::get('/', [AdminUserController::class, 'index'])->name('users.data.index');
         Route::post('/', [AdminUserController::class, 'store'])->name('users.data.store');
+        Route::post('/bulk-delete', [AdminUserController::class, 'bulkDelete'])->name('users.data.bulk-delete');
         Route::get('/{uuid}', [AdminUserController::class, 'show'])->name('users.data.show')->whereUuid('uuid');
         Route::put('/{uuid}', [AdminUserController::class, 'update'])->name('users.data.update')->whereUuid('uuid');
         Route::delete('/{uuid}', [AdminUserController::class, 'destroy'])->name('users.data.destroy')->whereUuid('uuid');

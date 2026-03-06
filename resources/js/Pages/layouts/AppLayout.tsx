@@ -45,7 +45,10 @@ import {
   Kanban,
   Package,
   Home,
-  ChevronRight
+  ChevronRight,
+  BookOpen,
+  Tags,
+  FileText
 } from 'lucide-react';
 
 const icSize = 18;
@@ -66,6 +69,9 @@ const IconClose = () => <X size={16} />;
 const IconBuilding = () => <Building2 size={icSize} />;
 const IconPackage = () => <Package size={icSize} />;
 const IconHome = () => <Home size={icSize} />;
+const IconBlog = () => <BookOpen size={icSize} />;
+const IconTags = () => <Tags size={icSize} />;
+const IconPost = () => <FileText size={icSize} />;
 
 // ══════════════════════════════════════════════════════════════════
 // Nav Items — Profile removed (accessible via avatar dropdown)
@@ -76,7 +82,7 @@ interface NavItem {
   icon: React.ReactNode; 
   description: string;
   children?: NavItem[];
-  permission?: string;
+  permission?: string | string[];
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -96,6 +102,16 @@ const NAV_ITEMS: NavItem[] = [
     ]
   },
   { label: 'Products', href: '/products', icon: <IconPackage />, description: 'Product catalog', permission: 'READ_PRODUCT' },
+  {
+    label: 'Blog',
+    icon: <IconBlog />,
+    description: 'Manage blog structure',
+    permission: ['READ_BLOG_CATEGORY', 'READ_POST', 'VIEW_POST'],
+    children: [
+      { label: 'Categories', href: '/blog-categories', icon: <IconTags />, description: 'Blog taxonomy', permission: 'READ_BLOG_CATEGORY' },
+      { label: 'Posts', href: '/posts', icon: <IconPost />, description: 'Editorial content', permission: 'VIEW_POST' },
+    ]
+  },
 ];
 
 // ══════════════════════════════════════════════════════════════════
@@ -389,7 +405,29 @@ function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () => void }
 // ══════════════════════════════════════════════════════════════════
 function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Element {
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-  const [expandedItems, setExpandedItems] = React.useState<Set<string>>(new Set());
+  const [expandedItems, setExpandedItems] = React.useState<Set<string>>(() => {
+    if (typeof window === 'undefined') {
+      return new Set();
+    }
+
+    const storedValue = window.localStorage.getItem('aq-sidebar-expanded-items');
+    const storedItems = storedValue ? JSON.parse(storedValue) as string[] : [];
+    const nextItems = new Set(storedItems);
+
+    NAV_ITEMS.forEach((item) => {
+      const hasActiveChild = item.children?.some((child) => child.href && (currentPath === child.href || currentPath.startsWith(child.href + '/')));
+
+      if (hasActiveChild) {
+        nextItems.add(item.label);
+      }
+    });
+
+    return nextItems;
+  });
+
+  React.useEffect(() => {
+    window.localStorage.setItem('aq-sidebar-expanded-items', JSON.stringify(Array.from(expandedItems)));
+  }, [expandedItems]);
 
   const toggleExpanded = (label: string) => {
     setExpandedItems(prev => {
@@ -461,7 +499,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
               child.href && (currentPath === child.href || currentPath.startsWith(child.href + '/'))
             );
 
-            return (
+            const groupElement = (
               <div key={item.label}>
                 <button
                   onClick={() => toggleExpanded(item.label)}
@@ -550,7 +588,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
                       // Wrap with PermissionGuard if permission is defined
                       if (child.permission) {
                         return (
-                          <PermissionGuard key={child.href} permissions={[child.permission]}>
+                          <PermissionGuard key={child.href} permissions={Array.isArray(child.permission) ? child.permission : [child.permission]}>
                             {childLink}
                           </PermissionGuard>
                         );
@@ -562,6 +600,16 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
                 )}
               </div>
             );
+
+            if (item.permission) {
+              return (
+                <PermissionGuard key={item.label} permissions={Array.isArray(item.permission) ? item.permission : [item.permission]}>
+                  {groupElement}
+                </PermissionGuard>
+              );
+            }
+
+            return groupElement;
           }
 
           // Regular item without children
@@ -612,7 +660,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
           // Wrap with PermissionGuard if permission is defined
           if (item.permission) {
             return (
-              <PermissionGuard key={item.href} permissions={[item.permission]}>
+              <PermissionGuard key={item.href} permissions={Array.isArray(item.permission) ? item.permission : [item.permission]}>
                 {linkElement}
               </PermissionGuard>
             );

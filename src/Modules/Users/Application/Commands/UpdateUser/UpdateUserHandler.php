@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Users\Application\Commands\UpdateUser;
 
+use Illuminate\Support\Facades\Cache;
 use Modules\Users\Domain\Entities\User;
 use Modules\Users\Domain\Exceptions\UserNotFoundException;
 use Modules\Users\Domain\Ports\UserRepositoryPort;
-use Illuminate\Support\Facades\Cache;
+use Shared\Infrastructure\Audit\AuditInterface;
 
 /**
  * UpdateUserHandler — Validates user existence, then delegates update to the repository.
@@ -16,6 +17,7 @@ final readonly class UpdateUserHandler
 {
     public function __construct(
         private UserRepositoryPort $repository,
+        private AuditInterface $audit,
     ) {
     }
 
@@ -27,9 +29,37 @@ final readonly class UpdateUserHandler
             throw UserNotFoundException::withUuid($command->uuid);
         }
 
-        $user = $this->repository->update($command->uuid, $command->dto->toArray());
+        $payload = array_filter([
+            'name' => $command->dto->name,
+            'last_name' => $command->dto->lastName,
+            'email' => $command->dto->email,
+            'username' => $command->dto->username,
+            'phone' => $command->dto->phone,
+            'address' => $command->dto->address,
+            'city' => $command->dto->city,
+            'state' => $command->dto->state,
+            'country' => $command->dto->country,
+            'zip_code' => $command->dto->zipCode,
+            'status' => $command->dto->status?->value,
+        ], static fn (mixed $value): bool => $value !== null);
+
+        $user = $this->repository->update($command->uuid, $payload);
 
         Cache::forget("user_{$command->uuid}");
+
+        try {
+            Cache::tags(['users_list'])->flush();
+        } catch (\Exception) {
+        }
+
+        $this->audit->log(
+            logName: 'users.updated',
+            description: 'user.updated',
+            properties: [
+                'uuid' => $command->uuid,
+                'changed_fields' => array_keys($payload),
+            ],
+        );
 
         return $user;
     }

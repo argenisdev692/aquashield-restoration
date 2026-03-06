@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\InsuranceCompanies\Domain\Ports;
 
 use Modules\InsuranceCompanies\Domain\Entities\InsuranceCompany;

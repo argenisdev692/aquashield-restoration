@@ -1,11 +1,12 @@
 import { useForm } from '@inertiajs/react';
+import type { MortgageCompanyFormData } from '@/modules/mortgage-companies/types';
 import type { MortgageCompanyDetail } from '@/types/api';
 import { PremiumField } from '@/shadcn/PremiumField';
 import { Plus, Save, X } from 'lucide-react';
 
 interface MortgageCompanyFormProps {
     initialData?: MortgageCompanyDetail;
-    onSubmit: (data: Partial<MortgageCompanyDetail>) => void;
+    onSubmit: (data: MortgageCompanyFormData) => void;
     isSubmitting: boolean;
     onCancel: () => void;
 }
@@ -16,7 +17,7 @@ export default function MortgageCompanyForm({
     isSubmitting,
     onCancel,
 }: MortgageCompanyFormProps) {
-    const { data, setData, errors } = useForm({
+    const { data, setData, errors } = useForm<MortgageCompanyFormData>({
         mortgageCompanyName: initialData?.mortgageCompanyName || '',
         address: initialData?.address || '',
         phone: initialData?.phone || '',
@@ -73,7 +74,7 @@ export default function MortgageCompanyForm({
                         error={errors.address}
                         isTextArea
                         value={data.address || ''}
-                        onChange={(e) => (setData as any)('address', e.target.value)}
+                        onChange={(e) => setData('address', e.target.value)}
                         placeholder="Street, City, State, Zip..."
                     />
                 </div>

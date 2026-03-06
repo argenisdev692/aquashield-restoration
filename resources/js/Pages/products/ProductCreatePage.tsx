@@ -1,11 +1,12 @@
 import { Head, router, usePage } from "@inertiajs/react";
+import type { PageProps } from '@inertiajs/core';
 import AppLayout from "@/pages/layouts/AppLayout";
 import { useCreateProduct } from "@/modules/products/hooks/useProductMutations";
 import ProductForm from "./components/ProductForm";
 import { PackagePlus } from "lucide-react";
-import type { Category } from "@/modules/products/types";
+import type { Category, ProductFormData } from "@/modules/products/types";
 
-interface ProductCreatePageProps {
+interface ProductCreatePageProps extends PageProps {
     categories: Category[];
 }
 
@@ -13,7 +14,7 @@ export default function ProductCreatePage(): React.JSX.Element {
     const { categories } = usePage<ProductCreatePageProps>().props;
     const createProduct = useCreateProduct();
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: ProductFormData): Promise<void> => {
         await createProduct.mutateAsync(data);
     };
 

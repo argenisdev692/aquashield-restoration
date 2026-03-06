@@ -16,7 +16,7 @@ final class UserPdfExport
     ) {
     }
 
-    public function stream(): Response
+    public function download(): Response
     {
         $rows = UserEloquentModel::query()
             ->select([
@@ -39,15 +39,15 @@ final class UserPdfExport
                 $this->filters->dateFrom || $this->filters->dateTo,
                 fn($q) => $q->inDateRange($this->filters->dateFrom, $this->filters->dateTo)
             )
-            ->orderBy($this->filters->sortBy, $this->filters->sortDir)
+            ->orderBy($this->filters->sortBy ?? 'created_at', $this->filters->sortDir ?? 'desc')
             ->get();
 
         $pdf = Pdf::loadView('exports.pdf.users', [
             'title' => 'Users Report',
-            'generatedAt' => now()->format('Y-m-d H:i:s'),
+            'generatedAt' => now()->format('F j, Y H:i'),
             'rows' => $rows,
         ]);
 
-        return $pdf->stream('users-report-' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->download('users-report-' . now()->format('Y-m-d') . '.pdf');
     }
 }

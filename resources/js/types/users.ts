@@ -7,16 +7,16 @@ export type UserStatus = 'active' | 'suspended' | 'banned' | 'deleted' | 'pendin
 export interface UserListItem {
   uuid: string;
   name: string;
-  lastName: string;
-  fullName: string;
+  last_name: string | null;
+  full_name: string;
   email: string;
   username: string | null;
   phone: string | null;
   status: UserStatus;
-  profilePhotoPath: string | null;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string | null;
+  profile_photo_path: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
   role: string | null;
   // Address info
   address?: string | null;

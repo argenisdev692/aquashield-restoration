@@ -34,7 +34,7 @@ export function useUpdateProduct() {
             });
             if (!response.ok) throw new Error("Failed to update product");
         },
-        onSuccess: (_, variables) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["products"] });
             router.visit("/products");
         },

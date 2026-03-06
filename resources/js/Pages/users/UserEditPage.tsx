@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Link, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
 import type { UpdateUserPayload, UserDetail } from '@/types/users';
@@ -33,7 +33,7 @@ function Field({ label, name, value, onChange, type = 'text', required = false, 
       <label
         htmlFor={name}
         className="block text-[12px] font-semibold uppercase tracking-wider"
-        style={{ color: 'var(--text-muted)' }}
+        style={{ color: 'var(--text-secondary)' }}
       >
         {label} {required && <span style={{ color: 'var(--accent-error)' }}>*</span>}
       </label>
@@ -105,11 +105,12 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
       onSuccess: () => {
         router.visit(`/users/${user.uuid}`);
       },
-      onError: (err: any) => {
-        if (err.response?.data?.errors) {
+      onError: (err: unknown) => {
+        const response = (err as { response?: { data?: { errors?: Record<string, string[]> } } }).response;
+        if (response?.data?.errors) {
           const serverErrors: Record<string, string> = {};
-          for (const [key, msgs] of Object.entries(err.response.data.errors)) {
-            serverErrors[key] = (msgs as string[])[0] ?? '';
+          for (const [key, msgs] of Object.entries(response.data.errors)) {
+            serverErrors[key] = msgs[0] ?? '';
           }
           setErrors(serverErrors);
         }
@@ -119,11 +120,13 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
 
   return (
     <AppLayout>
+      <Head title={`Edit User - ${user.full_name}`} />
       <div style={{ fontFamily: 'var(--font-sans)' }}>
         {/* ── Header ── */}
         <div className="mb-6 flex items-center gap-3">
           <Link
             href={`/users/${user.uuid}`}
+            aria-label="Back to user details"
             className="flex h-9 w-9 items-center justify-center rounded-lg transition-all"
             style={{
               color: 'var(--text-muted)',
@@ -134,7 +137,7 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
             <IconArrowLeft />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            <h1 className="text-xl font-bold text-(--text-primary)">
               Edit User
             </h1>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -181,7 +184,7 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
           <div className="mt-4 flex justify-end gap-3">
             <Link
               href={`/users/${user.uuid}`}
-              className="rounded-lg px-4 py-2.5 text-sm font-medium transition-all"
+              className="btn-ghost rounded-lg px-4 py-2.5 text-sm font-medium transition-all"
               style={{
                 color: 'var(--text-muted)',
                 border: '1px solid var(--border-default)',
@@ -192,10 +195,10 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
             <button
               type="submit"
               disabled={updateUser.isPending}
-              className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all disabled:opacity-50"
+              className="btn-modern btn-modern-primary rounded-lg px-5 py-2.5 text-sm font-semibold transition-all disabled:opacity-50"
               style={{
                 background: 'linear-gradient(135deg, var(--color-aqua), var(--color-aqua-dark))',
-                color: '#ffffff',
+                color: 'var(--color-white)',
                 boxShadow: '0 2px 8px color-mix(in srgb, var(--color-aqua) 30%, transparent)',
               }}
             >

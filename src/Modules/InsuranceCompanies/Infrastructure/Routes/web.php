@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Modules\InsuranceCompanies\Infrastructure\Http\Controllers\Web\InsuranceCompanyPageController;
 use Modules\InsuranceCompanies\Infrastructure\Http\Controllers\Api\InsuranceCompanyController;
+use Modules\InsuranceCompanies\Infrastructure\Http\Controllers\Api\InsuranceCompanyExportController;
 
 // Inertia Pages
 Route::get('/', [InsuranceCompanyPageController::class, 'index'])->name('insurance-companies.index');
@@ -14,10 +15,14 @@ Route::get('/{uuid}/edit', [InsuranceCompanyPageController::class, 'edit'])->nam
 
 // JSON Data endpoints (Internal for React Query)
 Route::prefix('data')->group(function () {
-    Route::get('/', [InsuranceCompanyController::class, 'index']);
-    Route::post('/', [InsuranceCompanyController::class, 'store']);
-    Route::get('/{uuid}', [InsuranceCompanyController::class, 'show'])->whereUuid('uuid');
-    Route::put('/{uuid}', [InsuranceCompanyController::class, 'update'])->whereUuid('uuid');
-    Route::delete('/{uuid}', [InsuranceCompanyController::class, 'destroy'])->whereUuid('uuid');
-    Route::patch('/{uuid}/restore', [InsuranceCompanyController::class, 'restore'])->whereUuid('uuid');
+    Route::middleware(['role:SUPER_ADMIN'])->prefix('admin')->group(function () {
+        Route::get('/', [InsuranceCompanyController::class, 'index']);
+        Route::post('/', [InsuranceCompanyController::class, 'store']);
+        Route::get('/export', [InsuranceCompanyExportController::class, '__invoke']); // BEFORE /{uuid}
+        Route::get('/{uuid}', [InsuranceCompanyController::class, 'show'])->whereUuid('uuid');
+        Route::put('/{uuid}', [InsuranceCompanyController::class, 'update'])->whereUuid('uuid');
+        Route::delete('/{uuid}', [InsuranceCompanyController::class, 'destroy'])->whereUuid('uuid');
+        Route::patch('/{uuid}/restore', [InsuranceCompanyController::class, 'restore'])->whereUuid('uuid');
+        Route::post('/bulk-delete', [InsuranceCompanyController::class, 'bulkDelete']);
+    });
 });

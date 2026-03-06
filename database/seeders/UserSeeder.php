@@ -206,6 +206,8 @@ class UserSeeder extends Seeder
         $actions = ['CREATE', 'READ', 'UPDATE', 'DELETE', 'RESTORE'];
 
         // Create all permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         $allPermissions = [];
         foreach ($models as $model) {
             foreach ($actions as $action) {

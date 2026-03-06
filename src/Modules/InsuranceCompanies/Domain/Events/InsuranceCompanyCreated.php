@@ -7,10 +7,10 @@ namespace Modules\InsuranceCompanies\Domain\Events;
 use Modules\InsuranceCompanies\Domain\Entities\InsuranceCompany;
 use Shared\Domain\Events\DomainEvent;
 
-final class InsuranceCompanyCreated extends DomainEvent
+final readonly class InsuranceCompanyCreated extends DomainEvent
 {
     public function __construct(
-        public readonly InsuranceCompany $insuranceCompany
+        public InsuranceCompany $insuranceCompany
     ) {
         parent::__construct($insuranceCompany->getId()->value);
     }

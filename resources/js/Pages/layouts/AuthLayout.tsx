@@ -43,7 +43,7 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
             }}
           >
             <img 
-              src="/img/Logo PNG.png" 
+              src="/img/Logo PNG-WHITE.png" 
               alt="AquaShield Logo" 
               className="h-14 w-auto object-contain drop-shadow-md"
             />
@@ -77,10 +77,16 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
 
         {/* Footer */}
         <p
-          className="mt-6 text-center text-xs"
-          style={{ color: 'var(--text-disabled)' }}
+          className="mt-6 text-center text-xs font-medium"
+          style={{
+            background: 'var(--grad-text)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            opacity: 0.7,
+          }}
         >
-          © {new Date().getFullYear()} AquaShield. All rights reserved.
+          © {new Date().getFullYear()} AquaShield Restoration. All rights reserved.
         </p>
       </div>
     </div>

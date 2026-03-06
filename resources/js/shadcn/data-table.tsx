@@ -3,6 +3,7 @@ import {
   getCoreRowModel,
   flexRender,
   type ColumnDef,
+  type Row,
   type RowSelectionState,
   type OnChangeFn,
 } from '@tanstack/react-table';
@@ -23,7 +24,8 @@ interface DataTableProps<TData, TValue> {
   noDataMessage?: string;
   errorMessage?: string;
   loadingMessage?: string;
-  
+  getRowId?: (originalRow: TData, index: number, parent?: Row<TData>) => string;
+
   // Optional Row Selection
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
@@ -37,12 +39,14 @@ export function DataTable<TData, TValue>({
   noDataMessage = 'No results.',
   errorMessage = 'Failed to load data. Please try again.',
   loadingMessage = 'Loading...',
+  getRowId,
   rowSelection,
   onRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
+    getRowId,
     getCoreRowModel: getCoreRowModel(),
     enableRowSelection: rowSelection !== undefined,
     onRowSelectionChange,
@@ -105,7 +109,7 @@ export function DataTable<TData, TValue>({
             table.getRowModel().rows.map((row) => {
               // Soft-delete visual indicator
               // Check if original data has `deletedAt` or `deleted_at` field and it is truthy
-              const orig = row.original as any;
+              const orig = row.original as { deletedAt?: unknown; deleted_at?: unknown };
               const isDeleted = Boolean(orig?.deletedAt || orig?.deleted_at);
               
               return (
@@ -116,8 +120,9 @@ export function DataTable<TData, TValue>({
                   style={{
                     borderBottom: '1px solid var(--border-subtle)',
                     ...(isDeleted && {
-                      background: 'color-mix(in srgb, var(--accent-error) 6%, transparent)',
-                      opacity: 0.65,
+                      background: 'var(--deleted-row-bg)',
+                      opacity: 'var(--deleted-row-opacity)',
+                      borderLeft: '2px solid var(--deleted-row-border)',
                     }),
                   }}
                 >

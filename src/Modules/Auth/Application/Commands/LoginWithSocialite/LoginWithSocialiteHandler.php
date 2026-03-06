@@ -96,13 +96,19 @@ final readonly class LoginWithSocialiteHandler
 
     private function buildEvent(User $user, LoginWithSocialiteCommand $command): UserLoggedIn
     {
-        return new UserLoggedIn(
-            userId: $user->id,
+        $user->logIn(
             provider: $command->provider,
             ipAddress: $command->ipAddress,
             userAgent: $command->userAgent,
-            occurredAt: now()->toIso8601String(),
         );
+
+        $events = $user->pullDomainEvents();
+
+        foreach ($events as $event) {
+            event($event);
+        }
+
+        return $events[0];
     }
 
     private function generateUsername(LoginWithSocialiteCommand $command): string
@@ -114,7 +120,7 @@ final readonly class LoginWithSocialiteHandler
         $username = $base;
         $counter = 1;
 
-        while ($this->userRepository->findByEmailOrPhone($username) !== null) {
+        while ($this->userRepository->findByUsername($username) !== null) {
             $username = $base . '_' . $counter;
             $counter++;
         }

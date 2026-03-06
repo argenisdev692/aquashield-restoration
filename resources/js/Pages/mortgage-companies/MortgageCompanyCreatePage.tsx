@@ -1,13 +1,14 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useMortgageCompanyMutations } from '@/modules/mortgage-companies/hooks/useMortgageCompanyMutations';
+import type { MortgageCompanyFormData } from '@/modules/mortgage-companies/types';
 import MortgageCompanyForm from './components/MortgageCompanyForm';
-import { Building2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
-export default function MortgageCompanyCreatePage() {
+export default function MortgageCompanyCreatePage(): React.JSX.Element {
     const { createMortgageCompany } = useMortgageCompanyMutations();
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: MortgageCompanyFormData): Promise<void> => {
         await createMortgageCompany.mutateAsync(data);
     };
 

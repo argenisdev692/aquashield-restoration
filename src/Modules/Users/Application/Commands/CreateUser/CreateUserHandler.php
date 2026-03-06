@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Modules\Users\Application\Commands\CreateUser;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Modules\Users\Domain\Entities\User;
 use Modules\Users\Domain\Enums\UserStatus;
 use Modules\Users\Domain\Events\UserCreatedByAdmin;
 use Modules\Users\Domain\Ports\UserRepositoryPort;
 use Shared\Domain\Events\DomainEventPublisher;
+use Shared\Infrastructure\Audit\AuditInterface;
 
 final readonly class CreateUserHandler
 {
     public function __construct(
         private UserRepositoryPort $userRepository,
+        private AuditInterface $audit,
     ) {
     }
 
@@ -49,6 +52,19 @@ final readonly class CreateUserHandler
                 setupToken: $setupToken,
                 occurredOn: now()->toDateTimeString()
             )
+        );
+
+        try {
+            Cache::tags(['users_list'])->flush();
+        } catch (\Exception) {
+        }
+
+        $this->audit->log(
+            logName: 'users.created',
+            description: 'user.created',
+            properties: [
+                'uuid' => $uuid,
+            ],
         );
 
         return $user;

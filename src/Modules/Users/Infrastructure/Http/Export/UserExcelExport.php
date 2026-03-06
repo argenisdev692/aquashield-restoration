@@ -59,7 +59,7 @@ final class UserExcelExport implements
                 $this->filters->dateFrom || $this->filters->dateTo,
                 fn($q) => $q->inDateRange($this->filters->dateFrom, $this->filters->dateTo)
             )
-            ->orderBy($this->filters->sortBy, $this->filters->sortDir);
+            ->orderBy($this->filters->sortBy ?? 'created_at', $this->filters->sortDir ?? 'desc');
 
         return $query;
     }
@@ -94,7 +94,7 @@ final class UserExcelExport implements
             $user->city,
             $user->state,
             $user->country,
-            $user->created_at?->toIso8601String(),
+            $user->created_at?->format('F j, Y') ?? '—',
         ];
     }
 

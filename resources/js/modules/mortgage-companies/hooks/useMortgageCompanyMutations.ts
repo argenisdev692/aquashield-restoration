@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { router } from '@inertiajs/react';
 
 interface CreateMortgageCompanyData {
   mortgageCompanyName: string;

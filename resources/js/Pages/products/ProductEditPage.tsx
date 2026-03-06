@@ -1,11 +1,12 @@
 import { Head, router, usePage } from "@inertiajs/react";
+import type { PageProps } from '@inertiajs/core';
 import AppLayout from "@/pages/layouts/AppLayout";
 import { useUpdateProduct } from "@/modules/products/hooks/useProductMutations";
 import ProductForm from "./components/ProductForm";
 import { PackageOpen } from "lucide-react";
-import type { Product, Category } from "@/modules/products/types";
+import type { Product, Category, ProductFormData } from "@/modules/products/types";
 
-interface ProductEditPageProps {
+interface ProductEditPageProps extends PageProps {
     product: Product;
     categories: Category[];
 }
@@ -14,7 +15,7 @@ export default function ProductEditPage(): React.JSX.Element {
     const { product, categories } = usePage<ProductEditPageProps>().props;
     const updateProduct = useUpdateProduct();
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: ProductFormData): Promise<void> => {
         await updateProduct.mutateAsync({ uuid: product.uuid, data });
     };
 

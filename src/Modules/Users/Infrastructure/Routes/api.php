@@ -15,9 +15,10 @@ use Modules\Users\Infrastructure\Http\Controllers\Api\UserExportController;
 Route::middleware(['auth:sanctum'])->group(function () {
 
     // Admin Routes
-    Route::middleware(['role:super-admin'])->prefix('admin')->group(function () {
+    Route::middleware(['role:SUPER_ADMIN'])->prefix('admin')->group(function () {
         Route::get('/export', UserExportController::class)->name('api.admin.users.export');
         Route::get('/', [AdminUserController::class, 'index'])->name('api.admin.users.index');
+        Route::post('/bulk-delete', [AdminUserController::class, 'bulkDelete'])->name('api.admin.users.bulk-delete');
         Route::get('/{uuid}', [AdminUserController::class, 'show'])->name('api.admin.users.show')->whereUuid('uuid');
         Route::post('/', [AdminUserController::class, 'store'])->name('api.admin.users.store');
         Route::put('/{uuid}', [AdminUserController::class, 'update'])->name('api.admin.users.update')->whereUuid('uuid');

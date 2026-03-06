@@ -7,10 +7,10 @@ namespace Modules\InsuranceCompanies\Domain\Events;
 use Modules\InsuranceCompanies\Domain\ValueObjects\InsuranceCompanyId;
 use Shared\Domain\Events\DomainEvent;
 
-final class InsuranceCompanyDeleted extends DomainEvent
+final readonly class InsuranceCompanyDeleted extends DomainEvent
 {
     public function __construct(
-        public readonly InsuranceCompanyId $id
+        public InsuranceCompanyId $id
     ) {
         parent::__construct($id->value);
     }

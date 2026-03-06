@@ -33,7 +33,7 @@ class UserEloquentModel extends Authenticatable
     /**
      * Create a new factory instance for the model.
      */
-    protected static function newFactory()
+    protected static function newFactory(): \Database\Factories\UserFactory
     {
         return \Database\Factories\UserFactory::new();
     }
@@ -41,7 +41,22 @@ class UserEloquentModel extends Authenticatable
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logFillable()
+            ->logOnly([
+                'uuid',
+                'name',
+                'last_name',
+                'username',
+                'email',
+                'phone',
+                'address',
+                'zip_code',
+                'city',
+                'state',
+                'country',
+                'gender',
+                'profile_photo_path',
+                'status',
+            ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

@@ -4,16 +4,18 @@ import { Link } from '@inertiajs/react';
 import { DataTable } from '@/shadcn/data-table';
 import UserStatusBadge from '@/modules/users/components/UserStatusBadge';
 import type { UserListItem } from '@/types/users';
-import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
 import { formatDateShort } from '@/utils/dateFormatter';
 
 import { Eye, Pencil, Trash2, CheckCircle } from 'lucide-react';
+
+const columnHelper = createColumnHelper<UserListItem>();
 
 interface UsersTableProps {
   data: UserListItem[];
   isLoading: boolean;
   isError?: boolean;
   onDelete: (uuid: string, name: string, email: string) => void;
+  onRestore: (uuid: string, name: string, email: string) => void;
   initials: (name: string, lastName: string) => string;
   rowSelection: RowSelectionState;
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
@@ -24,14 +26,12 @@ export default function UsersTable({
   isLoading,
   isError = false,
   onDelete,
+  onRestore,
   initials,
   rowSelection,
   onRowSelectionChange,
-}: UsersTableProps) {
-  const columnHelper = createColumnHelper<UserListItem>();
-  const { restoreUser } = useUserMutations();
-
-  const columns = React.useMemo<ColumnDef<UserListItem, any>[]>(() => [
+}: UsersTableProps): React.JSX.Element {
+  const columns = React.useMemo(() => [
     columnHelper.display({
       id: 'select',
       header: ({ table }) => (
@@ -40,7 +40,7 @@ export default function UsersTable({
           checked={table.getIsAllPageRowsSelected()}
           onChange={table.getToggleAllPageRowsSelectedHandler()}
           aria-label="Select all"
-          className="h-4 w-4 rounded border-gray-300 accent-(--accent-primary) cursor-pointer"
+          className="h-4 w-4 cursor-pointer rounded accent-(--accent-primary)"
         />
       ),
       cell: ({ row }) => (
@@ -49,21 +49,21 @@ export default function UsersTable({
           checked={row.getIsSelected()}
           onChange={row.getToggleSelectedHandler()}
           aria-label="Select row"
-          className="h-4 w-4 rounded border-gray-300 accent-(--accent-primary) cursor-pointer"
+          className="h-4 w-4 cursor-pointer rounded accent-(--accent-primary)"
         />
       ),
     }),
-    columnHelper.accessor('fullName', {
+    columnHelper.accessor('full_name', {
       header: 'User',
       cell: (info) => {
         const user = info.row.original;
-        const displayName = user.fullName?.trim() || user.name || user.username || 'Unknown User';
+        const displayName = user.full_name?.trim() || user.name || user.username || 'Unknown User';
         
         return (
           <div className="flex items-center gap-3 text-left">
-            {user.profilePhotoPath ? (
+            {user.profile_photo_path ? (
               <img
-                src={user.profilePhotoPath}
+                src={user.profile_photo_path}
                 alt={displayName}
                 className="h-9 w-9 rounded-lg object-cover border border-(--border-default)"
               />
@@ -72,17 +72,17 @@ export default function UsersTable({
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-[11px] font-bold shadow-sm"
                 style={{
                   background: 'var(--grad-primary)',
-                  color: '#ffffff',
+                  color: 'var(--color-white)',
                 }}
               >
-                {initials(user.name, user.lastName)}
+                {initials(user.name, user.last_name ?? '')}
               </div>
             )}
             <div>
-              <p className="text-sm font-semibold leading-tight text-gray-900 dark:text-gray-100">
+              <p className="text-sm font-semibold leading-tight text-(--text-primary)">
                 {displayName}
               </p>
-              {user.username && user.fullName?.trim() && (
+              {user.username && user.full_name?.trim() && (
                 <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-disabled)' }}>
                   @{user.username}
                 </p>
@@ -108,7 +108,7 @@ export default function UsersTable({
       header: 'Status',
       cell: (info) => <UserStatusBadge status={info.getValue()} />,
     }),
-    columnHelper.accessor('createdAt', {
+    columnHelper.accessor('created_at', {
       header: 'Created',
       cell: (info) => {
         const val = info.getValue() as string | undefined;
@@ -124,7 +124,7 @@ export default function UsersTable({
       header: 'Actions',
       cell: (info) => {
         const user = info.row.original;
-        const isDeleted = !!user.deletedAt;
+        const isDeleted = !!user.deleted_at;
         
         return (
           <div className="flex items-center justify-end gap-1.5">
@@ -132,6 +132,7 @@ export default function UsersTable({
                href={`/users/${user.uuid}`}
                className="btn-action btn-action-view"
                title="View Profile"
+               aria-label="View user"
             >
                <Eye size={14} />
             </Link>
@@ -141,6 +142,7 @@ export default function UsersTable({
                  href={`/users/${user.uuid}/edit`}
                  className="btn-action btn-action-edit"
                  title="Edit User"
+                 aria-label="Edit user"
               >
                  <Pencil size={14} />
               </Link>
@@ -148,18 +150,19 @@ export default function UsersTable({
 
             {isDeleted ? (
               <button
-                  onClick={() => restoreUser.mutate(user.uuid)}
+                  onClick={() => onRestore(user.uuid, user.full_name, user.email)}
                   className="btn-action btn-action-restore"
                   title="Restore User"
-                  disabled={restoreUser.isPending}
+                  aria-label="Restore user"
               >
                   <CheckCircle size={14} />
               </button>
             ) : (
               <button
-                 onClick={() => onDelete(user.uuid, user.fullName, user.email)}
+                 onClick={() => onDelete(user.uuid, user.full_name, user.email)}
                  className="btn-action btn-action-delete"
                  title="Delete User"
+                 aria-label="Delete user"
               >
                  <Trash2 size={14} />
               </button>
@@ -168,7 +171,7 @@ export default function UsersTable({
         );
       },
     }),
-  ], [columnHelper, onDelete, initials, restoreUser]);
+  ] as ColumnDef<UserListItem>[], [initials, onDelete, onRestore]);
 
   return (
     <DataTable
@@ -177,6 +180,7 @@ export default function UsersTable({
       isLoading={isLoading}
       isError={isError}
       noDataMessage="No users found"
+      getRowId={(row) => row.uuid}
       rowSelection={rowSelection}
       onRowSelectionChange={onRowSelectionChange}
     />

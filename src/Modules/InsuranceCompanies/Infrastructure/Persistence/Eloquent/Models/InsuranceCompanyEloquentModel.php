@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\InsuranceCompanies\Infrastructure\Persistence\Eloquent\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -14,10 +15,10 @@ use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
 
 /**
  * InsuranceCompanyEloquentModel
- * 
+ *
  * @internal — Infrastructure only. Use InsuranceCompanyRepositoryPort.
  */
-class InsuranceCompanyEloquentModel extends Model
+final class InsuranceCompanyEloquentModel extends Model
 {
     use HasFactory, SoftDeletes, LogsActivity;
 
@@ -36,9 +37,10 @@ class InsuranceCompanyEloquentModel extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logFillable()
+            ->logOnly(['insurance_company_name', 'address', 'phone', 'email', 'website', 'user_id'])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            ->useLogName('crm.insurance_companies');
     }
 
     public function user(): BelongsTo
@@ -46,9 +48,9 @@ class InsuranceCompanyEloquentModel extends Model
         return $this->belongsTo(UserEloquentModel::class, 'user_id');
     }
 
-    public function scopeInDateRange($query, ?string $from, ?string $to): void
+    public function scopeInDateRange(Builder $query, ?string $from, ?string $to): Builder
     {
-        $query->when($from, fn($q) => $q->whereDate('created_at', '>=', $from))
-            ->when($to, fn($q) => $q->whereDate('created_at', '<=', $to));
+        return $query->when($from, fn(Builder $q) => $q->whereDate('created_at', '>=', $from))
+            ->when($to, fn(Builder $q) => $q->whereDate('created_at', '<=', $to));
     }
 }

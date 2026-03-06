@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Fortify;
 
 use App\Models\User;
@@ -23,6 +25,14 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
+            'username' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('users', 'username')->ignore($user->id),
+            ],
+            'phone' => ['nullable', 'string', 'max:30'],
 
             'email' => [
                 'required',
@@ -41,7 +51,10 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         } else {
             $user->forceFill([
                 'name' => $input['name'],
+                'last_name' => $input['last_name'] ?? null,
+                'username' => $input['username'] ?? null,
                 'email' => $input['email'],
+                'phone' => $input['phone'] ?? null,
             ])->save();
         }
 
@@ -57,7 +70,10 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     {
         $user->forceFill([
             'name' => $input['name'],
+            'last_name' => $input['last_name'] ?? null,
+            'username' => $input['username'] ?? null,
             'email' => $input['email'],
+            'phone' => $input['phone'] ?? null,
             'email_verified_at' => null,
         ])->save();
 

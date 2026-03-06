@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { Link, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import UserStatusBadge from '@/modules/users/components/UserStatusBadge';
 import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
+import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import type { UserDetail } from '@/types/users';
 
 // ══════════════════════════════════════════════════════════════
@@ -24,7 +25,7 @@ function InfoRow({ label, value }: { label: string; value: string | null | undef
   return (
     <div className="grid grid-cols-3 gap-4 py-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
       <dt className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>{label}</dt>
-      <dd className="col-span-2 text-sm font-medium text-gray-900 dark:text-gray-100">{value || '—'}</dd>
+      <dd className="col-span-2 text-sm font-medium text-(--text-primary)">{value || '—'}</dd>
     </div>
   );
 }
@@ -41,14 +42,14 @@ interface UserShowPageProps {
 // ══════════════════════════════════════════════════════════════
 export default function UserShowPage({ user }: UserShowPageProps): React.JSX.Element {
   const { deleteUser } = useUserMutations();
+  const [pendingDelete, setPendingDelete] = React.useState<boolean>(false);
 
   async function handleDelete(): Promise<void> {
-    if (!confirm(`Are you sure you want to delete "${user.full_name}"?`)) return;
     try {
       await deleteUser.mutateAsync(user.uuid);
+      setPendingDelete(false);
       router.visit('/users');
-    } catch (err) {
-      console.error('Failed to delete user', err);
+    } catch {
     }
   }
 
@@ -56,6 +57,7 @@ export default function UserShowPage({ user }: UserShowPageProps): React.JSX.Ele
 
   return (
     <AppLayout>
+      <Head title={`User Details - ${user.full_name}`} />
       <div style={{ fontFamily: 'var(--font-sans)' }}>
         {/* ── Header ── */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -72,7 +74,7 @@ export default function UserShowPage({ user }: UserShowPageProps): React.JSX.Ele
               <IconArrowLeft />
             </Link>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              <h1 className="text-xl font-bold text-(--text-primary)">
                 User Details
               </h1>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -89,8 +91,9 @@ export default function UserShowPage({ user }: UserShowPageProps): React.JSX.Ele
               <IconEdit /> Edit
             </Link>
             <button
-              onClick={() => void handleDelete()}
-              className="btn-modern btn-modern-danger px-4 py-2"
+              onClick={() => setPendingDelete(true)}
+              className="btn-modern btn-ghost px-4 py-2"
+              style={{ color: 'var(--accent-error)', borderColor: 'var(--deleted-row-border)' }}
             >
               <IconTrash /> Delete
             </button>
@@ -112,14 +115,14 @@ export default function UserShowPage({ user }: UserShowPageProps): React.JSX.Ele
                 className="flex h-16 w-16 items-center justify-center rounded-xl text-lg font-bold"
                 style={{
                   background: 'linear-gradient(135deg, var(--color-aqua), var(--color-aqua-dark))',
-                  color: '#ffffff',
+                  color: 'var(--color-white)',
                 }}
               >
                 {initialsStr}
               </div>
             )}
             <div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              <h2 className="text-lg font-bold text-(--text-primary)">
                 {user.full_name}
               </h2>
               {user.username && (
@@ -164,6 +167,13 @@ export default function UserShowPage({ user }: UserShowPageProps): React.JSX.Ele
             <InfoRow label="Updated" value={user.updated_at ? new Date(user.updated_at).toLocaleString() : null} />
           </dl>
         </div>
+        <DeleteConfirmModal
+          open={pendingDelete}
+          entityLabel={user.full_name}
+          onConfirm={handleDelete}
+          onCancel={() => setPendingDelete(false)}
+          isDeleting={deleteUser.isPending}
+        />
       </div>
     </AppLayout>
   );

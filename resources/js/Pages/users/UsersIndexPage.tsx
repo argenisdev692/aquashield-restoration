@@ -7,10 +7,16 @@ import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
 import UsersTable from './components/UsersTable';
 import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
+import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
 import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import { ExportButton } from '@/common/export/ExportButton';
-import type { UserFilters } from '@/types/users';
+import type { UserFilters, UserListItem } from '@/types/users';
 import { Search, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
+
+type OptimisticUsersAction =
+  | { type: 'delete'; uuid: string }
+  | { type: 'bulk-delete'; uuids: string[] }
+  | { type: 'restore'; uuid: string; removeFromList: boolean };
 
 /**
  * UsersIndexPage — Super-admin management for users.
@@ -20,6 +26,7 @@ export default function UsersIndexPage(): React.JSX.Element {
   const [search, setSearch] = React.useState<string>(filters.search || '');
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const [pendingDelete, setPendingDelete] = React.useState<{ uuid: string; name: string; email: string } | null>(null);
+  const [pendingRestore, setPendingRestore] = React.useState<{ uuid: string; name: string; email: string } | null>(null);
   
   const [isPendingExport, startExportTransition] = React.useTransition();
   const [, startSearchTransition] = React.useTransition();
@@ -28,8 +35,39 @@ export default function UsersIndexPage(): React.JSX.Element {
   const { data, isPending, isError } = useUsers(filters);
   const users = data?.data ?? [];
   const meta = data?.meta ?? { currentPage: 1, lastPage: 1, perPage: 15, total: 0 };
+  const isDeletedFilter = filters.status === 'deleted';
+  const [optimisticUsers, setOptimisticUsers] = React.useOptimistic<UserListItem[], OptimisticUsersAction>(
+    users,
+    (currentState, action) => {
+      if (action.type === 'delete') {
+        return currentState.filter((user) => user.uuid !== action.uuid);
+      }
 
-  const { deleteUser } = useUserMutations();
+      if (action.type === 'bulk-delete') {
+        const uuids = new Set(action.uuids);
+
+        return currentState.filter((user) => !uuids.has(user.uuid));
+      }
+
+      if (action.removeFromList) {
+        return currentState.filter((user) => user.uuid !== action.uuid);
+      }
+
+      return currentState.map((user) => {
+        if (user.uuid !== action.uuid) {
+          return user;
+        }
+
+        return {
+          ...user,
+          status: 'active',
+          deleted_at: null,
+        };
+      });
+    },
+  );
+
+  const { deleteUser, restoreUser, bulkDeleteUsers } = useUserMutations();
 
   // ── Export function ──
   async function handleExport(format: 'excel' | 'pdf'): Promise<void> {
@@ -38,6 +76,7 @@ export default function UsersIndexPage(): React.JSX.Element {
       if (filters.search) params.append('search', filters.search);
       if (filters.date_from) params.append('date_from', filters.date_from);
       if (filters.date_to) params.append('date_to', filters.date_to);
+      if (filters.status) params.append('status', filters.status);
       params.append('format', format);
 
       window.open(`/users/data/admin/export?${params.toString()}`, '_blank');
@@ -59,14 +98,70 @@ export default function UsersIndexPage(): React.JSX.Element {
     setPendingDelete({ uuid, name, email });
   }
 
+  function handleRestoreClick(uuid: string, name: string, email: string): void {
+    setPendingRestore({ uuid, name, email });
+  }
+
   async function handleConfirmSingleDelete(): Promise<void> {
     if (!pendingDelete) return;
-    try {
-      await deleteUser.mutateAsync(pendingDelete.uuid);
-      setPendingDelete(null);
-    } catch (err) {
-      console.error('Failed to delete user', err);
+
+    const targetUuid = pendingDelete.uuid;
+
+    React.startTransition(async () => {
+      setOptimisticUsers({ type: 'delete', uuid: targetUuid });
+
+      try {
+        await deleteUser.mutateAsync(targetUuid);
+        setPendingDelete(null);
+        setRowSelection((currentSelection) => {
+          const nextSelection = { ...currentSelection };
+          delete nextSelection[targetUuid];
+
+          return nextSelection;
+        });
+      } catch {
+      }
+    });
+  }
+
+  async function handleConfirmRestore(): Promise<void> {
+    if (!pendingRestore) return;
+
+    const targetUuid = pendingRestore.uuid;
+
+    React.startTransition(async () => {
+      setOptimisticUsers({ type: 'restore', uuid: targetUuid, removeFromList: isDeletedFilter });
+
+      try {
+        await restoreUser.mutateAsync(targetUuid);
+        setPendingRestore(null);
+        setRowSelection((currentSelection) => {
+          const nextSelection = { ...currentSelection };
+          delete nextSelection[targetUuid];
+
+          return nextSelection;
+        });
+      } catch {
+      }
+    });
+  }
+
+  function handleBulkDelete(): void {
+    if (selectedActiveUuids.length === 0) {
+      return;
     }
+
+    const uuidsToDelete = [...selectedActiveUuids];
+
+    React.startTransition(async () => {
+      setOptimisticUsers({ type: 'bulk-delete', uuids: uuidsToDelete });
+
+      try {
+        await bulkDeleteUsers.mutateAsync(uuidsToDelete);
+        setRowSelection({});
+      } catch {
+      }
+    });
   }
 
   // ── Pagination ──
@@ -86,6 +181,25 @@ export default function UsersIndexPage(): React.JSX.Element {
     [rowSelection]
   );
 
+  const selectedActiveUuids = React.useMemo(
+    () => optimisticUsers
+      .filter((user) => selectedUuids.includes(user.uuid) && !user.deleted_at)
+      .map((user) => user.uuid),
+    [optimisticUsers, selectedUuids]
+  );
+
+  function mapStatusValue(value: string): UserFilters['status'] | undefined {
+    return value === 'all' ? undefined : value as UserFilters['status'];
+  }
+
+  const paginationPages = React.useMemo(() => {
+    const start = Math.max(1, meta.currentPage - 2);
+    const end = Math.min(meta.lastPage, start + 4);
+    const adjustedStart = Math.max(1, end - 4);
+
+    return Array.from({ length: end - adjustedStart + 1 }, (_, index) => adjustedStart + index);
+  }, [meta.currentPage, meta.lastPage]);
+
   return (
     <>
       <Head title="System Users" />
@@ -98,12 +212,12 @@ export default function UsersIndexPage(): React.JSX.Element {
               System Users
             </h1>
             <p className="text-sm mt-1 text-(--text-muted) font-medium">
-              Oversee and manage platform accounts — <span className="text-(--accent-primary)">{meta.total} {meta.total === 1 ? 'user' : 'users'}</span> recorded
+              Oversee and manage platform accounts — <span className="text-(--accent-primary)">{meta.total} {meta.total === 1 ? 'record' : 'records'} found</span>
             </p>
           </div>
           <Link
             href="/users/create"
-            className="btn-modern-primary flex items-center gap-2 px-4 py-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="btn-modern btn-modern-primary flex items-center gap-2 px-4 py-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <UserPlus size={18} />
             <span className="font-semibold">New User</span>
@@ -124,29 +238,36 @@ export default function UsersIndexPage(): React.JSX.Element {
           </div>
 
           <div className="flex w-full items-center gap-4 sm:w-auto">
+            <div className="h-6 w-px bg-(--border-subtle) hidden sm:block" />
+
             <DataTableDateRangeFilter
               dateFrom={filters.date_from}
               dateTo={filters.date_to}
-              onChange={(range) => setFilters(p => ({ 
-                ...p, 
-                date_from: range.dateFrom, 
-                date_to: range.dateTo, 
-                page: 1 
-              }))}
+              onChange={(range) => {
+                startSearchTransition(() => {
+                  setFilters(p => ({ 
+                    ...p, 
+                    date_from: range.dateFrom, 
+                    date_to: range.dateTo, 
+                    page: 1 
+                  }));
+                });
+              }}
             />
+
+            <div className="h-6 w-px bg-(--border-subtle) hidden sm:block" />
 
             <select
               value={filters.status || "all"}
-              onChange={(e) =>
-                setFilters((p) => ({
-                  ...p,
-                  status:
-                    e.target.value === "all"
-                      ? undefined
-                      : e.target.value,
-                  page: 1,
-                }))
-              }
+              onChange={(e) => {
+                startSearchTransition(() => {
+                  setFilters((p) => ({
+                    ...p,
+                    status: mapStatusValue(e.target.value),
+                    page: 1,
+                  }));
+                });
+              }}
               className="px-3 py-2 rounded-lg text-sm outline-none bg-(--bg-subtle) text-(--text-primary) border border-(--border-default)"
             >
               <option value="all">All Status</option>
@@ -164,21 +285,22 @@ export default function UsersIndexPage(): React.JSX.Element {
         </div>
 
         {/* ── Bulk Actions Bar ── */}
-        {selectedUuids.length > 0 && (
+        {selectedActiveUuids.length > 0 && (
             <DataTableBulkActions
-                count={selectedUuids.length}
-                onDelete={() => {}} // Impl later
-                isDeleting={false}
+                count={selectedActiveUuids.length}
+                onDelete={handleBulkDelete}
+                isDeleting={bulkDeleteUsers.isPending}
             />
         )}
 
         {/* ── Table Card ── */}
         <div className="card-modern overflow-hidden border border-(--border-default) shadow-xl">
           <UsersTable
-            data={users}
+            data={optimisticUsers}
             isLoading={isPending}
             isError={isError}
             onDelete={handleDeleteClick}
+            onRestore={handleRestoreClick}
             initials={initials}
             rowSelection={rowSelection}
             onRowSelectionChange={setRowSelection}
@@ -186,9 +308,9 @@ export default function UsersIndexPage(): React.JSX.Element {
 
           {/* ── Pagination ── */}
           {meta.lastPage > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 bg-black/5 dark:bg-white/5 border-t border-(--border-subtle)">
+            <div className="flex items-center justify-between px-6 py-4 border-t border-(--border-subtle) bg-(--bg-subtle)">
               <span className="text-xs font-semibold text-(--text-disabled) uppercase tracking-wider">
-                Page {meta.currentPage} / {meta.lastPage} • {meta.total} Total
+                {meta.total} {meta.total === 1 ? 'record' : 'records'} found
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -199,15 +321,14 @@ export default function UsersIndexPage(): React.JSX.Element {
                   <ChevronLeft size={18} />
                 </button>
                 <div className="flex items-center gap-1 mx-2">
-                    {Array.from({ length: Math.min(5, meta.lastPage) }, (_, i) => {
-                        const p = i + 1;
+                    {paginationPages.map((p) => {
                         return (
                             <button
                                 key={p}
                                 onClick={() => goToPage(p)}
                                 className={`h-9 w-9 rounded-xl text-xs font-bold transition-all ${
                                     meta.currentPage === p 
-                                    ? 'bg-(--accent-primary) text-white shadow-lg' 
+                                    ? 'bg-(--accent-primary) text-(--color-white) shadow-lg' 
                                     : 'hover:bg-(--bg-hover) text-(--text-muted)'
                                 }`}
                             >
@@ -235,6 +356,14 @@ export default function UsersIndexPage(): React.JSX.Element {
         onConfirm={handleConfirmSingleDelete}
         onCancel={() => setPendingDelete(null)}
         isDeleting={deleteUser.isPending}
+      />
+      <RestoreConfirmModal
+        isOpen={pendingRestore !== null}
+        entityLabel="user"
+        entityName={pendingRestore ? `${pendingRestore.name} (${pendingRestore.email})` : ''}
+        onConfirm={handleConfirmRestore}
+        onCancel={() => setPendingRestore(null)}
+        isPending={restoreUser.isPending}
       />
       </AppLayout>
     </>

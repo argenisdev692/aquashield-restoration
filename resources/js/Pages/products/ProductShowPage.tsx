@@ -1,9 +1,10 @@
 import { Head, Link, usePage } from "@inertiajs/react";
+import type { PageProps } from '@inertiajs/core';
 import AppLayout from "@/pages/layouts/AppLayout";
 import { Package, ArrowLeft, Pencil, Tag, DollarSign, Box, Hash } from "lucide-react";
 import type { Product } from "@/modules/products/types";
 
-interface ProductShowPageProps {
+interface ProductShowPageProps extends PageProps {
     product: Product;
 }
 

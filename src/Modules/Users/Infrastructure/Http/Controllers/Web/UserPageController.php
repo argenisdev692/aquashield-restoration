@@ -13,7 +13,6 @@ use Modules\Users\Application\Commands\RestoreUser\RestoreUserCommand;
 use Modules\Users\Application\Commands\RestoreUser\RestoreUserHandler;
 use Modules\Users\Application\Queries\GetUser\GetUserHandler;
 use Modules\Users\Application\Queries\GetUser\GetUserQuery;
-use Modules\Users\Domain\Ports\UserRepositoryPort;
 use Modules\Users\Infrastructure\Http\Resources\UserResource;
 
 /**

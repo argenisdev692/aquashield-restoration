@@ -32,11 +32,12 @@ export default function UserCreatePage(): React.JSX.Element {
       onSuccess: () => {
         router.visit('/users');
       },
-      onError: (err: any) => {
-        if (err.response?.data?.errors) {
+      onError: (err: unknown) => {
+        const response = (err as { response?: { data?: { errors?: Record<string, string[]> } } }).response;
+        if (response?.data?.errors) {
           const serverErrors: Record<string, string> = {};
-          for (const [key, msgs] of Object.entries(err.response.data.errors)) {
-            serverErrors[key] = (msgs as string[])[0] ?? '';
+          for (const [key, msgs] of Object.entries(response.data.errors)) {
+            serverErrors[key] = msgs[0] ?? '';
           }
           setErrors(serverErrors);
         }
@@ -47,13 +48,14 @@ export default function UserCreatePage(): React.JSX.Element {
   return (
     <AppLayout>
       <Head title="Create Platform User" />
-      <div className="max-w-4xl mx-auto flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <form onSubmit={(e) => void handleSubmit(e)} className="max-w-4xl mx-auto flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         
         {/* ── Header ── */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/users"
+              aria-label="Back to users"
               className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--bg-card) border border-(--border-default) text-(--text-muted) hover:bg-(--bg-hover) hover:text-(--accent-primary) transition-all shadow-sm"
             >
               <ArrowLeft size={20} />
@@ -65,9 +67,9 @@ export default function UserCreatePage(): React.JSX.Element {
           </div>
 
           <button
-            onClick={handleSubmit}
+            type="submit"
             disabled={createUser.isPending}
-            className="btn-modern-primary flex items-center gap-2 px-6 py-2.5 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+            className="btn-modern btn-modern-primary flex items-center gap-2 px-6 py-2.5 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
           >
             {createUser.isPending ? (
               <span className="animate-pulse">Creating...</span>
@@ -152,7 +154,7 @@ export default function UserCreatePage(): React.JSX.Element {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                             <label className="text-[11px] font-bold uppercase tracking-widest text-(--text-muted)">Assign Role</label>
+                             <label className="text-[11px] font-bold uppercase tracking-widest text-(--text-secondary)">Assign Role</label>
                              <select 
                                 name="role"
                                 value={form.role}
@@ -168,7 +170,7 @@ export default function UserCreatePage(): React.JSX.Element {
                 </div>
             </div>
         </div>
-      </div>
+      </form>
     </AppLayout>
   );
 }

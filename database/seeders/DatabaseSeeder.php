@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Modules\Blog\Infrastructure\Persistence\Eloquent\Seeders\PostPermissionsSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -56,6 +59,7 @@ class DatabaseSeeder extends Seeder
 
         // BLOG AND EMAIL DATA - Call Blog and Email Seeders
         $this->call(BlogCategorySeeder::class);
+        $this->call(PostPermissionsSeeder::class);
         $this->call(EmailDataSeeder::class);
     }
 }

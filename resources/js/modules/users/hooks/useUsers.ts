@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { UserFilters, UserListItem, PaginatedResponse } from '@/types/users';
+import { keepPreviousData } from '@tanstack/react-query';
+import type { UserFilters, UserListItem, PaginatedResponse } from '@/types/users';
 
 /**
  * useUsers — Returns a list of users filtered by the provided filters.
  */
 export const useUsers = (filters: UserFilters = {}) => {
-  return useQuery({
+  return useQuery<PaginatedResponse<UserListItem>, Error>({
     queryKey: ['users', filters],
     queryFn: async () => {
       const { data } = await axios.get<PaginatedResponse<UserListItem>>('/users/data/admin', {
@@ -14,5 +15,6 @@ export const useUsers = (filters: UserFilters = {}) => {
       });
       return data;
     },
+    placeholderData: keepPreviousData,
   });
 };

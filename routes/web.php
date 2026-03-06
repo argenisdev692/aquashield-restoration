@@ -8,12 +8,14 @@ use Modules\Users\Infrastructure\Http\Controllers\Web\UserPageController;
 use Modules\Users\Infrastructure\Http\Controllers\Api\UserController;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login');
 });
 
 Route::get('/login', function () {
     return Inertia::render('auth/LoginPage');
-})->name('login');
+})->middleware('guest')->name('login');
 
 // ── Authenticated Routes ──────────────────────────────────────
 Route::middleware(['auth'])->group(function () {

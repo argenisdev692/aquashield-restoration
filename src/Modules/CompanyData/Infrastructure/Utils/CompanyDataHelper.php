@@ -1,18 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\CompanyData\Infrastructure\Utils;
 
-use App\Models\CompanyData;
+use Modules\CompanyData\Infrastructure\Persistence\Eloquent\Models\CompanyDataEloquentModel;
 
-class CompanyDataHelper
+final class CompanyDataHelper
 {
     /**
      * Get company information for PDF exports
+     *
+     * @return array<string, mixed>
      */
     public static function getCompanyInfo(): array
     {
-        $companyData = CompanyData::first();
-        
+        $companyData = CompanyDataEloquentModel::select([
+            'company_name',
+            'address',
+            'phone',
+            'email',
+            'website',
+            'signature_path',
+            'latitude',
+            'longitude',
+            'facebook_link',
+            'instagram_link',
+            'linkedin_link',
+            'twitter_link',
+        ])->first();
+
         if ($companyData) {
             return [
                 'name' => $companyData->company_name ?: config('app.name', 'V General Contractors'),
@@ -59,23 +76,26 @@ class CompanyDataHelper
         }
 
         // Remove all non-numeric characters
-        $phone = preg_replace('/[^0-9]/', '', $phone);
-        
+        $digits = $phone
+            |> (fn(string $p): string => preg_replace('/[^0-9]/', '', $p) ?? '');
+
         // Format as (xxx) xxx-xxxx for 10 digit numbers
-        if (strlen($phone) === 10) {
-            return sprintf('(%s) %s-%s', 
-                substr($phone, 0, 3),
-                substr($phone, 3, 3),
-                substr($phone, 6, 4)
+        if (strlen($digits) === 10) {
+            return sprintf(
+                '(%s) %s-%s',
+                substr($digits, 0, 3),
+                substr($digits, 3, 3),
+                substr($digits, 6, 4),
             );
         }
 
         // Format as +1 (xxx) xxx-xxxx for 11 digit numbers starting with 1
-        if (strlen($phone) === 11 && substr($phone, 0, 1) === '1') {
-            return sprintf('+1 (%s) %s-%s', 
-                substr($phone, 1, 3),
-                substr($phone, 4, 3),
-                substr($phone, 7, 4)
+        if (strlen($digits) === 11 && str_starts_with($digits, '1')) {
+            return sprintf(
+                '+1 (%s) %s-%s',
+                substr($digits, 1, 3),
+                substr($digits, 4, 3),
+                substr($digits, 7, 4),
             );
         }
 
@@ -84,11 +104,13 @@ class CompanyDataHelper
 
     /**
      * Get company information specifically for email templates
+     *
+     * @return array<string, mixed>
      */
     public static function getEmailTemplateData(): array
     {
         $info = self::getCompanyInfo();
-        
+
         return [
             'company_name' => $info['name'],
             'company_address' => $info['address'],
@@ -101,11 +123,13 @@ class CompanyDataHelper
 
     /**
      * Get company information for job notifications
+     *
+     * @return array<string, mixed>
      */
     public static function getJobNotificationData(): array
     {
         $info = self::getCompanyInfo();
-        
+
         return [
             'from_name' => $info['name'],
             'from_email' => $info['email'],
@@ -121,6 +145,7 @@ class CompanyDataHelper
     public static function hasLogo(): bool
     {
         $info = self::getCompanyInfo();
+
         return !empty($info['logo_path']) && file_exists($info['logo_path']);
     }
 
@@ -130,6 +155,7 @@ class CompanyDataHelper
     public static function hasSignature(): bool
     {
         $info = self::getCompanyInfo();
+
         return !empty($info['signature_path']) && file_exists($info['signature_path']);
     }
 }

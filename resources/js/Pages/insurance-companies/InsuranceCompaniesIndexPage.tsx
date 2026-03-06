@@ -10,6 +10,10 @@ import { ExportButton } from '@/common/export/ExportButton';
 import type { InsuranceCompanyFilters } from '@/modules/insurance-companies/types';
 import { Search, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
+function mapStatusValue(value: string): InsuranceCompanyFilters['status'] | undefined {
+    return value === 'all' ? undefined : value as InsuranceCompanyFilters['status'];
+}
+
 export default function InsuranceCompaniesIndexPage(): React.JSX.Element {
     const [filters, setFilters] = useRemember<InsuranceCompanyFilters>({ page: 1, perPage: 15 }, 'insurance-companies-filters');
     const [search, setSearch] = React.useState<string>(filters.search || '');
@@ -109,10 +113,7 @@ export default function InsuranceCompaniesIndexPage(): React.JSX.Element {
                                 onChange={(e) =>
                                     setFilters((p) => ({
                                         ...p,
-                                        status:
-                                            e.target.value === "all"
-                                                ? undefined
-                                                : e.target.value,
+                                        status: mapStatusValue(e.target.value),
                                         page: 1,
                                     }))
                                 }

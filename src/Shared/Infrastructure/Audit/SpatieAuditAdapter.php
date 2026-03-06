@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Infrastructure\Audit;
 
+use Illuminate\Support\Facades\Log;
 use Spatie\Activitylog\Facades\Activity;
 
 final class SpatieAuditAdapter implements AuditInterface
@@ -18,5 +19,13 @@ final class SpatieAuditAdapter implements AuditInterface
         }
 
         $logger->log($description);
+
+        Log::info('audit.event', [
+            'log_name' => $logName,
+            'description' => $description,
+            'subject_type' => is_object($subject) ? $subject::class : null,
+            'subject_id' => is_object($subject) && isset($subject->id) ? $subject->id : null,
+            'properties' => $properties,
+        ]);
     }
 }
