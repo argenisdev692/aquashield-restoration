@@ -3,6 +3,7 @@ import { Link, Head, useRemember } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useInsuranceCompanies } from '@/modules/insurance-companies/hooks/useInsuranceCompanies';
 import { useInsuranceCompanyMutations } from '@/modules/insurance-companies/hooks/useInsuranceCompanyMutations';
+import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import InsuranceCompaniesTable from './components/InsuranceCompaniesTable';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
@@ -75,13 +76,15 @@ export default function InsuranceCompaniesIndexPage(): React.JSX.Element {
                                 Manage your insurance carriers — <span className="text-(--accent-primary)">{meta.total} {meta.total === 1 ? 'carrier' : 'carriers'}</span> found
                             </p>
                         </div>
-                        <Link
-                            href="/insurance-companies/create"
-                            className="bg-(--accent-primary) text-white font-bold py-2.5 px-6 rounded-xl hover:scale-[1.03] active:scale-[0.97] transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
-                        >
-                            <Plus size={18} />
-                            <span>New Company</span>
-                        </Link>
+                        <PermissionGuard permissions={['CREATE_INSURANCE_COMPANY']}>
+                            <Link
+                                href="/insurance-companies/create"
+                                className="bg-(--accent-primary) text-white font-bold py-2.5 px-6 rounded-xl hover:scale-[1.03] active:scale-[0.97] transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                            >
+                                <Plus size={18} />
+                                <span>New Company</span>
+                            </Link>
+                        </PermissionGuard>
                     </div>
 
                     <div className="flex flex-col items-center gap-3 rounded-2xl px-5 py-4 sm:flex-row glass-morphism border border-(--border-default) shadow-sm bg-(--bg-card)/50">
@@ -125,10 +128,12 @@ export default function InsuranceCompaniesIndexPage(): React.JSX.Element {
                             </select>
                             
                             <div className="h-8 w-px bg-(--border-subtle) hidden sm:block" />
-                            <ExportButton 
-                                onExport={handleExport} 
-                                isExporting={isPendingExport} 
-                            />
+                            <PermissionGuard permissions={['READ_INSURANCE_COMPANY']}>
+                                <ExportButton 
+                                    onExport={handleExport} 
+                                    isExporting={isPendingExport} 
+                                />
+                            </PermissionGuard>
                         </div>
                     </div>
 

@@ -17,28 +17,28 @@ use Modules\Users\Infrastructure\Http\Controllers\Api\UserExportController;
  */
 
 // ── Inertia Pages ──
-Route::get('/', [UserPageController::class, 'index'])->name('users.index');
-Route::get('/create', [UserPageController::class, 'create'])->name('users.create');
-Route::get('/{uuid}', [UserPageController::class, 'show'])->name('users.show')->whereUuid('uuid');
-Route::get('/{uuid}/edit', [UserPageController::class, 'edit'])->name('users.edit')->whereUuid('uuid');
-Route::delete('/{uuid}', [UserPageController::class, 'destroy'])->name('users.destroy')->whereUuid('uuid');
-Route::patch('/{uuid}/restore', [UserPageController::class, 'restore'])->name('users.restore')->whereUuid('uuid');
+Route::get('/', [UserPageController::class, 'index'])->name('users.index')->middleware('permission:VIEW_USERS');
+Route::get('/create', [UserPageController::class, 'create'])->name('users.create')->middleware('permission:CREATE_USERS');
+Route::get('/{uuid}', [UserPageController::class, 'show'])->name('users.show')->whereUuid('uuid')->middleware('permission:VIEW_USERS');
+Route::get('/{uuid}/edit', [UserPageController::class, 'edit'])->name('users.edit')->whereUuid('uuid')->middleware('permission:UPDATE_USERS');
+Route::delete('/{uuid}', [UserPageController::class, 'destroy'])->name('users.destroy')->whereUuid('uuid')->middleware('permission:DELETE_USERS');
+Route::patch('/{uuid}/restore', [UserPageController::class, 'restore'])->name('users.restore')->whereUuid('uuid')->middleware('permission:DELETE_USERS');
 
 // ── JSON Endpoints for React Query (Internal Web API) ──
 // These endpoints are used by the frontend React components via React Query
 Route::prefix('data')->group(function () {
     // Admin
-    Route::middleware(['role:SUPER_ADMIN'])->prefix('admin')->group(function () {
-        Route::get('/export', UserExportController::class)->name('users.data.export');
-        Route::get('/', [AdminUserController::class, 'index'])->name('users.data.index');
-        Route::post('/', [AdminUserController::class, 'store'])->name('users.data.store');
-        Route::post('/bulk-delete', [AdminUserController::class, 'bulkDelete'])->name('users.data.bulk-delete');
-        Route::get('/{uuid}', [AdminUserController::class, 'show'])->name('users.data.show')->whereUuid('uuid');
-        Route::put('/{uuid}', [AdminUserController::class, 'update'])->name('users.data.update')->whereUuid('uuid');
-        Route::delete('/{uuid}', [AdminUserController::class, 'destroy'])->name('users.data.destroy')->whereUuid('uuid');
-        Route::patch('/{uuid}/restore', [AdminUserController::class, 'restore'])->name('users.data.restore')->whereUuid('uuid');
-        Route::post('/{uuid}/suspend', [AdminUserController::class, 'suspend'])->name('users.data.suspend')->whereUuid('uuid');
-        Route::post('/{uuid}/activate', [AdminUserController::class, 'activate'])->name('users.data.activate')->whereUuid('uuid');
+    Route::prefix('admin')->group(function () {
+        Route::get('/export', UserExportController::class)->name('users.data.export')->middleware('permission:VIEW_USERS');
+        Route::get('/', [AdminUserController::class, 'index'])->name('users.data.index')->middleware('permission:VIEW_USERS');
+        Route::post('/', [AdminUserController::class, 'store'])->name('users.data.store')->middleware('permission:CREATE_USERS');
+        Route::post('/bulk-delete', [AdminUserController::class, 'bulkDelete'])->name('users.data.bulk-delete')->middleware('permission:DELETE_USERS');
+        Route::get('/{uuid}', [AdminUserController::class, 'show'])->name('users.data.show')->whereUuid('uuid')->middleware('permission:VIEW_USERS');
+        Route::put('/{uuid}', [AdminUserController::class, 'update'])->name('users.data.update')->whereUuid('uuid')->middleware('permission:UPDATE_USERS');
+        Route::delete('/{uuid}', [AdminUserController::class, 'destroy'])->name('users.data.destroy')->whereUuid('uuid')->middleware('permission:DELETE_USERS');
+        Route::patch('/{uuid}/restore', [AdminUserController::class, 'restore'])->name('users.data.restore')->whereUuid('uuid')->middleware('permission:DELETE_USERS');
+        Route::post('/{uuid}/suspend', [AdminUserController::class, 'suspend'])->name('users.data.suspend')->whereUuid('uuid')->middleware('permission:UPDATE_USERS');
+        Route::post('/{uuid}/activate', [AdminUserController::class, 'activate'])->name('users.data.activate')->whereUuid('uuid')->middleware('permission:UPDATE_USERS');
     });
 
     // Profile

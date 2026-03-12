@@ -89,7 +89,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <IconGrid />, description: 'Overview & metrics' },
   { label: 'Kanban', href: '/kanban', icon: <IconKanban />, description: 'Project board' },
-  { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users', roles: 'SUPER_ADMIN' },
+  { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users', permission: 'VIEW_USERS' },
   { 
     label: 'Companies', 
     icon: <IconBuilding />, 
