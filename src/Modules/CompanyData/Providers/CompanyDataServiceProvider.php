@@ -25,7 +25,12 @@ final class CompanyDataServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../Infrastructure/Persistence/Eloquent/Migrations');
-        $this->loadViewsFrom(__DIR__ . '/../Infrastructure/Http/Export/views', 'company-data');
+        $viewsPath = __DIR__ . '/../Infrastructure/Http/Export/views';
+
+        if (is_dir($viewsPath)) {
+            $this->loadViewsFrom($viewsPath, 'company-data');
+        }
+
         $this->registerRoutes();
     }
 
