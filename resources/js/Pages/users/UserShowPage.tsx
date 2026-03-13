@@ -17,6 +17,11 @@ const ic = {
 const IconArrowLeft = () => <svg {...ic}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>;
 const IconEdit = () => <svg {...ic}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
 const IconTrash = () => <svg {...ic}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>;
+const showDateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+});
 
 // ══════════════════════════════════════════════════════════════
 // Info Row
@@ -28,6 +33,20 @@ function InfoRow({ label, value }: { label: string; value: string | null | undef
       <dd className="col-span-2 text-sm font-medium text-(--text-primary)">{value || '—'}</dd>
     </div>
   );
+}
+
+function formatShowDate(dateString: string | null | undefined): string {
+  if (!dateString) {
+    return '—';
+  }
+
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) {
+    return '—';
+  }
+
+  return showDateFormatter.format(date);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -163,8 +182,8 @@ export default function UserShowPage({ user }: UserShowPageProps): React.JSX.Ele
             Metadata
           </h3>
           <dl>
-            <InfoRow label="Created" value={user.created_at ? new Date(user.created_at).toLocaleString() : null} />
-            <InfoRow label="Updated" value={user.updated_at ? new Date(user.updated_at).toLocaleString() : null} />
+            <InfoRow label="Created" value={formatShowDate(user.created_at)} />
+            <InfoRow label="Updated" value={formatShowDate(user.updated_at)} />
           </dl>
         </div>
         <DeleteConfirmModal

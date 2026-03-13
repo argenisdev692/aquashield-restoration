@@ -1,36 +1,174 @@
 import * as React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
+import { formatUsPhoneInput } from '@/common/helpers/phone';
+import { containsDigits, sanitizePersonNameInput } from '@/common/helpers/personName';
+import {
+  getUserAvailabilityErrorMessage,
+  shouldCheckUserFieldAvailability,
+  useUserFieldAvailability,
+} from '@/modules/users/hooks/useUserFieldAvailability';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
 import { PremiumField } from '@/shadcn/PremiumField';
 import type { CreateUserPayload } from '@/types/users';
 import { ArrowLeft, Save } from 'lucide-react';
 
-export default function UserCreatePage(): React.JSX.Element {
+interface UserCreatePageProps {
+  roles: string[];
+}
+
+function getNameFieldError(field: 'name' | 'last_name'): string {
+  return field === 'name'
+    ? 'The first name field must not contain numbers.'
+    : 'The last name field must not contain numbers.';
+}
+
+function formatRoleLabel(role: string): string {
+  return role
+    .toLowerCase()
+    .split('_')
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(' ');
+}
+
+export default function UserCreatePage({ roles }: UserCreatePageProps): React.JSX.Element {
+  const availableRoles = roles.length > 0 ? roles : ['USER'];
   const [form, setForm] = React.useState<CreateUserPayload>({
     name: '',
     last_name: '',
     email: '',
     username: '',
     phone: '',
-    role: 'user', // Default
+    role: availableRoles[0] ?? 'USER',
   });
   
   const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const [availabilityErrors, setAvailabilityErrors] = React.useState<Record<string, string>>({});
   const { createUser } = useUserMutations();
+  const emailAvailability = useUserFieldAvailability({ field: 'email', value: form.email, scope: 'admin' });
+  const usernameAvailability = useUserFieldAvailability({ field: 'username', value: form.username ?? '', scope: 'admin' });
+  const phoneAvailability = useUserFieldAvailability({ field: 'phone', value: form.phone ?? '', scope: 'admin' });
+
+  React.useEffect(() => {
+    if (!shouldCheckUserFieldAvailability('email', form.email) || emailAvailability.isFetching) {
+      setAvailabilityErrors((prev) => ({ ...prev, email: '' }));
+      return;
+    }
+
+    setAvailabilityErrors((prev) => ({
+      ...prev,
+      email: emailAvailability.data?.available === false ? getUserAvailabilityErrorMessage('email') : '',
+    }));
+  }, [emailAvailability.data?.available, emailAvailability.isFetching, form.email]);
+
+  React.useEffect(() => {
+    const usernameValue = form.username ?? '';
+
+    if (!shouldCheckUserFieldAvailability('username', usernameValue) || usernameAvailability.isFetching) {
+      setAvailabilityErrors((prev) => ({ ...prev, username: '' }));
+      return;
+    }
+
+    setAvailabilityErrors((prev) => ({
+      ...prev,
+      username: usernameAvailability.data?.available === false ? getUserAvailabilityErrorMessage('username') : '',
+    }));
+  }, [form.username, usernameAvailability.data?.available, usernameAvailability.isFetching]);
+
+  React.useEffect(() => {
+    const phoneValue = form.phone ?? '';
+
+    if (!shouldCheckUserFieldAvailability('phone', phoneValue) || phoneAvailability.isFetching) {
+      setAvailabilityErrors((prev) => ({ ...prev, phone: '' }));
+      return;
+    }
+
+    setAvailabilityErrors((prev) => ({
+      ...prev,
+      phone: phoneAvailability.data?.available === false ? getUserAvailabilityErrorMessage('phone') : '',
+    }));
+  }, [form.phone, phoneAvailability.data?.available, phoneAvailability.isFetching]);
+
+  function getFieldError(field: keyof CreateUserPayload): string | undefined {
+    const directError = errors[field];
+
+    if (typeof directError === 'string' && directError.length > 0) {
+      return directError;
+    }
+
+    const availabilityError = availabilityErrors[field];
+
+    return typeof availabilityError === 'string' && availabilityError.length > 0 ? availabilityError : undefined;
+  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+    const isPersonNameField = name === 'name' || name === 'last_name';
+    const nextValue = name === 'phone'
+      ? formatUsPhoneInput(value)
+      : isPersonNameField
+        ? sanitizePersonNameInput(value)
+        : value;
+
+    setForm((prev) => ({ ...prev, [name]: nextValue }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: isPersonNameField && containsDigits(value)
+        ? getNameFieldError(name)
+        : '',
+    }));
+  }
+
+  function validate(): boolean {
+    const nextErrors: Record<string, string> = {};
+
+    if (!form.name.trim()) {
+      nextErrors.name = 'First name is required.';
+    }
+
+    if (!form.last_name.trim()) {
+      nextErrors.last_name = 'Last name is required.';
+    }
+
+    if (!form.email.trim()) {
+      nextErrors.email = 'Email is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      nextErrors.email = 'Invalid email format.';
+    }
+
+    if (!form.role.trim()) {
+      nextErrors.role = 'Role is required.';
+    }
+
+    if (availabilityErrors.email) {
+      nextErrors.email = availabilityErrors.email;
+    }
+
+    if (availabilityErrors.username) {
+      nextErrors.username = availabilityErrors.username;
+    }
+
+    if (availabilityErrors.phone) {
+      nextErrors.phone = availabilityErrors.phone;
+    }
+
+    setErrors(nextErrors);
+
+    return Object.keys(nextErrors).length === 0;
   }
 
   async function handleSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
+
+    if (!validate()) {
+      return;
+    }
     
     createUser.mutate(form, {
       onSuccess: () => {
-        router.visit('/users');
+        window.setTimeout(() => {
+          router.visit('/users');
+        }, 180);
       },
       onError: (err: unknown) => {
         const response = (err as { response?: { data?: { errors?: Record<string, string[]> } } }).response;
@@ -98,7 +236,7 @@ export default function UserCreatePage(): React.JSX.Element {
                             value={form.name} 
                             onChange={handleChange} 
                             required 
-                            error={errors.name} 
+                            error={getFieldError('name')} 
                             placeholder="John"
                         />
                         <PremiumField 
@@ -107,7 +245,7 @@ export default function UserCreatePage(): React.JSX.Element {
                             value={form.last_name} 
                             onChange={handleChange} 
                             required 
-                            error={errors.last_name} 
+                            error={getFieldError('last_name')} 
                             placeholder="Doe"
                         />
                         <div className="md:col-span-2">
@@ -118,7 +256,7 @@ export default function UserCreatePage(): React.JSX.Element {
                                 value={form.email} 
                                 onChange={handleChange} 
                                 required 
-                                error={errors.email} 
+                                error={getFieldError('email')} 
                                 placeholder="john.doe@example.com"
                             />
                         </div>
@@ -127,7 +265,7 @@ export default function UserCreatePage(): React.JSX.Element {
                             name="username" 
                             value={form.username || ''} 
                             onChange={handleChange} 
-                            error={errors.username} 
+                            error={getFieldError('username')} 
                             placeholder="johndoe"
                         />
                         <PremiumField 
@@ -135,8 +273,8 @@ export default function UserCreatePage(): React.JSX.Element {
                             name="phone" 
                             value={form.phone || ''} 
                             onChange={handleChange} 
-                            error={errors.phone} 
-                            placeholder="+1 (555) 000-0000"
+                            error={getFieldError('phone')} 
+                            placeholder="(555) 000-0000"
                         />
                     </div>
                 </div>
@@ -158,13 +296,23 @@ export default function UserCreatePage(): React.JSX.Element {
                              <select 
                                 name="role"
                                 value={form.role}
-                                onChange={(e) => setForm(p => ({ ...p, role: e.target.value }))}
+                                onChange={(e) => {
+                                  setForm((prev) => ({ ...prev, role: e.target.value }));
+                                  setErrors((prev) => ({ ...prev, role: '' }));
+                                }}
                                 className="w-full rounded-xl px-4 py-3 bg-(--bg-card) border border-(--border-default) text-sm outline-none focus:ring-2 focus:ring-(--accent-primary) transition-all"
                              >
-                                 <option value="user">Platform User</option>
-                                 <option value="manager">Manager</option>
-                                 <option value="super-admin">Super Admin</option>
+                                 {availableRoles.map((role) => (
+                                   <option key={role} value={role}>
+                                     {formatRoleLabel(role)}
+                                   </option>
+                                 ))}
                              </select>
+                             {errors.role ? (
+                               <span className="text-[11px] font-medium text-(--accent-error)">
+                                 {errors.role}
+                               </span>
+                             ) : null}
                         </div>
                     </div>
                 </div>

@@ -105,7 +105,7 @@
                     <td>{{ $user->uuid }}</td>
                     <td>{{ $user->name }} {{ $user->last_name }}</td>
                     <td>{{ $user->email }}</td>
-                    <td>{{ $user->phone }}</td>
+                    <td>{{ \Shared\Infrastructure\Utils\PhoneHelper::format($user->phone) ?: '—' }}</td>
                     <td>{{ $user->city }}</td>
                     <td>{{ $user->created_at?->format('F j, Y') ?? '—' }}</td>
                 </tr>

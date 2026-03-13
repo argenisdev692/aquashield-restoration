@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Users\Infrastructure\Http\Controllers\Web\UserPageController;
 
 use Modules\Users\Infrastructure\Http\Controllers\Api\AdminUserController;
+use Modules\Users\Infrastructure\Http\Controllers\Api\UserAvailabilityController;
 use Modules\Users\Infrastructure\Http\Controllers\Api\UserProfileController;
 use Modules\Users\Infrastructure\Http\Controllers\Api\UserExportController;
 
@@ -32,6 +33,7 @@ Route::prefix('data')->group(function () {
         Route::get('/export', UserExportController::class)->name('users.data.export')->middleware('permission:VIEW_USERS');
         Route::get('/', [AdminUserController::class, 'index'])->name('users.data.index')->middleware('permission:VIEW_USERS');
         Route::post('/', [AdminUserController::class, 'store'])->name('users.data.store')->middleware('permission:CREATE_USERS');
+        Route::get('/availability', [UserAvailabilityController::class, 'admin'])->name('users.data.availability')->middleware('permission:VIEW_USERS|CREATE_USERS|UPDATE_USERS');
         Route::post('/bulk-delete', [AdminUserController::class, 'bulkDelete'])->name('users.data.bulk-delete')->middleware('permission:DELETE_USERS');
         Route::get('/{uuid}', [AdminUserController::class, 'show'])->name('users.data.show')->whereUuid('uuid')->middleware('permission:VIEW_USERS');
         Route::put('/{uuid}', [AdminUserController::class, 'update'])->name('users.data.update')->whereUuid('uuid')->middleware('permission:UPDATE_USERS');
@@ -44,6 +46,7 @@ Route::prefix('data')->group(function () {
     // Profile
     Route::prefix('profile')->group(function () {
         Route::get('/', [UserProfileController::class, 'show'])->name('users.data.profile.show');
+        Route::get('/availability', [UserAvailabilityController::class, 'profile'])->name('users.data.profile.availability');
         Route::put('/', [UserProfileController::class, 'update'])->name('users.data.profile.update');
     });
 });

@@ -9,6 +9,7 @@ use Modules\Users\Domain\Entities\User;
 use Modules\Users\Domain\Exceptions\UserNotFoundException;
 use Modules\Users\Domain\Ports\UserRepositoryPort;
 use Shared\Infrastructure\Audit\AuditInterface;
+use Shared\Infrastructure\Utils\PhoneHelper;
 
 /**
  * UpdateUserHandler — Validates user existence, then delegates update to the repository.
@@ -34,7 +35,7 @@ final readonly class UpdateUserHandler
             'last_name' => $command->dto->lastName,
             'email' => $command->dto->email,
             'username' => $command->dto->username,
-            'phone' => $command->dto->phone,
+            'phone' => PhoneHelper::normalizeUs($command->dto->phone),
             'address' => $command->dto->address,
             'city' => $command->dto->city,
             'state' => $command->dto->state,

@@ -36,25 +36,30 @@ final class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $name = data_get($this->resource, 'name');
+        $lastName = data_get($this->resource, 'lastName') ?? data_get($this->resource, 'last_name');
+
         return [
-            'id' => $this->resource->id->value ?? $this->resource->id,
-            'uuid' => $this->resource->uuid,
-            'name' => $this->resource->name,
-            'last_name' => $this->resource->lastName ?? $this->resource->last_name,
-            'full_name' => method_exists($this->resource, 'fullName') ? $this->resource->fullName() : trim(($this->resource->name ?? '') . ' ' . ($this->resource->lastName ?? $this->resource->last_name ?? '')),
-            'email' => $this->resource->email,
-            'username' => $this->resource->username,
-            'phone' => $this->resource->phone,
-            'profile_photo_path' => $this->resource->profilePhotoPath ?? $this->resource->profile_photo_path,
-            'address' => $this->resource->address,
-            'city' => $this->resource->city,
-            'state' => $this->resource->state,
-            'country' => $this->resource->country,
-            'zip_code' => $this->resource->zipCode ?? $this->resource->zip_code,
-            'status' => $this->resource->status->value ?? $this->resource->status ?? 'active',
-            'created_at' => $this->resource->createdAt ?? $this->resource->created_at,
-            'updated_at' => $this->resource->updatedAt ?? $this->resource->updated_at,
-            'deleted_at' => $this->resource->deletedAt ?? $this->resource->deleted_at,
+            'id' => data_get($this->resource, 'id.value') ?? data_get($this->resource, 'id'),
+            'uuid' => data_get($this->resource, 'uuid'),
+            'name' => $name,
+            'last_name' => $lastName,
+            'full_name' => method_exists($this->resource, 'fullName')
+                ? $this->resource->fullName()
+                : trim(($name ?? '') . ' ' . ($lastName ?? '')),
+            'email' => data_get($this->resource, 'email'),
+            'username' => data_get($this->resource, 'username'),
+            'phone' => data_get($this->resource, 'phone'),
+            'profile_photo_path' => data_get($this->resource, 'profilePhotoPath') ?? data_get($this->resource, 'profile_photo_path'),
+            'address' => data_get($this->resource, 'address'),
+            'city' => data_get($this->resource, 'city'),
+            'state' => data_get($this->resource, 'state'),
+            'country' => data_get($this->resource, 'country'),
+            'zip_code' => data_get($this->resource, 'zipCode') ?? data_get($this->resource, 'zip_code'),
+            'status' => data_get($this->resource, 'status.value') ?? data_get($this->resource, 'status') ?? 'active',
+            'created_at' => data_get($this->resource, 'createdAt') ?? data_get($this->resource, 'created_at'),
+            'updated_at' => data_get($this->resource, 'updatedAt') ?? data_get($this->resource, 'updated_at'),
+            'deleted_at' => data_get($this->resource, 'deletedAt') ?? data_get($this->resource, 'deleted_at'),
         ];
     }
 }

@@ -12,6 +12,7 @@ use Modules\Users\Domain\Events\UserCreatedByAdmin;
 use Modules\Users\Domain\Ports\UserRepositoryPort;
 use Shared\Domain\Events\DomainEventPublisher;
 use Shared\Infrastructure\Audit\AuditInterface;
+use Shared\Infrastructure\Utils\PhoneHelper;
 
 final readonly class CreateUserHandler
 {
@@ -33,7 +34,7 @@ final readonly class CreateUserHandler
             'last_name' => $dto->lastName,
             'email' => $dto->email,
             'username' => $dto->username,
-            'phone' => $dto->phone,
+            'phone' => PhoneHelper::normalizeUs($dto->phone),
             'address' => $dto->address,
             'city' => $dto->city,
             'state' => $dto->state,
@@ -42,6 +43,7 @@ final readonly class CreateUserHandler
             'status' => UserStatus::PendingSetup->value,
             'setup_token' => $setupToken,
             'setup_token_expires_at' => now()->addDays(7)->toDateTimeString(),
+            'role' => $dto->role,
         ]);
 
         // Dispatch domain event

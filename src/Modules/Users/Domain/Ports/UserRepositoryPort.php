@@ -18,6 +18,12 @@ interface UserRepositoryPort
 
     public function findByEmail(string $email): ?User;
 
+    public function existsByEmail(string $email, ?string $ignoreUuid = null): bool;
+
+    public function existsByUsername(string $username, ?string $ignoreUuid = null): bool;
+
+    public function existsByPhone(string $phone, ?string $ignoreUuid = null): bool;
+
     /**
      * @param array<string, mixed> $filters
      * @return array{data: list<User>, total: int, perPage: int, currentPage: int, lastPage: int}

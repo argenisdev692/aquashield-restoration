@@ -32,16 +32,24 @@ final readonly class GetUserHandler
             }
 
             return new UserReadModel(
+                id: $user->id->value,
                 uuid: $user->uuid,
                 name: $user->name,
                 lastName: $user->lastName,
                 email: $user->email ?? '',
                 username: $user->username,
                 phone: $user->phone,
+                address: $user->address,
+                city: $user->city,
+                state: $user->state,
+                country: $user->country,
+                zipCode: $user->zipCode,
+                role: $user->role,
                 status: $user->status->value,
                 profilePhotoPath: $user->profilePhotoPath,
                 createdAt: $user->createdAt,
                 updatedAt: $user->updatedAt,
+                deletedAt: $user->deletedAt,
                 roles: [], // To be populated if needed
                 permissions: []
             );

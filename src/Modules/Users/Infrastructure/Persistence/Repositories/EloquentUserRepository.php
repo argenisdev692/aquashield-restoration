@@ -9,6 +9,7 @@ use Modules\Users\Domain\Enums\UserStatus;
 use Modules\Users\Domain\Ports\UserRepositoryPort;
 use Modules\Users\Infrastructure\Persistence\Mappers\UserMapper;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
+use Shared\Infrastructure\Utils\PhoneHelper;
 
 /**
  * EloquentUserRepository — Implements UserRepositoryPort using Eloquent.
@@ -58,6 +59,48 @@ final class EloquentUserRepository implements UserRepositoryPort
             ->first();
 
         return $model ? UserMapper::toDomain($model) : null;
+    }
+
+    public function existsByEmail(string $email, ?string $ignoreUuid = null): bool
+    {
+        return UserEloquentModel::query()
+            ->withTrashed()
+            ->when(
+                $ignoreUuid,
+                static fn($query, $uuid) => $query->where('uuid', '!=', (string) $uuid),
+            )
+            ->whereRaw('LOWER(email) = ?', [mb_strtolower(trim($email))])
+            ->exists();
+    }
+
+    public function existsByUsername(string $username, ?string $ignoreUuid = null): bool
+    {
+        return UserEloquentModel::query()
+            ->withTrashed()
+            ->when(
+                $ignoreUuid,
+                static fn($query, $uuid) => $query->where('uuid', '!=', (string) $uuid),
+            )
+            ->whereRaw('LOWER(username) = ?', [mb_strtolower(trim($username))])
+            ->exists();
+    }
+
+    public function existsByPhone(string $phone, ?string $ignoreUuid = null): bool
+    {
+        $normalizedPhone = PhoneHelper::normalizeUs($phone);
+
+        if ($normalizedPhone === null) {
+            return false;
+        }
+
+        return UserEloquentModel::query()
+            ->withTrashed()
+            ->when(
+                $ignoreUuid,
+                static fn($query, $uuid) => $query->where('uuid', '!=', (string) $uuid),
+            )
+            ->where('phone', $normalizedPhone)
+            ->exists();
     }
 
     /**
@@ -138,7 +181,14 @@ final class EloquentUserRepository implements UserRepositoryPort
      */
     public function create(array $data): User
     {
+        $role = is_string($data['role'] ?? null) && $data['role'] !== '' ? $data['role'] : null;
+        unset($data['role']);
+
         $model = UserEloquentModel::query()->create($data);
+
+        if ($role !== null) {
+            $model->syncRoles([$role]);
+        }
 
         return UserMapper::toDomain($model->load('roles:id,name'));
     }

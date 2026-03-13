@@ -9,6 +9,31 @@ namespace Shared\Infrastructure\Utils;
  */
 class PhoneHelper
 {
+    public static function normalizeUs(?string $phone): ?string
+    {
+        if ($phone === null) {
+            return null;
+        }
+
+        $trimmedPhone = trim($phone);
+
+        if ($trimmedPhone === '') {
+            return null;
+        }
+
+        $digits = preg_replace('/[^0-9]/', '', $trimmedPhone) ?? '';
+
+        if (strlen($digits) === 11 && str_starts_with($digits, '1')) {
+            $digits = substr($digits, 1);
+        }
+
+        if (strlen($digits) !== 10) {
+            return null;
+        }
+
+        return '+1' . $digits;
+    }
+
     /**
      * Format a phone number to (XXX) XXX-XXXX.
      * Accepts raw digits, +1 prefixed, or already formatted numbers.
@@ -19,7 +44,19 @@ class PhoneHelper
             return '';
         }
 
-        // Remove everything except digits
+        $normalizedPhone = self::normalizeUs($phone);
+
+        if ($normalizedPhone !== null) {
+            $digits = substr($normalizedPhone, 2);
+
+            return sprintf(
+                '(%s) %s-%s',
+                substr($digits, 0, 3),
+                substr($digits, 3, 3),
+                substr($digits, 6, 4),
+            );
+        }
+
         $digits = preg_replace('/[^0-9]/', '', $phone) ?? '';
 
         // 10-digit US number

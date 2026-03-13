@@ -39,7 +39,7 @@ final class CreateUserDTO extends Data
         public ?string $state = null,
         public ?string $country = null,
         public ?string $zipCode = null,
-        public ?string $role = 'user',
+        public ?string $role = 'USER',
     ) {
     }
 }

@@ -12,16 +12,24 @@ use Spatie\LaravelData\Data;
 final class UserReadModel extends Data
 {
     public function __construct(
+        public ?int $id,
         public string $uuid,
         public string $name,
-        public string $lastName,
+        public ?string $lastName,
         public string $email,
         public ?string $username,
         public ?string $phone,
+        public ?string $address,
+        public ?string $city,
+        public ?string $state,
+        public ?string $country,
+        public ?string $zipCode,
+        public ?string $role,
         public string $status,
         public ?string $profilePhotoPath,
         public ?string $createdAt,
         public ?string $updatedAt,
+        public ?string $deletedAt,
         public ?array $roles = [],
         public ?array $permissions = [],
     ) {

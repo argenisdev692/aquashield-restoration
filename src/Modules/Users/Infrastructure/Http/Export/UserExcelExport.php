@@ -15,6 +15,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
 use Modules\Users\Application\DTOs\UserFilterDTO;
 use Illuminate\Database\Eloquent\Builder;
+use Shared\Infrastructure\Utils\PhoneHelper;
 
 final class UserExcelExport implements
     FromQuery,
@@ -90,7 +91,7 @@ final class UserExcelExport implements
             $user->last_name,
             $user->email,
             $user->username,
-            $user->phone,
+            PhoneHelper::format($user->phone) ?: '—',
             $user->city,
             $user->state,
             $user->country,

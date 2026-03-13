@@ -14,6 +14,7 @@ use Modules\Users\Application\Commands\RestoreUser\RestoreUserHandler;
 use Modules\Users\Application\Queries\GetUser\GetUserHandler;
 use Modules\Users\Application\Queries\GetUser\GetUserQuery;
 use Modules\Users\Infrastructure\Http\Resources\UserResource;
+use Spatie\Permission\Models\Role;
 
 /**
  * UserPageController — Inertia page renders + write actions for Users CRUD.
@@ -40,7 +41,15 @@ final class UserPageController
      */
     public function create(): Response
     {
-        return Inertia::render('users/UserCreatePage');
+        return Inertia::render('users/UserCreatePage', [
+            'roles' => Role::query()
+                ->where('guard_name', 'web')
+                ->where('name', '!=', 'Users')
+                ->orderBy('name')
+                ->pluck('name')
+                ->values()
+                ->all(),
+        ]);
     }
 
     /**
@@ -51,7 +60,7 @@ final class UserPageController
         $user = $this->getHandler->handle(new GetUserQuery($uuid));
 
         return Inertia::render('users/UserShowPage', [
-            'user' => new UserResource($user),
+            'user' => UserResource::make($user)->resolve(request()),
         ]);
     }
 
@@ -63,7 +72,7 @@ final class UserPageController
         $user = $this->getHandler->handle(new GetUserQuery($uuid));
 
         return Inertia::render('users/UserEditPage', [
-            'user' => new UserResource($user),
+            'user' => UserResource::make($user)->resolve(request()),
         ]);
     }
 

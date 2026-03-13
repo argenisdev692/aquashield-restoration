@@ -1,6 +1,13 @@
 import * as React from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
+import { formatUsPhoneInput } from '@/common/helpers/phone';
+import { containsDigits, sanitizePersonNameInput } from '@/common/helpers/personName';
+import {
+  getUserAvailabilityErrorMessage,
+  shouldCheckUserFieldAvailability,
+  useUserFieldAvailability,
+} from '@/modules/users/hooks/useUserFieldAvailability';
 import type { ProfilePageProps } from '@/types/auth';
 import { sileo } from 'sileo';
 import { Globe, LockKeyhole, Smartphone, User } from 'lucide-react';
@@ -18,6 +25,8 @@ type ProfileFieldProps = {
   name: string;
   value: string;
   type?: React.HTMLInputTypeAttribute;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
+  maxLength?: number;
   placeholder?: string;
   autoComplete?: string;
   error?: string;
@@ -35,11 +44,19 @@ function getFirstError(errors: Record<string, string | undefined>): string | nul
   return Object.values(errors).find((value): value is string => typeof value === 'string' && value.length > 0) ?? null;
 }
 
+function getProfileNameError(field: 'name' | 'last_name'): string {
+  return field === 'name'
+    ? 'The first name field must not contain numbers.'
+    : 'The last name field must not contain numbers.';
+}
+
 function ProfileField({
   label,
   name,
   value,
   type = 'text',
+  inputMode,
+  maxLength,
   placeholder,
   autoComplete,
   error,
@@ -56,6 +73,8 @@ function ProfileField({
         type={type}
         value={value}
         onChange={onChange}
+        inputMode={inputMode}
+        maxLength={maxLength}
         placeholder={placeholder}
         autoComplete={autoComplete}
         disabled={disabled}
@@ -88,7 +107,7 @@ export default function ProfilePage(): React.JSX.Element {
     last_name: user.last_name ?? '',
     email: user.email,
     username: user.username || '',
-    phone: user.phone || '',
+    phone: formatUsPhoneInput(user.phone || ''),
   });
 
   const passwordForm = useForm<PasswordFormState>({
@@ -96,9 +115,81 @@ export default function ProfilePage(): React.JSX.Element {
     password: '',
     password_confirmation: '',
   });
+  const [availabilityErrors, setAvailabilityErrors] = React.useState<Record<string, string>>({});
+  const emailAvailability = useUserFieldAvailability({ field: 'email', value: profileForm.data.email, scope: 'profile', ignoreUuid: user.uuid });
+  const usernameAvailability = useUserFieldAvailability({ field: 'username', value: profileForm.data.username, scope: 'profile', ignoreUuid: user.uuid });
+  const phoneAvailability = useUserFieldAvailability({ field: 'phone', value: profileForm.data.phone, scope: 'profile', ignoreUuid: user.uuid });
+
+  React.useEffect(() => {
+    if (!shouldCheckUserFieldAvailability('email', profileForm.data.email) || emailAvailability.isFetching) {
+      setAvailabilityErrors((prev) => ({ ...prev, email: '' }));
+      return;
+    }
+
+    setAvailabilityErrors((prev) => ({
+      ...prev,
+      email: emailAvailability.data?.available === false ? getUserAvailabilityErrorMessage('email') : '',
+    }));
+  }, [emailAvailability.data?.available, emailAvailability.isFetching, profileForm.data.email]);
+
+  React.useEffect(() => {
+    if (!shouldCheckUserFieldAvailability('username', profileForm.data.username) || usernameAvailability.isFetching) {
+      setAvailabilityErrors((prev) => ({ ...prev, username: '' }));
+      return;
+    }
+
+    setAvailabilityErrors((prev) => ({
+      ...prev,
+      username: usernameAvailability.data?.available === false ? getUserAvailabilityErrorMessage('username') : '',
+    }));
+  }, [profileForm.data.username, usernameAvailability.data?.available, usernameAvailability.isFetching]);
+
+  React.useEffect(() => {
+    if (!shouldCheckUserFieldAvailability('phone', profileForm.data.phone) || phoneAvailability.isFetching) {
+      setAvailabilityErrors((prev) => ({ ...prev, phone: '' }));
+      return;
+    }
+
+    setAvailabilityErrors((prev) => ({
+      ...prev,
+      phone: phoneAvailability.data?.available === false ? getUserAvailabilityErrorMessage('phone') : '',
+    }));
+  }, [phoneAvailability.data?.available, phoneAvailability.isFetching, profileForm.data.phone]);
+
+  function getProfileFieldError(field: keyof ProfileFormState): string | undefined {
+    const directError = profileForm.errors[field];
+
+    if (typeof directError === 'string' && directError.length > 0) {
+      return directError;
+    }
+
+    const availabilityError = availabilityErrors[field];
+
+    return typeof availabilityError === 'string' && availabilityError.length > 0 ? availabilityError : undefined;
+  }
+
+  const handleProfileNameChange = (field: 'name' | 'last_name', value: string): void => {
+    const sanitizedValue = sanitizePersonNameInput(value);
+
+    profileForm.setData(field, sanitizedValue);
+
+    if (containsDigits(value)) {
+      profileForm.setError(field, getProfileNameError(field));
+      return;
+    }
+
+    profileForm.clearErrors(field);
+  };
 
   const handleProfileSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
+
+    if (availabilityErrors.email || availabilityErrors.username || availabilityErrors.phone) {
+      sileo.error({ title: getFirstError(availabilityErrors) ?? 'Please fix the highlighted fields.' });
+      return;
+    }
+
+    profileForm.clearErrors();
 
     profileForm.put('/user/profile-information', {
       preserveScroll: true,
@@ -195,20 +286,20 @@ export default function ProfilePage(): React.JSX.Element {
                   label="First Name"
                   name="name"
                   value={profileForm.data.name}
-                  onChange={(event) => profileForm.setData('name', event.target.value)}
+                  onChange={(event) => handleProfileNameChange('name', event.target.value)}
                   placeholder="John"
                   autoComplete="given-name"
-                  error={profileForm.errors.name}
+                  error={getProfileFieldError('name')}
                   disabled={profileForm.processing}
                 />
                 <ProfileField
                   label="Last Name"
                   name="last_name"
                   value={profileForm.data.last_name}
-                  onChange={(event) => profileForm.setData('last_name', event.target.value)}
+                  onChange={(event) => handleProfileNameChange('last_name', event.target.value)}
                   placeholder="Doe"
                   autoComplete="family-name"
-                  error={profileForm.errors.last_name}
+                  error={getProfileFieldError('last_name')}
                   disabled={profileForm.processing}
                 />
                 <div className="sm:col-span-2">
@@ -217,10 +308,13 @@ export default function ProfilePage(): React.JSX.Element {
                     name="email"
                     type="email"
                     value={profileForm.data.email}
-                    onChange={(event) => profileForm.setData('email', event.target.value)}
+                    onChange={(event) => {
+                      profileForm.setData('email', event.target.value);
+                      profileForm.clearErrors('email');
+                    }}
                     placeholder="john@example.com"
                     autoComplete="email"
-                    error={profileForm.errors.email}
+                    error={getProfileFieldError('email')}
                     disabled={profileForm.processing}
                   />
                 </div>
@@ -228,20 +322,29 @@ export default function ProfilePage(): React.JSX.Element {
                   label="Public Username"
                   name="username"
                   value={profileForm.data.username}
-                  onChange={(event) => profileForm.setData('username', event.target.value)}
+                  onChange={(event) => {
+                    profileForm.setData('username', event.target.value);
+                    profileForm.clearErrors('username');
+                  }}
                   placeholder="jdoe88"
                   autoComplete="username"
-                  error={profileForm.errors.username}
+                  error={getProfileFieldError('username')}
                   disabled={profileForm.processing}
                 />
                 <ProfileField
                   label="Contact Phone"
                   name="phone"
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={14}
                   value={profileForm.data.phone}
-                  onChange={(event) => profileForm.setData('phone', event.target.value)}
-                  placeholder="+1 555-0199"
+                  onChange={(event) => {
+                    profileForm.setData('phone', formatUsPhoneInput(event.target.value));
+                    profileForm.clearErrors('phone');
+                  }}
+                  placeholder="(555) 000-0000"
                   autoComplete="tel"
-                  error={profileForm.errors.phone}
+                  error={getProfileFieldError('phone')}
                   disabled={profileForm.processing}
                 />
               </div>

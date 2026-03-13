@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Fortify;
 
-use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\ResetsUserPasswords;
+use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel as User;
 
 class ResetUserPassword implements ResetsUserPasswords
 {

@@ -435,8 +435,8 @@ class UserSeeder extends Seeder
         $superAdminUser = User::factory()->create([
             'name' => 'Victor',
             'last_name' => 'Lara',
-            'email' => 'info@vgeneralcontractors.com',
-            'username' => 'vgeneralcontractors',
+            'email' => 'info@aquashieldrestorationusa.com',
+            'username' => 'aquashieldrestorationusa',
             'password' => bcrypt('info01='),
             'uuid' => Uuid::uuid4()->toString(),
             'terms_and_conditions' => true
@@ -461,7 +461,7 @@ class UserSeeder extends Seeder
         $adminUser = User::factory()->create([
             'name' => 'Admin',
             'last_name' => 'User',
-            'email' => 'admin@vgeneralcontractors.com',
+            'email' => 'admin@aquashieldrestorationusa.com',
             'username' => 'adminAppointment',
             'password' => bcrypt('admin01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -474,7 +474,7 @@ class UserSeeder extends Seeder
         $managerUser = User::factory()->create([
             'name' => 'Manager',
             'last_name' => 'User',
-            'email' => 'manager@vgeneralcontractors.com',
+            'email' => 'manager@aquashieldrestorationusa.com',
             'username' => 'manager01',
             'password' => bcrypt('manager01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -500,7 +500,7 @@ class UserSeeder extends Seeder
         $marketingManagerUser = User::factory()->create([
             'name' => 'Marketing',
             'last_name' => 'Manager',
-            'email' => 'marketingmanager@vgeneralcontractors.com',
+            'email' => 'marketingmanager@aquashieldrestorationusa.com',
             'username' => 'marketingmanager01',
             'password' => bcrypt('marketingmanager01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -513,7 +513,7 @@ class UserSeeder extends Seeder
         $directorAssistantUser = User::factory()->create([
             'name' => 'Director',
             'last_name' => 'Assistant',
-            'email' => 'directorassistant@vgeneralcontractors.com',
+            'email' => 'directorassistant@aquashieldrestorationusa.com',
             'username' => 'directorassistant01',
             'password' => bcrypt('directorassistant01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -526,7 +526,7 @@ class UserSeeder extends Seeder
         $technicalSupervisorUser = User::factory()->create([
             'name' => 'Technical',
             'last_name' => 'Supervisor',
-            'email' => 'technicalsupervisor@vgeneralcontractors.com',
+            'email' => 'technicalsupervisor@aquashieldrestorationusa.com',
             'username' => 'technicalsupervisor01',
             'password' => bcrypt('technicalsupervisor01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -539,7 +539,7 @@ class UserSeeder extends Seeder
         $representationCompanyUser = User::factory()->create([
             'name' => 'Representation',
             'last_name' => 'Company',
-            'email' => 'representationcompany@vgeneralcontractors.com',
+            'email' => 'representationcompany@aquashieldrestorationusa.com',
             'username' => 'representationcompany01',
             'password' => bcrypt('representationcompany01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -552,7 +552,7 @@ class UserSeeder extends Seeder
         $publicCompanyUser = User::factory()->create([
             'name' => 'Public',
             'last_name' => 'Company',
-            'email' => 'publiccompany@vgeneralcontractors.com',
+            'email' => 'publiccompany@aquashieldrestorationusa.com',
             'username' => 'publiccompany01',
             'password' => bcrypt('publiccompany01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -565,7 +565,7 @@ class UserSeeder extends Seeder
         $externalOperatorsUser = User::factory()->create([
             'name' => 'External',
             'last_name' => 'Operators',
-            'email' => 'externaloperators@vgeneralcontractors.com',
+            'email' => 'externaloperators@aquashieldrestorationusa.com',
             'username' => 'externaloperators01',
             'password' => bcrypt('externaloperators01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -578,7 +578,7 @@ class UserSeeder extends Seeder
         $publicAdjusterUser = User::factory()->create([
             'name' => 'Public',
             'last_name' => 'Adjuster',
-            'email' => 'publicadjuster@vgeneralcontractors.com',
+            'email' => 'publicadjuster@aquashieldrestorationusa.com',
             'username' => 'publicadjuster01',
             'password' => bcrypt('publicadjuster01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -591,7 +591,7 @@ class UserSeeder extends Seeder
         $insuranceAdjusterUser = User::factory()->create([
             'name' => 'Insurance',
             'last_name' => 'Adjuster',
-            'email' => 'insuranceadjuster@vgeneralcontractors.com',
+            'email' => 'insuranceadjuster@aquashieldrestorationusa.com',
             'username' => 'insuranceadjuster01',
             'password' => bcrypt('insuranceadjuster01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -604,7 +604,7 @@ class UserSeeder extends Seeder
         $technicalServicesUser = User::factory()->create([
             'name' => 'Technical',
             'last_name' => 'Services',
-            'email' => 'technicalservices@vgeneralcontractors.com',
+            'email' => 'technicalservices@aquashieldrestorationusa.com',
             'username' => 'technicalservices01',
             'password' => bcrypt('technicalservices01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -617,7 +617,7 @@ class UserSeeder extends Seeder
         $marketingUser = User::factory()->create([
             'name' => 'Marketing',
             'last_name' => 'User',
-            'email' => 'marketing@vgeneralcontractors.com',
+            'email' => 'marketing@aquashieldrestorationusa.com',
             'username' => 'marketing01',
             'password' => bcrypt('marketing01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -630,7 +630,7 @@ class UserSeeder extends Seeder
         $warehouseUser = User::factory()->create([
             'name' => 'Warehouse',
             'last_name' => 'User',
-            'email' => 'warehouse@vgeneralcontractors.com',
+            'email' => 'warehouse@aquashieldrestorationusa.com',
             'username' => 'warehouse01',
             'password' => bcrypt('warehouse01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -643,7 +643,7 @@ class UserSeeder extends Seeder
         $administrativeUser = User::factory()->create([
             'name' => 'Administrative',
             'last_name' => 'User',
-            'email' => 'administrative@vgeneralcontractors.com',
+            'email' => 'administrative@aquashieldrestorationusa.com',
             'username' => 'administrative01',
             'password' => bcrypt('administrative01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -656,7 +656,7 @@ class UserSeeder extends Seeder
         $collectionsUser = User::factory()->create([
             'name' => 'Collections',
             'last_name' => 'User',
-            'email' => 'collections@vgeneralcontractors.com',
+            'email' => 'collections@aquashieldrestorationusa.com',
             'username' => 'collections01',
             'password' => bcrypt('collections01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -669,7 +669,7 @@ class UserSeeder extends Seeder
         $reportesUser = User::factory()->create([
             'name' => 'Reportes',
             'last_name' => 'User',
-            'email' => 'reportes@vgeneralcontractors.com',
+            'email' => 'reportes@aquashieldrestorationusa.com',
             'username' => 'reportes01',
             'password' => bcrypt('reportes01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -682,7 +682,7 @@ class UserSeeder extends Seeder
         $salespersonUser = User::factory()->create([
             'name' => 'Sales',
             'last_name' => 'Person',
-            'email' => 'salesperson@vgeneralcontractors.com',
+            'email' => 'salesperson@aquashieldrestorationusa.com',
             'username' => 'salesperson01',
             'password' => bcrypt('salesperson01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -695,7 +695,7 @@ class UserSeeder extends Seeder
         $leadUser = User::factory()->create([
             'name' => 'Lead',
             'last_name' => 'User',
-            'email' => 'lead@vgeneralcontractors.com',
+            'email' => 'lead@aquashieldrestorationusa.com',
             'username' => 'lead01',
             'password' => bcrypt('lead01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -708,7 +708,7 @@ class UserSeeder extends Seeder
         $employeesUser = User::factory()->create([
             'name' => 'Employee',
             'last_name' => 'User',
-            'email' => 'employees@vgeneralcontractors.com',
+            'email' => 'employees@aquashieldrestorationusa.com',
             'username' => 'employees01',
             'password' => bcrypt('employees01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -721,7 +721,7 @@ class UserSeeder extends Seeder
         $clientUser = User::factory()->create([
             'name' => 'Client',
             'last_name' => 'User',
-            'email' => 'client@vgeneralcontractors.com',
+            'email' => 'client@aquashieldrestorationusa.com',
             'username' => 'client01',
             'password' => bcrypt('client01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -734,7 +734,7 @@ class UserSeeder extends Seeder
         $contactUser = User::factory()->create([
             'name' => 'Contact',
             'last_name' => 'User',
-            'email' => 'contact@vgeneralcontractors.com',
+            'email' => 'contact@aquashieldrestorationusa.com',
             'username' => 'contact01',
             'password' => bcrypt('contact01='),
             'uuid' => Uuid::uuid4()->toString(),
@@ -747,7 +747,7 @@ class UserSeeder extends Seeder
         $spectatorUser = User::factory()->create([
             'name' => 'Spectator',
             'last_name' => 'User',
-            'email' => 'spectator@vgeneralcontractors.com',
+            'email' => 'spectator@aquashieldrestorationusa.com',
             'username' => 'spectator01',
             'password' => bcrypt('spectator01='),
             'uuid' => Uuid::uuid4()->toString(),

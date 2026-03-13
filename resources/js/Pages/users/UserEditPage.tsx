@@ -1,5 +1,12 @@
 import * as React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
+import { formatUsPhoneInput } from '@/common/helpers/phone';
+import { containsDigits, sanitizePersonNameInput } from '@/common/helpers/personName';
+import {
+  getUserAvailabilityErrorMessage,
+  shouldCheckUserFieldAvailability,
+  useUserFieldAvailability,
+} from '@/modules/users/hooks/useUserFieldAvailability';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
 import type { UpdateUserPayload, UserDetail } from '@/types/users';
@@ -63,6 +70,12 @@ interface UserEditPageProps {
   user: UserDetail;
 }
 
+function getNameFieldError(field: 'name' | 'last_name'): string {
+  return field === 'name'
+    ? 'The first name field must not contain numbers.'
+    : 'The last name field must not contain numbers.';
+}
+
 // ══════════════════════════════════════════════════════════════
 // UserEditPage
 // ══════════════════════════════════════════════════════════════
@@ -73,7 +86,7 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
     email: user.email ?? '',
     last_name: user.last_name ?? '',
     username: user.username ?? '',
-    phone: user.phone ?? '',
+    phone: formatUsPhoneInput(user.phone ?? ''),
     address: user.address ?? '',
     city: user.city ?? '',
     state: user.state ?? '',
@@ -81,18 +94,106 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
     zip_code: user.zip_code ?? '',
   });
   const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const [availabilityErrors, setAvailabilityErrors] = React.useState<Record<string, string>>({});
+  const emailAvailability = useUserFieldAvailability({ field: 'email', value: form.email ?? '', scope: 'admin', ignoreUuid: user.uuid });
+  const usernameAvailability = useUserFieldAvailability({ field: 'username', value: form.username ?? '', scope: 'admin', ignoreUuid: user.uuid });
+  const phoneAvailability = useUserFieldAvailability({ field: 'phone', value: form.phone ?? '', scope: 'admin', ignoreUuid: user.uuid });
+
+  React.useEffect(() => {
+    const emailValue = form.email ?? '';
+
+    if (!shouldCheckUserFieldAvailability('email', emailValue) || emailAvailability.isFetching) {
+      setAvailabilityErrors((prev) => ({ ...prev, email: '' }));
+      return;
+    }
+
+    setAvailabilityErrors((prev) => ({
+      ...prev,
+      email: emailAvailability.data?.available === false ? getUserAvailabilityErrorMessage('email') : '',
+    }));
+  }, [emailAvailability.data?.available, emailAvailability.isFetching, form.email]);
+
+  React.useEffect(() => {
+    const usernameValue = form.username ?? '';
+
+    if (!shouldCheckUserFieldAvailability('username', usernameValue) || usernameAvailability.isFetching) {
+      setAvailabilityErrors((prev) => ({ ...prev, username: '' }));
+      return;
+    }
+
+    setAvailabilityErrors((prev) => ({
+      ...prev,
+      username: usernameAvailability.data?.available === false ? getUserAvailabilityErrorMessage('username') : '',
+    }));
+  }, [form.username, usernameAvailability.data?.available, usernameAvailability.isFetching]);
+
+  React.useEffect(() => {
+    const phoneValue = form.phone ?? '';
+
+    if (!shouldCheckUserFieldAvailability('phone', phoneValue) || phoneAvailability.isFetching) {
+      setAvailabilityErrors((prev) => ({ ...prev, phone: '' }));
+      return;
+    }
+
+    setAvailabilityErrors((prev) => ({
+      ...prev,
+      phone: phoneAvailability.data?.available === false ? getUserAvailabilityErrorMessage('phone') : '',
+    }));
+  }, [form.phone, phoneAvailability.data?.available, phoneAvailability.isFetching]);
+
+  function getFieldError(field: keyof UpdateUserPayload): string | undefined {
+    const directError = errors[field];
+
+    if (typeof directError === 'string' && directError.length > 0) {
+      return directError;
+    }
+
+    const availabilityError = availabilityErrors[field];
+
+    return typeof availabilityError === 'string' && availabilityError.length > 0 ? availabilityError : undefined;
+  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+    const isPersonNameField = name === 'name' || name === 'last_name';
+    const nextValue = name === 'phone'
+      ? formatUsPhoneInput(value)
+      : isPersonNameField
+        ? sanitizePersonNameInput(value)
+        : value;
+
+    setForm((prev) => ({ ...prev, [name]: nextValue }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: isPersonNameField && containsDigits(value)
+        ? getNameFieldError(name)
+        : '',
+    }));
   }
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
-    if (form.name !== undefined && !form.name.trim()) errs.name = 'Name is required';
-    if (form.email !== undefined && form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      errs.email = 'Invalid email format';
+
+    if (form.name !== undefined && !form.name.trim()) {
+      errs.name = 'First name is required.';
+    }
+
+    if (form.email !== undefined && form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      errs.email = 'Invalid email format.';
+    }
+
+    if (availabilityErrors.email) {
+      errs.email = availabilityErrors.email;
+    }
+
+    if (availabilityErrors.username) {
+      errs.username = availabilityErrors.username;
+    }
+
+    if (availabilityErrors.phone) {
+      errs.phone = availabilityErrors.phone;
+    }
+
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -103,7 +204,9 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
 
     updateUser.mutate({ uuid: user.uuid, payload: form }, {
       onSuccess: () => {
-        router.visit(`/users/${user.uuid}`);
+        window.setTimeout(() => {
+          router.visit(`/users/${user.uuid}`);
+        }, 180);
       },
       onError: (err: unknown) => {
         const response = (err as { response?: { data?: { errors?: Record<string, string[]> } } }).response;
@@ -159,11 +262,11 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
               Personal Information
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="First Name" name="name" value={form.name ?? ''} onChange={handleChange} required error={errors.name} />
-              <Field label="Last Name" name="last_name" value={form.last_name ?? ''} onChange={handleChange} />
-              <Field label="Email" name="email" value={form.email ?? ''} onChange={handleChange} type="email" error={errors.email} />
-              <Field label="Username" name="username" value={form.username ?? ''} onChange={handleChange} />
-              <Field label="Phone" name="phone" value={form.phone ?? ''} onChange={handleChange} />
+              <Field label="First Name" name="name" value={form.name ?? ''} onChange={handleChange} required error={getFieldError('name')} />
+              <Field label="Last Name" name="last_name" value={form.last_name ?? ''} onChange={handleChange} error={getFieldError('last_name')} />
+              <Field label="Email" name="email" value={form.email ?? ''} onChange={handleChange} type="email" error={getFieldError('email')} />
+              <Field label="Username" name="username" value={form.username ?? ''} onChange={handleChange} error={getFieldError('username')} />
+              <Field label="Phone" name="phone" value={form.phone ?? ''} onChange={handleChange} error={getFieldError('phone')} />
             </div>
 
             <h2 className="mb-4 mt-8 text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
@@ -181,7 +284,7 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
           </div>
 
           {/* ── Actions ── */}
-          <div className="mt-4 flex justify-end gap-3">
+          <div className="mt-8 flex justify-end gap-3">
             <Link
               href={`/users/${user.uuid}`}
               className="btn-ghost rounded-lg px-4 py-2.5 text-sm font-medium transition-all"
