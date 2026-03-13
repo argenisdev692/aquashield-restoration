@@ -11,7 +11,7 @@ import { UserAddressFields } from '@/modules/users/components/UserAddressFields'
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
 import { PremiumField } from '@/shadcn/PremiumField';
-import type { CreateUserPayload } from '@/types/users';
+import type { CreateUserPayload } from '@/modules/users/types';
 import { ArrowLeft, Save } from 'lucide-react';
 
 interface UserCreatePageProps {
@@ -212,13 +212,14 @@ export default function UserCreatePage({ roles }: UserCreatePageProps): React.JS
   return (
     <AppLayout>
       <Head title="Create Platform User" />
-      <form onSubmit={(e) => void handleSubmit(e)} className="max-w-4xl mx-auto flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <form onSubmit={(e) => void handleSubmit(e)} className="max-w-4xl mx-auto flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
         
         {/* ── Header ── */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/users"
+              prefetch
               aria-label="Back to users"
               className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--bg-card) border border-(--border-default) text-(--text-muted) hover:bg-(--bg-hover) hover:text-(--accent-primary) transition-all shadow-sm"
             >

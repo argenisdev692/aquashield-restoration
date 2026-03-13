@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\UpdatesUserPasswords;
+use Modules\Users\Application\Support\UserCacheKeys;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel as User;
 
 class UpdateUserPassword implements UpdatesUserPasswords
@@ -35,6 +36,6 @@ class UpdateUserPassword implements UpdatesUserPasswords
             'password' => Hash::make($input['password']),
         ])->save();
 
-        Cache::forget("user_{$user->uuid}");
+        Cache::forget(UserCacheKeys::user($user->uuid));
     }
 }

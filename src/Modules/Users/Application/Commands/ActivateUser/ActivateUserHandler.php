@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace Modules\Users\Application\Commands\ActivateUser;
 
-use Illuminate\Support\Facades\Cache;
+use Modules\Users\Application\Support\UserCacheKeys;
 use Modules\Users\Domain\Events\UserActivated;
 use Modules\Users\Domain\Exceptions\UserNotFoundException;
+use Modules\Users\Domain\Ports\UserAuditPort;
+use Modules\Users\Domain\Ports\UserCachePort;
 use Modules\Users\Domain\Ports\UserRepositoryPort;
 use Modules\Users\Domain\Services\UserStatusManager;
 use Shared\Domain\Events\DomainEventPublisher;
-use Shared\Infrastructure\Audit\AuditInterface;
 
 final readonly class ActivateUserHandler
 {
     public function __construct(
         private UserRepositoryPort $userRepository,
         private UserStatusManager $statusManager,
-        private AuditInterface $audit,
+        private UserAuditPort $audit,
+        private UserCachePort $cache,
     ) {
     }
 
@@ -38,12 +40,8 @@ final readonly class ActivateUserHandler
             )
         );
 
-        Cache::forget("user_{$command->uuid}");
-
-        try {
-            Cache::tags(['users_list'])->flush();
-        } catch (\Exception) {
-        }
+        $this->cache->forget(UserCacheKeys::user($command->uuid));
+        $this->cache->flushTag(UserCacheKeys::LIST_TAG);
 
         $this->audit->log(
             logName: 'users.activated',

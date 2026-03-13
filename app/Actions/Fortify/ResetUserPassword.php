@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\ResetsUserPasswords;
+use Illuminate\Support\Facades\Cache;
+use Modules\Users\Application\Support\UserCacheKeys;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel as User;
 
 class ResetUserPassword implements ResetsUserPasswords
@@ -30,5 +32,7 @@ class ResetUserPassword implements ResetsUserPasswords
         $user->forceFill([
             'password' => Hash::make($input['password']),
         ])->save();
+
+        Cache::forget(UserCacheKeys::user($user->uuid));
     }
 }

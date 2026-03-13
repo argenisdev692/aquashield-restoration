@@ -2,11 +2,13 @@ import * as React from 'react';
 import { Link, Head, useRemember } from '@inertiajs/react';
 import { type RowSelectionState } from '@tanstack/react-table';
 import AppLayout from '@/pages/layouts/AppLayout';
+import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { useCompanies } from '@/modules/company-data/hooks/useCompanies';
 import { useCompanyDataMutations } from '@/modules/company-data/hooks/useCompanyDataMutations';
 import CompanyDataTable from './components/CompanyDataTable';
 import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
+import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
 import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import { ExportButton } from '@/common/export/ExportButton';
 import type { CompanyDataFilters } from '@/types/api';
@@ -28,10 +30,11 @@ const IconChevRight = () => <svg {...ic} width={14} height={14}><polyline points
 // CompanyDataIndexPage
 // ══════════════════════════════════════════════════════════════
 export default function CompanyDataIndexPage(): React.JSX.Element {
-  const [filters, setFilters] = useRemember<CompanyDataFilters>({ page: 1, perPage: 15 }, 'company-filters');
+  const [filters, setFilters] = useRemember<CompanyDataFilters>({ page: 1, per_page: 15 }, 'company-filters');
   const [search, setSearch] = React.useState<string>(filters.search || '');
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const [pendingDelete, setPendingDelete] = React.useState<{ uuid: string; name: string } | null>(null);
+  const [pendingRestore, setPendingRestore] = React.useState<{ uuid: string; name: string } | null>(null);
   
   const [isPendingExport, startExportTransition] = React.useTransition();
   const [, startSearchTransition] = React.useTransition();
@@ -41,8 +44,8 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
     startExportTransition(() => {
       const params = new URLSearchParams();
       if (filters.search) params.append('search', filters.search);
-      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
-      if (filters.dateTo) params.append('dateTo', filters.dateTo);
+      if (filters.date_from) params.append('date_from', filters.date_from);
+      if (filters.date_to) params.append('date_to', filters.date_to);
       params.append('format', format);
 
       window.open(`/company-data/data/admin/export?${params.toString()}`, '_blank');
@@ -95,6 +98,18 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
     });
   }
 
+  function handleSingleRestore(uuid: string): void {
+    const company = companyList.find((item) => item.uuid === uuid);
+    setPendingRestore({ uuid, name: company?.company_name ?? uuid });
+  }
+
+  function handleConfirmSingleRestore(): void {
+    if (!pendingRestore) return;
+    restoreCompanyData.mutate(pendingRestore.uuid, {
+      onSuccess: () => setPendingRestore(null),
+    });
+  }
+
   // ── Pagination ──
   function goToPage(page: number): void {
     setFilters((prev) => ({ ...prev, page }));
@@ -109,7 +124,8 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1
-              className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100"
+              className="text-2xl font-bold tracking-tight"
+              style={{ color: 'var(--text-primary)' }}
             >
               Company Profiles
             </h1>
@@ -117,12 +133,14 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
               Manage corporate entries — {meta.total} total
             </p>
           </div>
-          <Link
-            href="/company-data/create"
-            className="btn-modern btn-modern-primary px-4 py-2"
-          >
-            <IconPlus /> New Company
-          </Link>
+          <PermissionGuard permissions={['CREATE_COMPANY_DATA']}>
+            <Link
+              href="/company-data/create"
+              className="btn-modern btn-modern-primary px-4 py-2"
+            >
+              <IconPlus /> New Company
+            </Link>
+          </PermissionGuard>
         </div>
 
         {/* ── Search bar ── */}
@@ -134,7 +152,7 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
           }}
         >
           <div className="flex flex-1 items-center gap-3 w-full">
-            <span style={{ color: 'var(--text-disabled)' }}><IconSearch /></span>
+            <span style={{ color: 'var(--text-secondary)' }}><IconSearch /></span>
             <input
               type="text"
               value={search}
@@ -152,17 +170,26 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
             <div className="h-8 w-px hidden sm:block" style={{ background: 'var(--border-subtle)' }} />
             
             <DataTableDateRangeFilter
-              dateFrom={filters.dateFrom}
-              dateTo={filters.dateTo}
-              onChange={(range: { dateFrom?: string; dateTo?: string }) => setFilters(p => ({ ...p, ...range, page: 1 }))}
+              dateFrom={filters.date_from}
+              dateTo={filters.date_to}
+              onChange={(range: { dateFrom?: string; dateTo?: string }) =>
+                setFilters((p) => ({
+                  ...p,
+                  date_from: range.dateFrom,
+                  date_to: range.dateTo,
+                  page: 1,
+                }))
+              }
             />
 
             <div className="h-8 w-px hidden sm:block" style={{ background: 'var(--border-subtle)' }} />
 
-            <ExportButton 
-              onExport={handleExport} 
-              isExporting={isPendingExport} 
-            />
+            <PermissionGuard permissions={['VIEW_COMPANY_DATA']}>
+              <ExportButton
+                onExport={handleExport}
+                isExporting={isPendingExport}
+              />
+            </PermissionGuard>
           </div>
         </div>
 
@@ -182,6 +209,7 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
             isLoading={isPending}
             isError={isError}
             onDelete={handleDeleteClick}
+            onRestore={handleSingleRestore}
             rowSelection={rowSelection}
             onRowSelectionChange={setRowSelection}
           />
@@ -192,7 +220,7 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
               className="flex items-center justify-between px-4 py-3"
               style={{ borderTop: '1px solid var(--border-subtle)' }}
             >
-              <p className="text-xs" style={{ color: 'var(--text-disabled)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                 Page {meta.currentPage} of {meta.lastPage} ({meta.total} entries)
               </p>
               <div className="flex items-center gap-1">
@@ -224,6 +252,14 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
         onConfirm={handleConfirmSingleDelete}
         onCancel={() => setPendingDelete(null)}
         isDeleting={deleteCompanyData.isPending}
+      />
+      <RestoreConfirmModal
+        isOpen={pendingRestore !== null}
+        entityLabel="company"
+        entityName={pendingRestore?.name ?? ''}
+        onConfirm={handleConfirmSingleRestore}
+        onCancel={() => setPendingRestore(null)}
+        isPending={restoreCompanyData.isPending}
       />
       </AppLayout>
     </>

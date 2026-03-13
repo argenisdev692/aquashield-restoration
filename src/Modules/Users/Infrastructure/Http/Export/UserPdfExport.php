@@ -40,7 +40,7 @@ final class UserPdfExport
                 fn($q) => $q->inDateRange($this->filters->dateFrom, $this->filters->dateTo)
             )
             ->orderBy($this->filters->sortBy ?? 'created_at', $this->filters->sortDir ?? 'desc')
-            ->get();
+            ->cursor();
 
         $pdf = Pdf::loadView('exports.pdf.users', [
             'title' => 'Users Report',

@@ -6,11 +6,14 @@ use Mockery\MockInterface;
 use Modules\Users\Application\Commands\CreateUser\CreateUserCommand;
 use Modules\Users\Application\Commands\CreateUser\CreateUserHandler;
 use Modules\Users\Application\DTOs\CreateUserDTO;
+use Modules\Users\Application\Support\UserCacheKeys;
 use Modules\Users\Domain\Entities\User;
 use Modules\Users\Domain\Enums\UserStatus;
+use Modules\Users\Domain\Ports\UserAuditPort;
+use Modules\Users\Domain\Ports\UserCachePort;
+use Modules\Users\Domain\Ports\UserPhoneNormalizerPort;
 use Modules\Users\Domain\Ports\UserRepositoryPort;
 use Modules\Users\Domain\ValueObjects\UserId;
-use Shared\Infrastructure\Audit\AuditInterface;
 use Tests\TestCase;
 
 uses(TestCase::class);
@@ -44,13 +47,26 @@ it('creates a user and records the audit entry', function (): void {
         }))
         ->andReturn($expectedUser);
 
-    /** @var AuditInterface&MockInterface $audit */
-    $audit = Mockery::mock(AuditInterface::class);
+    /** @var UserAuditPort&MockInterface $audit */
+    $audit = Mockery::mock(UserAuditPort::class);
     $audit->shouldReceive('log')
         ->once()
         ->with('users.created', 'user.created', Mockery::type('array'));
 
-    $handler = new CreateUserHandler($repository, $audit);
+    /** @var UserCachePort&MockInterface $cache */
+    $cache = Mockery::mock(UserCachePort::class);
+    $cache->shouldReceive('flushTag')
+        ->once()
+        ->with(UserCacheKeys::LIST_TAG);
+
+    /** @var UserPhoneNormalizerPort&MockInterface $phoneNormalizer */
+    $phoneNormalizer = Mockery::mock(UserPhoneNormalizerPort::class);
+    $phoneNormalizer->shouldReceive('normalize')
+        ->once()
+        ->with(null)
+        ->andReturn(null);
+
+    $handler = new CreateUserHandler($repository, $audit, $cache, $phoneNormalizer);
 
     $user = $handler->handle(new CreateUserCommand($dto));
 

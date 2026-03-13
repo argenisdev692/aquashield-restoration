@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { UserDetail } from '@/types/users';
+import type { UserDetail } from '@/modules/users/types';
 
 /**
  * useUser — Fetches a single user by UUID.

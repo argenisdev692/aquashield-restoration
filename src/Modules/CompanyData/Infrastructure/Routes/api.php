@@ -40,7 +40,7 @@ Route::prefix('admin')->group(function (): void {
     Route::patch('/{uuid}/restore', [CompanyDataController::class, 'restore'])
         ->name('api.admin.company_data.restore')
         ->whereUuid('uuid')
-        ->middleware('permission:DELETE_COMPANY_DATA');
+        ->middleware('permission:RESTORE_COMPANY_DATA');
 });
 
 // For current user profile data

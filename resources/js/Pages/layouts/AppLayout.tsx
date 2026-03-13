@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import type { AuthPageProps } from '@/types/auth';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
+import { queryClient } from '@/lib/queryClient';
 
 // ══════════════════════════════════════════════════════════════════
 // Theme Hook
@@ -318,6 +319,7 @@ function AvatarDropdown(): React.JSX.Element {
           {/* Company Identity → /profile (includes company data) */}
           <Link
             href="/profile"
+            prefetch
             onClick={() => setOpen(false)}
             className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
             style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}
@@ -331,6 +333,7 @@ function AvatarDropdown(): React.JSX.Element {
           {/* Settings → /profile */}
           <Link
             href="/profile"
+            prefetch
             onClick={() => setOpen(false)}
             className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
             style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}
@@ -346,7 +349,12 @@ function AvatarDropdown(): React.JSX.Element {
 
           {/* Logout */}
           <button
-            onClick={() => router.post('/logout')}
+            onClick={() => router.post('/logout', {}, {
+              onSuccess: () => {
+                queryClient.clear();
+                router.visit('/login');
+              },
+            })}
             className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
             style={{ color: 'var(--accent-error)', fontFamily: 'var(--font-sans)' }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--accent-error) 10%, transparent)'; }}
@@ -583,6 +591,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
                         <Link
                           key={child.href}
                           href={child.href!}
+                          prefetch
                           onClick={onClose}
                           className="group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 transition-all duration-200"
                           style={{
@@ -657,6 +666,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
             <Link
               key={item.href}
               href={item.href!}
+              prefetch
               onClick={onClose}
               className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-300 ${active ? 'sidebar-active shadow-sm' : ''}`}
               style={{

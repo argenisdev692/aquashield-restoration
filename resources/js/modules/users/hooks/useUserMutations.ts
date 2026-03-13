@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import type { AxiosError } from 'axios';
 import { sileo } from 'sileo';
-import type { CreateUserPayload, UpdateUserPayload } from '@/types/users';
+import type { CreateUserPayload, UpdateUserPayload } from '@/modules/users/types';
 
 /**
  * useUserMutations — Provides mutations for creating, updating, and status management.

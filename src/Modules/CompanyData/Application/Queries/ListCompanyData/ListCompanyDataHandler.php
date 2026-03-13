@@ -6,12 +6,14 @@ namespace Modules\CompanyData\Application\Queries\ListCompanyData;
 
 use Modules\CompanyData\Application\Queries\ReadModels\CompanyDataReadModel;
 use Modules\CompanyData\Domain\Ports\CompanyDataRepositoryPort;
+use Modules\CompanyData\Domain\Ports\CompanySignatureStoragePort;
 use Illuminate\Support\Facades\Cache;
 
 final readonly class ListCompanyDataHandler
 {
     public function __construct(
         private CompanyDataRepositoryPort $repository,
+        private CompanySignatureStoragePort $signatureStorage,
     ) {
     }
 
@@ -65,7 +67,7 @@ final readonly class ListCompanyDataHandler
                     latitude: $coordinates['latitude'],
                     longitude: $coordinates['longitude'],
                     status: $companyData->status->value,
-                    signatureUrl: $companyData->signaturePath,
+                    signatureUrl: $this->signatureStorage->url($companyData->signaturePath),
                     createdAt: $companyData->createdAt ?? '',
                     updatedAt: $companyData->updatedAt ?? '',
                     deletedAt: $companyData->deletedAt,

@@ -13,7 +13,6 @@ use Modules\Users\Domain\Ports\StoragePort;
  */
 final class AvatarStorageAdapter implements StoragePort
 {
-    private const AVATARS_DISK = 'public';
     private const AVATARS_DIR = 'avatars';
 
     public function upload(mixed $file): string
@@ -22,10 +21,10 @@ final class AvatarStorageAdapter implements StoragePort
             throw new \InvalidArgumentException('Avatar upload requires an uploaded file instance.');
         }
 
-        $path = $file->store(self::AVATARS_DIR, self::AVATARS_DISK);
+        $path = $file->store(self::AVATARS_DIR, $this->diskName());
 
-        if (!$path) {
-            throw new \RuntimeException("Failed to upload avatar.");
+        if (! $path) {
+            throw new \RuntimeException('Failed to upload avatar.');
         }
 
         return $path;
@@ -33,16 +32,23 @@ final class AvatarStorageAdapter implements StoragePort
 
     public function delete(string $path): void
     {
-        if (Storage::disk(self::AVATARS_DISK)->exists($path)) {
-            Storage::disk(self::AVATARS_DISK)->delete($path);
+        if (Storage::disk($this->diskName())->exists($path)) {
+            Storage::disk($this->diskName())->delete($path);
         }
     }
 
     public function getUrl(string $path): string
     {
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk(self::AVATARS_DISK);
+        $disk = Storage::disk($this->diskName());
 
         return $disk->url($path);
+    }
+
+    private function diskName(): string
+    {
+        $disk = (string) config('filesystems.default', 'public');
+
+        return $disk === 'local' ? 'public' : $disk;
     }
 }

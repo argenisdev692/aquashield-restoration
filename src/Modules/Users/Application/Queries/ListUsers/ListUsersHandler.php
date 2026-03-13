@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace Modules\Users\Application\Queries\ListUsers;
 
+use Modules\Users\Application\DTOs\UserFilterDTO;
 use Modules\Users\Application\Queries\ReadModels\UserListReadModel;
+use Modules\Users\Application\Support\UserCacheKeys;
+use Modules\Users\Domain\Ports\UserCachePort;
 use Modules\Users\Domain\Ports\UserRepositoryPort;
-use Illuminate\Support\Facades\Cache;
 
 final readonly class ListUsersHandler
 {
     public function __construct(
         private UserRepositoryPort $userRepository,
+        private UserCachePort $cache,
     ) {
     }
 
@@ -21,26 +24,21 @@ final readonly class ListUsersHandler
     public function handle(ListUsersQuery $query): array
     {
         $filters = $query->filters;
-        $cacheKey = "users_list_" . md5(serialize($filters->toArray()));
+        $cacheKey = UserCacheKeys::list($filters->toArray());
         $ttl = 60 * 15; // 15 minutes
 
-        try {
-            // Try to use cache tags (requires Redis/Memcached)
-            return Cache::tags(['users_list'])->remember($cacheKey, $ttl, function () use ($filters) {
-                return $this->fetchAndMapUsers($filters);
-            });
-        } catch (\Exception $e) {
-            // Fallback to regular cache if tags not supported
-            return Cache::remember($cacheKey, $ttl, function () use ($filters) {
-                return $this->fetchAndMapUsers($filters);
-            });
-        }
+        return $this->cache->rememberTagged(
+            UserCacheKeys::LIST_TAG,
+            $cacheKey,
+            $ttl,
+            fn(): array => $this->fetchAndMapUsers($filters),
+        );
     }
 
     /**
      * @return array{data: list<UserListReadModel>, total: int, perPage: int, currentPage: int, lastPage: int}
      */
-    private function fetchAndMapUsers($filters): array
+    private function fetchAndMapUsers(UserFilterDTO $filters): array
     {
         $result = $this->userRepository->findAllPaginated(
             filters: $filters->toArray(),

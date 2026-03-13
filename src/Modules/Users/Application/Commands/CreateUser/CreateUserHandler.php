@@ -4,29 +4,32 @@ declare(strict_types=1);
 
 namespace Modules\Users\Application\Commands\CreateUser;
 
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
+use Modules\Users\Application\Support\UserCacheKeys;
 use Modules\Users\Domain\Entities\User;
 use Modules\Users\Domain\Enums\UserStatus;
 use Modules\Users\Domain\Events\UserCreatedByAdmin;
+use Modules\Users\Domain\Ports\UserAuditPort;
+use Modules\Users\Domain\Ports\UserCachePort;
+use Modules\Users\Domain\Ports\UserPhoneNormalizerPort;
 use Modules\Users\Domain\Ports\UserRepositoryPort;
+use Ramsey\Uuid\Uuid;
 use Shared\Domain\Events\DomainEventPublisher;
-use Shared\Infrastructure\Audit\AuditInterface;
-use Shared\Infrastructure\Utils\PhoneHelper;
 
 final readonly class CreateUserHandler
 {
     public function __construct(
         private UserRepositoryPort $userRepository,
-        private AuditInterface $audit,
+        private UserAuditPort $audit,
+        private UserCachePort $cache,
+        private UserPhoneNormalizerPort $phoneNormalizer,
     ) {
     }
 
     public function handle(CreateUserCommand $command): User
     {
         $dto = $command->dto;
-        $uuid = Str::uuid()->toString();
-        $setupToken = Str::random(60);
+        $uuid = Uuid::uuid7()->toString();
+        $setupToken = bin2hex(random_bytes(30));
 
         $user = $this->userRepository->create([
             'uuid' => $uuid,
@@ -34,7 +37,7 @@ final readonly class CreateUserHandler
             'last_name' => $dto->lastName,
             'email' => $dto->email,
             'username' => $dto->username,
-            'phone' => PhoneHelper::normalizeUs($dto->phone),
+            'phone' => $this->phoneNormalizer->normalize($dto->phone),
             'address' => $dto->address,
             'address_2' => $dto->address2,
             'city' => $dto->city,
@@ -57,10 +60,7 @@ final readonly class CreateUserHandler
             )
         );
 
-        try {
-            Cache::tags(['users_list'])->flush();
-        } catch (\Exception) {
-        }
+        $this->cache->flushTag(UserCacheKeys::LIST_TAG);
 
         $this->audit->log(
             logName: 'users.created',

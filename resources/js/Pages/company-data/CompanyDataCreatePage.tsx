@@ -1,8 +1,10 @@
 import * as React from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useCompanyDataMutations } from '@/modules/company-data/hooks/useCompanyDataMutations';
 import type { CreateCompanyDataDTO } from '@/types/api';
+import CompanySignaturePad from '@/modules/company-data/components/CompanySignaturePad';
+import type { AuthPageProps } from '@/types/auth';
 
 // ══════════════════════════════════════════════════════════════
 // Icons
@@ -20,8 +22,10 @@ const IconSave = () => <svg {...ic}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 
 // ══════════════════════════════════════════════════════════════
 export default function CompanyDataCreatePage(): React.JSX.Element {
   const { createCompanyData: createMutation } = useCompanyDataMutations();
+  const { props } = usePage<AuthPageProps>();
+  const currentUserUuid = props.auth.user?.uuid ?? '';
   const [formData, setFormData] = React.useState<CreateCompanyDataDTO>({
-    user_id: 1, // Defaulting to 1 for now, or this could come from auth context
+    user_uuid: currentUserUuid,
     company_name: '',
     name: '',
     email: '',
@@ -33,6 +37,7 @@ export default function CompanyDataCreatePage(): React.JSX.Element {
     linkedin_link: '',
     twitter_link: '',
   });
+  const [signatureDataUrl, setSignatureDataUrl] = React.useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -41,15 +46,14 @@ export default function CompanyDataCreatePage(): React.JSX.Element {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createMutation.mutate(formData, {
-      onSuccess: () => {
-        router.visit('/company-data');
+    createMutation.mutate(
+      { ...formData, signature_data_url: signatureDataUrl },
+      {
+        onSuccess: () => {
+          router.visit('/company-data');
+        },
       },
-      onError: (error) => {
-        console.error('Failed to create company data:', error);
-        alert('Failed to save company data. Please check the console.');
-      }
-    });
+    );
   };
 
   return (
@@ -68,7 +72,7 @@ export default function CompanyDataCreatePage(): React.JSX.Element {
               <IconArrowLeft />
             </Link>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+              <h1 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
                 New Company Profile
               </h1>
               <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
@@ -236,6 +240,10 @@ export default function CompanyDataCreatePage(): React.JSX.Element {
                 />
               </div>
             </div>
+
+            <hr style={{ borderColor: 'var(--border-subtle)', margin: '24px 0' }} />
+
+            <CompanySignaturePad value={signatureDataUrl} onChange={setSignatureDataUrl} disabled={createMutation.isPending} />
 
           </form>
         </div>

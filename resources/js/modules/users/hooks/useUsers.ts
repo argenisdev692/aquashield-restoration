@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { keepPreviousData } from '@tanstack/react-query';
-import type { UserFilters, UserListItem, PaginatedResponse } from '@/types/users';
+import type { UserFilters, UserListItem, PaginatedResponse } from '@/modules/users/types';
 
 /**
  * useUsers — Returns a list of users filtered by the provided filters.

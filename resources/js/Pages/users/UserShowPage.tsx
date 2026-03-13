@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
+import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import AppLayout from '@/pages/layouts/AppLayout';
 import UserStatusBadge from '@/modules/users/components/UserStatusBadge';
 import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
-import type { UserDetail } from '@/types/users';
+import type { UserDetail } from '@/modules/users/types';
 
 // ══════════════════════════════════════════════════════════════
 // Icons
@@ -83,6 +84,7 @@ export default function UserShowPage({ user }: UserShowPageProps): React.JSX.Ele
           <div className="flex items-center gap-3">
             <Link
               href="/users"
+              prefetch
               className="flex h-9 w-9 items-center justify-center rounded-lg transition-all"
               style={{
                 color: 'var(--text-muted)',
@@ -103,19 +105,24 @@ export default function UserShowPage({ user }: UserShowPageProps): React.JSX.Ele
           </div>
 
           <div className="flex gap-3">
-            <Link
-              href={`/users/${user.uuid}/edit`}
-              className="btn-modern btn-modern-primary px-4 py-2"
-            >
-              <IconEdit /> Edit
-            </Link>
-            <button
-              onClick={() => setPendingDelete(true)}
-              className="btn-modern btn-ghost px-4 py-2"
-              style={{ color: 'var(--accent-error)', borderColor: 'var(--deleted-row-border)' }}
-            >
-              <IconTrash /> Delete
-            </button>
+            <PermissionGuard permissions={['UPDATE_USERS']}>
+              <Link
+                href={`/users/${user.uuid}/edit`}
+                prefetch
+                className="btn-modern btn-modern-primary px-4 py-2"
+              >
+                <IconEdit /> Edit
+              </Link>
+            </PermissionGuard>
+            <PermissionGuard permissions={['DELETE_USERS']}>
+              <button
+                onClick={() => setPendingDelete(true)}
+                className="btn-modern btn-ghost px-4 py-2"
+                style={{ color: 'var(--accent-error)', borderColor: 'var(--deleted-row-border)' }}
+              >
+                <IconTrash /> Delete
+              </button>
+            </PermissionGuard>
           </div>
         </div>
 

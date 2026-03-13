@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Cache;
 use Modules\CompanyData\Domain\Events\CompanyDataUpdated;
 use Modules\CompanyData\Domain\Exceptions\CompanyDataNotFoundException;
 use Modules\CompanyData\Domain\Ports\CompanyDataRepositoryPort;
+use Modules\CompanyData\Domain\Ports\CompanySignatureStoragePort;
 use Modules\CompanyData\Domain\ValueObjects\CompanyDataId;
 use Modules\CompanyData\Domain\ValueObjects\Coordinates;
 use Modules\CompanyData\Domain\ValueObjects\SocialLinks;
@@ -18,6 +19,7 @@ final readonly class UpdateCompanyDataHandler
 {
     public function __construct(
         private CompanyDataRepositoryPort $repository,
+        private CompanySignatureStoragePort $signatureStorage,
         private AuditInterface $audit,
     ) {
     }
@@ -32,6 +34,19 @@ final readonly class UpdateCompanyDataHandler
         }
 
         $dto = $command->dto;
+        $signaturePath = $companyData->signaturePath;
+
+        if ($dto->removeSignature && $signaturePath !== null) {
+            $this->signatureStorage->delete($signaturePath);
+            $signaturePath = null;
+        }
+
+        if ($dto->signatureDataUrl !== null && $dto->signatureDataUrl !== '') {
+            if ($signaturePath !== null) {
+                $this->signatureStorage->delete($signaturePath);
+            }
+            $signaturePath = $this->signatureStorage->storeFromDataUrl($dto->signatureDataUrl);
+        }
 
         $updatedCompanyData = $companyData->update(
             companyName: $dto->companyName,
@@ -50,7 +65,7 @@ final readonly class UpdateCompanyDataHandler
                 latitude: $dto->latitude,
                 longitude: $dto->longitude,
             ),
-            signaturePath: $dto->signaturePath,
+            signaturePath: $signaturePath,
         );
 
         $this->repository->save($updatedCompanyData);

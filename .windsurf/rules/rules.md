@@ -50,6 +50,15 @@ trigger: always_on
 
 ---
 
+# [MUST] File editing & env handling
+
+- For file administration and edits, try filesystem MCP tools first.
+- If filesystem MCP does not work, use `write_to_file` only for brand-new files.
+- Reserve `apply_patch` only for edits to existing files.
+- For `.env` and `.env.example`, if direct modification is not possible, provide only the required environment variable keys/placeholders and continue working.
+
+---
+
 # [SHOULD] General quality
 
 - Mobile-first on every UI component.

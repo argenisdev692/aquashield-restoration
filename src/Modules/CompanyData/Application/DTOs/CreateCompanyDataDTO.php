@@ -37,7 +37,9 @@ final class CreateCompanyDataDTO extends Data
         public ?string $twitterLink = null,
         public ?float $latitude = null,
         public ?float $longitude = null,
+        public ?string $signatureDataUrl = null,
         public ?string $signaturePath = null,
+        public bool $removeSignature = false,
     ) {
     }
 }

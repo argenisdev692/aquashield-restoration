@@ -75,15 +75,18 @@ export interface UsersIndexPageProps {
 // ── Company Data ────────────────────────────────────────────────
 
 export interface CompanyDataListItem {
-  id: string; // This corresponds to the UUID
-  user_id: number;
+  uuid: string;
+  user_uuid: string;
   name: string | null;
   company_name: string;
   email: string | null;
   phone: string | null;
   address: string | null;
   website: string | null;
+  status: string;
+  signature_url: string | null;
   created_at: string; // ISO 8601
+  updated_at: string | null;
   deleted_at?: string | null;
 }
 
@@ -94,13 +97,13 @@ export interface CompanyDataDetail extends CompanyDataListItem {
   twitter_link: string | null;
   latitude: number | null;
   longitude: number | null;
-  signature_path: string | null;
+  signature_url: string | null;
   updated_at: string | null;
   deleted_at: string | null;
 }
 
 export interface CreateCompanyDataDTO {
-  user_id: number;
+  user_uuid: string;
   company_name: string;
   name?: string | null;
   email?: string | null;
@@ -113,33 +116,36 @@ export interface CreateCompanyDataDTO {
   twitter_link?: string | null;
   latitude?: number | null;
   longitude?: number | null;
-  signature_path?: string | null;
+  signature_data_url?: string | null;
+  remove_signature?: boolean;
 }
 
 export interface UpdateCompanyDataDTO {
-  companyName: string;
+  company_name: string;
   name?: string | null;
   email?: string | null;
   phone?: string | null;
   address?: string | null;
   website?: string | null;
-  facebook?: string | null;
-  instagram?: string | null;
-  linkedin?: string | null;
-  twitter?: string | null;
+  facebook_link?: string | null;
+  instagram_link?: string | null;
+  linkedin_link?: string | null;
+  twitter_link?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  signature_data_url?: string | null;
+  remove_signature?: boolean;
 }
 
 export interface CompanyDataFilters {
   page?: number;
-  perPage?: number;
+  per_page?: number;
   search?: string;
-  userId?: number;
-  dateFrom?: string;   // ISO 8601 'YYYY-MM-DD'
-  dateTo?: string;     // ISO 8601 'YYYY-MM-DD'
-  sortBy?: string;
-  sortDir?: 'asc' | 'desc';
+  user_uuid?: string;
+  date_from?: string;   // ISO 8601 'YYYY-MM-DD'
+  date_to?: string;     // ISO 8601 'YYYY-MM-DD'
+  sort_by?: string;
+  sort_dir?: 'asc' | 'desc';
 }
 
 export interface CompanyDataIndexPageProps {

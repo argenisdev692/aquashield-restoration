@@ -10,7 +10,7 @@ import {
 import { UserAddressFields } from '@/modules/users/components/UserAddressFields';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
-import type { UpdateUserPayload, UserDetail } from '@/types/users';
+import type { UpdateUserPayload, UserDetail } from '@/modules/users/types';
 
 // ══════════════════════════════════════════════════════════════
 // Icons
@@ -250,6 +250,7 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
         <div className="mb-6 flex items-center gap-3">
           <Link
             href={`/users/${user.uuid}`}
+            prefetch
             aria-label="Back to user details"
             className="flex h-9 w-9 items-center justify-center rounded-lg transition-all"
             style={{
@@ -306,6 +307,7 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
           <div className="mt-8 flex justify-end gap-3">
             <Link
               href={`/users/${user.uuid}`}
+              prefetch
               className="btn-ghost rounded-lg px-4 py-2.5 text-sm font-medium transition-all"
               style={{
                 color: 'var(--text-muted)',

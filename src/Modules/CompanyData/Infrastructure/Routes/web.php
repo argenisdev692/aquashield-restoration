@@ -69,6 +69,6 @@ Route::prefix('data')->group(function (): void {
         Route::patch('/{uuid}/restore', [CompanyDataController::class, 'restore'])
             ->name('company-data.data.restore')
             ->whereUuid('uuid')
-            ->middleware('permission:DELETE_COMPANY_DATA');
+            ->middleware('permission:RESTORE_COMPANY_DATA');
     });
 });

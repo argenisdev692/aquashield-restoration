@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Modules\Users\Application\Queries\GetUser;
 
 use Modules\Users\Application\Queries\ReadModels\UserReadModel;
+use Modules\Users\Application\Support\UserCacheKeys;
 use Modules\Users\Domain\Exceptions\UserNotFoundException;
+use Modules\Users\Domain\Ports\UserCachePort;
 use Modules\Users\Domain\Ports\UserRepositoryPort;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * GetUserHandler — Returns a UserReadModel or throws.
@@ -16,15 +17,16 @@ final readonly class GetUserHandler
 {
     public function __construct(
         private UserRepositoryPort $repository,
+        private UserCachePort $cache,
     ) {
     }
 
     public function handle(GetUserQuery $query): UserReadModel
     {
-        $cacheKey = "user_read_{$query->uuid}";
+        $cacheKey = UserCacheKeys::user($query->uuid);
         $ttl = 60 * 15;
 
-        return Cache::remember($cacheKey, $ttl, function () use ($query) {
+        return $this->cache->remember($cacheKey, $ttl, function () use ($query) {
             $user = $this->repository->findByUuid($query->uuid);
 
             if ($user === null) {

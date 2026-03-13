@@ -3,7 +3,7 @@ import { createColumnHelper, type ColumnDef, type RowSelectionState, type OnChan
 import { Link } from '@inertiajs/react';
 import { DataTable } from '@/shadcn/data-table';
 import UserStatusBadge from '@/modules/users/components/UserStatusBadge';
-import type { UserListItem } from '@/types/users';
+import type { UserListItem } from '@/modules/users/types';
 import { formatDateShort } from '@/utils/dateFormatter';
 
 import { Eye, Pencil, Trash2, CheckCircle } from 'lucide-react';

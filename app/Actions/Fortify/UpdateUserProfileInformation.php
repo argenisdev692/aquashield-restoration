@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
+use Modules\Users\Application\Support\UserCacheKeys;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel as User;
 use Shared\Infrastructure\Utils\PhoneHelper;
 
@@ -110,7 +111,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             ])->save();
         }
 
-        Cache::forget("user_{$user->uuid}");
+        Cache::forget(UserCacheKeys::user($user->uuid));
+        Cache::forget(UserCacheKeys::profile((int) $user->id));
     }
 
     /**
@@ -135,7 +137,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'email_verified_at' => null,
         ])->save();
 
-        Cache::forget("user_{$user->uuid}");
+        Cache::forget(UserCacheKeys::user($user->uuid));
+        Cache::forget(UserCacheKeys::profile((int) $user->id));
 
         $user->sendEmailVerificationNotification();
     }

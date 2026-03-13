@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Link, Head, useRemember } from '@inertiajs/react';
 import { type RowSelectionState } from '@tanstack/react-table';
+import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useUsers } from '@/modules/users/hooks/useUsers';
 import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
@@ -10,7 +11,7 @@ import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
 import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import { ExportButton } from '@/common/export/ExportButton';
-import type { UserFilters, UserListItem } from '@/types/users';
+import type { UserFilters, UserListItem } from '@/modules/users/types';
 import { Search, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 
 type OptimisticUsersAction =
@@ -204,7 +205,7 @@ export default function UsersIndexPage(): React.JSX.Element {
     <>
       <Head title="System Users" />
       <AppLayout>
-      <div className="flex flex-col gap-6 animate-in fade-in duration-500">
+      <div className="flex flex-col gap-6 animate-in fade-in duration-300">
         {/* ── Header ── */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -215,13 +216,16 @@ export default function UsersIndexPage(): React.JSX.Element {
               Oversee and manage platform accounts — <span className="text-(--accent-primary)">{meta.total} {meta.total === 1 ? 'record' : 'records'} found</span>
             </p>
           </div>
-          <Link
-            href="/users/create"
-            className="btn-modern btn-modern-primary flex items-center gap-2 px-4 py-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
-          >
-            <UserPlus size={18} />
-            <span className="font-semibold">New User</span>
-          </Link>
+          <PermissionGuard permissions={['CREATE_USERS']}>
+            <Link
+              href="/users/create"
+              prefetch
+              className="btn-modern btn-modern-primary flex items-center gap-2 px-4 py-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            >
+              <UserPlus size={18} />
+              <span className="font-semibold">New User</span>
+            </Link>
+          </PermissionGuard>
         </div>
 
         {/* ── Filters Bar ── */}
@@ -286,11 +290,13 @@ export default function UsersIndexPage(): React.JSX.Element {
 
         {/* ── Bulk Actions Bar ── */}
         {selectedActiveUuids.length > 0 && (
-            <DataTableBulkActions
-                count={selectedActiveUuids.length}
-                onDelete={handleBulkDelete}
-                isDeleting={bulkDeleteUsers.isPending}
-            />
+            <PermissionGuard permissions={['DELETE_USERS']}>
+              <DataTableBulkActions
+                  count={selectedActiveUuids.length}
+                  onDelete={handleBulkDelete}
+                  isDeleting={bulkDeleteUsers.isPending}
+              />
+            </PermissionGuard>
         )}
 
         {/* ── Table Card ── */}

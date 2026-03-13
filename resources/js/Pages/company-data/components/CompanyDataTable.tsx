@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { createColumnHelper, type ColumnDef, type RowSelectionState, type OnChangeFn } from '@tanstack/react-table';
 import { Link } from '@inertiajs/react';
+import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { DataTable } from '@/shadcn/data-table';
 import type { CompanyDataListItem } from '@/types/api';
 import { formatDateShort } from '@/utils/dateFormatter';
 
-import { Building2, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Building2, CheckCircle, Eye, Pencil, Trash2 } from 'lucide-react';
 
 // ══════════════════════════════════════════════════════════════
 // Props
@@ -15,21 +16,23 @@ interface CompanyDataTableProps {
   isLoading: boolean;
   isError: boolean;
   onDelete: (uuid: string, name: string) => void;
+  onRestore: (uuid: string) => void;
   rowSelection: RowSelectionState;
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
 }
+
+const columnHelper = createColumnHelper<CompanyDataListItem>();
 
 export default function CompanyDataTable({
   data,
   isLoading,
   isError,
   onDelete,
+  onRestore,
   rowSelection,
   onRowSelectionChange,
-}: CompanyDataTableProps) {
-  const columnHelper = createColumnHelper<CompanyDataListItem>();
-
-  const columns = React.useMemo<ColumnDef<CompanyDataListItem, any>[]>(() => [
+}: CompanyDataTableProps): React.JSX.Element {
+  const columns = React.useMemo(() => [
     columnHelper.display({
       id: 'select',
       header: ({ table }) => (
@@ -38,7 +41,7 @@ export default function CompanyDataTable({
           checked={table.getIsAllPageRowsSelected()}
           onChange={table.getToggleAllPageRowsSelectedHandler()}
           aria-label="Select all"
-          className="h-4 w-4 rounded border-gray-300 accent-(--accent-primary) cursor-pointer"
+          className="h-4 w-4 cursor-pointer rounded border-(--border-default) accent-(--accent-primary)"
         />
       ),
       cell: ({ row }) => (
@@ -47,7 +50,7 @@ export default function CompanyDataTable({
           checked={row.getIsSelected()}
           onChange={row.getToggleSelectedHandler()}
           aria-label="Select row"
-          className="h-4 w-4 rounded border-gray-300 accent-(--accent-primary) cursor-pointer"
+          className="h-4 w-4 cursor-pointer rounded border-(--border-default) accent-(--accent-primary)"
         />
       ),
     }),
@@ -67,7 +70,7 @@ export default function CompanyDataTable({
               <Building2 size={16} />
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+              <p className="truncate text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                 {company.company_name}
               </p>
               {company.name && (
@@ -101,39 +104,63 @@ export default function CompanyDataTable({
       header: 'Actions',
       cell: (info) => {
         const company = info.row.original;
+        const isDeleted = Boolean(company.deleted_at);
+
         return (
           <div className="flex items-center justify-center gap-2">
-            <Link
-              href={`/company-data/${company.id}`}
-              className="btn-action btn-action-view"
-              title="View"
-            >
-              <Eye size={14} />
-            </Link>
-            <Link
-              href={`/company-data/${company.id}/edit`}
-              className="btn-action btn-action-edit"
-              title="Edit"
-            >
-              <Pencil size={14} />
-            </Link>
-            <button
-              onClick={() => onDelete(company.id, company.company_name)}
-              className="btn-action btn-action-delete"
-              title="Delete"
-            >
-              <Trash2 size={14} />
-            </button>
+            <PermissionGuard permissions={['VIEW_COMPANY_DATA']}>
+              <Link
+                href={`/company-data/${company.uuid}`}
+                className="btn-action btn-action-view"
+                title="View"
+              >
+                <Eye size={14} />
+              </Link>
+            </PermissionGuard>
+
+            {!isDeleted ? (
+              <>
+                <PermissionGuard permissions={['UPDATE_COMPANY_DATA']}>
+                  <Link
+                    href={`/company-data/${company.uuid}/edit`}
+                    className="btn-action btn-action-edit"
+                    title="Edit"
+                  >
+                    <Pencil size={14} />
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard permissions={['DELETE_COMPANY_DATA']}>
+                  <button
+                    onClick={() => onDelete(company.uuid, company.company_name)}
+                    className="btn-action btn-action-delete"
+                    title="Delete"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </PermissionGuard>
+              </>
+            ) : (
+              <PermissionGuard permissions={['RESTORE_COMPANY_DATA']}>
+                <button
+                  onClick={() => onRestore(company.uuid)}
+                  className="btn-action btn-action-restore"
+                  title="Restore"
+                >
+                  <CheckCircle size={14} />
+                </button>
+              </PermissionGuard>
+            )}
           </div>
         );
       },
     }),
-  ], [columnHelper, onDelete]);
+  ], [onDelete, onRestore]);
 
   return (
     <DataTable
-      columns={columns}
+      columns={columns as ColumnDef<CompanyDataListItem, unknown>[]}
       data={data}
+      getRowId={(row) => row.uuid}
       isLoading={isLoading}
       isError={isError}
       noDataMessage="No companies found"

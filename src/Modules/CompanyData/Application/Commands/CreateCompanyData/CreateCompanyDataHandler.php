@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Modules\CompanyData\Domain\Entities\CompanyData;
 use Modules\CompanyData\Domain\Enums\CompanyStatus;
 use Modules\CompanyData\Domain\Ports\CompanyDataRepositoryPort;
+use Modules\CompanyData\Domain\Ports\CompanySignatureStoragePort;
 use Modules\CompanyData\Domain\ValueObjects\CompanyDataId;
 use Modules\CompanyData\Domain\ValueObjects\Coordinates;
 use Modules\CompanyData\Domain\ValueObjects\SocialLinks;
@@ -23,6 +24,7 @@ final readonly class CreateCompanyDataHandler
 {
     public function __construct(
         private CompanyDataRepositoryPort $repository,
+        private CompanySignatureStoragePort $signatureStorage,
         private AuditInterface $audit,
     ) {
     }
@@ -37,6 +39,11 @@ final readonly class CreateCompanyDataHandler
 
         $dto = $command->dto;
         $uuid = Str::uuid()->toString();
+        $signaturePath = $dto->signaturePath;
+
+        if ($dto->signatureDataUrl !== null && $dto->signatureDataUrl !== '') {
+            $signaturePath = $this->signatureStorage->storeFromDataUrl($dto->signatureDataUrl);
+        }
 
         $companyData = CompanyData::create(
             id: new CompanyDataId($uuid),
@@ -57,7 +64,7 @@ final readonly class CreateCompanyDataHandler
                 latitude: $dto->latitude,
                 longitude: $dto->longitude,
             ),
-            signaturePath: $dto->signaturePath,
+            signaturePath: $signaturePath,
             status: CompanyStatus::Active,
         );
 
