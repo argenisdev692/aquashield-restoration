@@ -26,6 +26,7 @@ final class EloquentUserRepository implements UserRepositoryPort
         'phone',
         'profile_photo_path',
         'address',
+        'address_2',
         'city',
         'state',
         'country',

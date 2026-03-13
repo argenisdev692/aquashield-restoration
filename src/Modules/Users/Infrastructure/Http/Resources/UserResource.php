@@ -52,6 +52,7 @@ final class UserResource extends JsonResource
             'phone' => data_get($this->resource, 'phone'),
             'profile_photo_path' => data_get($this->resource, 'profilePhotoPath') ?? data_get($this->resource, 'profile_photo_path'),
             'address' => data_get($this->resource, 'address'),
+            'address_2' => data_get($this->resource, 'address2') ?? data_get($this->resource, 'address_2'),
             'city' => data_get($this->resource, 'city'),
             'state' => data_get($this->resource, 'state'),
             'country' => data_get($this->resource, 'country'),

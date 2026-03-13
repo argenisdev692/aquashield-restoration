@@ -159,6 +159,7 @@ export interface AuthUser {
   phone: string | null;
   date_of_birth: string | null;
   address: string | null;
+  address_2: string | null;
   zip_code: string | null;
   city: string | null;
   state: string | null;
@@ -212,6 +213,7 @@ export interface UpdateProfileDTO {
   phone: string | null;
   date_of_birth: string | null;
   address: string | null;
+  address_2: string | null;
   zip_code: string | null;
   city: string | null;
   state: string | null;

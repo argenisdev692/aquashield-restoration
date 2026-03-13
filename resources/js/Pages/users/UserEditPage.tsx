@@ -7,6 +7,7 @@ import {
   shouldCheckUserFieldAvailability,
   useUserFieldAvailability,
 } from '@/modules/users/hooks/useUserFieldAvailability';
+import { UserAddressFields } from '@/modules/users/components/UserAddressFields';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
 import type { UpdateUserPayload, UserDetail } from '@/types/users';
@@ -88,6 +89,7 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
     username: user.username ?? '',
     phone: formatUsPhoneInput(user.phone ?? ''),
     address: user.address ?? '',
+    address_2: user.address_2 ?? '',
     city: user.city ?? '',
     state: user.state ?? '',
     country: user.country ?? '',
@@ -170,6 +172,25 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
         : '',
     }));
   }
+
+  const handleAddressAutofill = React.useCallback((value: Pick<UpdateUserPayload, 'address' | 'city' | 'state' | 'country' | 'zip_code'>): void => {
+    setForm((prev) => ({
+      ...prev,
+      address: value.address ?? '',
+      city: value.city ?? '',
+      state: value.state ?? '',
+      country: value.country ?? '',
+      zip_code: value.zip_code ?? '',
+    }));
+    setErrors((prev) => ({
+      ...prev,
+      address: '',
+      city: '',
+      state: '',
+      country: '',
+      zip_code: '',
+    }));
+  }, []);
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
@@ -272,15 +293,13 @@ export default function UserEditPage({ user }: UserEditPageProps): React.JSX.Ele
             <h2 className="mb-4 mt-8 text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
               Address
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <Field label="Address" name="address" value={form.address ?? ''} onChange={handleChange} />
-              </div>
-              <Field label="City" name="city" value={form.city ?? ''} onChange={handleChange} />
-              <Field label="State" name="state" value={form.state ?? ''} onChange={handleChange} />
-              <Field label="Country" name="country" value={form.country ?? ''} onChange={handleChange} />
-              <Field label="Zip Code" name="zip_code" value={form.zip_code ?? ''} onChange={handleChange} />
-            </div>
+            <UserAddressFields
+              form={form}
+              errors={errors}
+              onChange={handleChange}
+              onAddressAutofill={handleAddressAutofill}
+              variant="compact"
+            />
           </div>
 
           {/* ── Actions ── */}

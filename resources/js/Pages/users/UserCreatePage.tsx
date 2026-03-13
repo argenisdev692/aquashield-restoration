@@ -7,6 +7,7 @@ import {
   shouldCheckUserFieldAvailability,
   useUserFieldAvailability,
 } from '@/modules/users/hooks/useUserFieldAvailability';
+import { UserAddressFields } from '@/modules/users/components/UserAddressFields';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useUserMutations } from '@/modules/users/hooks/useUserMutations';
 import { PremiumField } from '@/shadcn/PremiumField';
@@ -39,6 +40,12 @@ export default function UserCreatePage({ roles }: UserCreatePageProps): React.JS
     email: '',
     username: '',
     phone: '',
+    address: '',
+    address_2: '',
+    city: '',
+    state: '',
+    country: '',
+    zip_code: '',
     role: availableRoles[0] ?? 'USER',
   });
   
@@ -118,6 +125,25 @@ export default function UserCreatePage({ roles }: UserCreatePageProps): React.JS
         : '',
     }));
   }
+
+  const handleAddressAutofill = React.useCallback((value: Pick<CreateUserPayload, 'address' | 'city' | 'state' | 'country' | 'zip_code'>): void => {
+    setForm((prev) => ({
+      ...prev,
+      address: value.address ?? '',
+      city: value.city ?? '',
+      state: value.state ?? '',
+      country: value.country ?? '',
+      zip_code: value.zip_code ?? '',
+    }));
+    setErrors((prev) => ({
+      ...prev,
+      address: '',
+      city: '',
+      state: '',
+      country: '',
+      zip_code: '',
+    }));
+  }, []);
 
   function validate(): boolean {
     const nextErrors: Record<string, string> = {};
@@ -277,6 +303,19 @@ export default function UserCreatePage({ roles }: UserCreatePageProps): React.JS
                             placeholder="(555) 000-0000"
                         />
                     </div>
+
+                    <div className="flex items-center gap-3 pt-2">
+                        <div className="h-8 w-1 bg-(--accent-primary) rounded-full" />
+                        <h2 className="text-lg font-bold text-(--text-primary)">Address</h2>
+                    </div>
+
+                    <UserAddressFields
+                      form={form}
+                      errors={errors}
+                      onChange={handleChange}
+                      onAddressAutofill={handleAddressAutofill}
+                      variant="premium"
+                    />
                 </div>
             </div>
 

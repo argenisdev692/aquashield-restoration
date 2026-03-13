@@ -58,6 +58,7 @@ final class CreateUserRequest extends FormRequest
                 },
             ],
             'address' => 'nullable|string|max:500',
+            'address_2' => 'nullable|string|max:500',
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:255',
             'country' => 'nullable|string|max:255',

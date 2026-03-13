@@ -36,6 +36,7 @@ final readonly class CreateUserHandler
             'username' => $dto->username,
             'phone' => PhoneHelper::normalizeUs($dto->phone),
             'address' => $dto->address,
+            'address_2' => $dto->address2,
             'city' => $dto->city,
             'state' => $dto->state,
             'country' => $dto->country,

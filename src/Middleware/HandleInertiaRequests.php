@@ -54,6 +54,7 @@ class HandleInertiaRequests extends Middleware
                     'phone' => $user->phone,
                     'date_of_birth' => $user->date_of_birth,
                     'address' => $user->address,
+                    'address_2' => $user->address_2,
                     'zip_code' => $user->zip_code,
                     'city' => $user->city,
                     'state' => $user->state,

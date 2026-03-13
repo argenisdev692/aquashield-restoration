@@ -20,6 +20,7 @@ final class UserReadModel extends Data
         public ?string $username,
         public ?string $phone,
         public ?string $address,
+        public ?string $address2,
         public ?string $city,
         public ?string $state,
         public ?string $country,

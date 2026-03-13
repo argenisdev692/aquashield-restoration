@@ -7,7 +7,7 @@ import type Echo from 'laravel-echo';
 import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import type Pusher from 'pusher-js';
 
-interface AuthUser {
+interface InertiaAuthUser {
   id: number;
   uuid: string;
   name: string;
@@ -16,6 +16,14 @@ interface AuthUser {
   email: string;
   email_verified_at: string | null;
   phone: string | null;
+  date_of_birth: string | null;
+  address: string | null;
+  address_2: string | null;
+  zip_code: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  gender: string | null;
   profile_photo_path: string | null;
   roles: string[];
   permissions: string[];
@@ -31,7 +39,7 @@ declare global {
 
 declare module '@inertiajs/core' {
   interface PageProps extends InertiaPageProps {
-    auth: { user: AuthUser | null };
+    auth: { user: InertiaAuthUser | null };
     flash: { success?: string; error?: string; warning?: string };
     ziggy: { url: string; port: number | null; routes: Record<string, unknown> };
   }

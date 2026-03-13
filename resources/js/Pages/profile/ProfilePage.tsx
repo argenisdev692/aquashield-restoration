@@ -8,6 +8,7 @@ import {
   shouldCheckUserFieldAvailability,
   useUserFieldAvailability,
 } from '@/modules/users/hooks/useUserFieldAvailability';
+import { UserAddressFields } from '@/modules/users/components/UserAddressFields';
 import type { ProfilePageProps } from '@/types/auth';
 import { sileo } from 'sileo';
 import { Globe, LockKeyhole, Smartphone, User } from 'lucide-react';
@@ -18,6 +19,12 @@ type ProfileFormState = {
   email: string;
   username: string;
   phone: string;
+  address: string;
+  address_2: string;
+  city: string;
+  state: string;
+  country: string;
+  zip_code: string;
 };
 
 type ProfileFieldProps = {
@@ -108,6 +115,12 @@ export default function ProfilePage(): React.JSX.Element {
     email: user.email,
     username: user.username || '',
     phone: formatUsPhoneInput(user.phone || ''),
+    address: user.address ?? '',
+    address_2: user.address_2 ?? '',
+    city: user.city ?? '',
+    state: user.state ?? '',
+    country: user.country ?? '',
+    zip_code: user.zip_code ?? '',
   });
 
   const passwordForm = useForm<PasswordFormState>({
@@ -180,6 +193,26 @@ export default function ProfilePage(): React.JSX.Element {
 
     profileForm.clearErrors(field);
   };
+
+  const handleProfileInputChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = event.target;
+    const field = name as keyof ProfileFormState;
+
+    profileForm.setData(field, value);
+    profileForm.clearErrors(field);
+  }, [profileForm]);
+
+  const handleProfileAddressAutofill = React.useCallback((value: Pick<Partial<ProfileFormState>, 'address' | 'city' | 'state' | 'country' | 'zip_code'>): void => {
+    profileForm.setData((previous) => ({
+      ...previous,
+      address: value.address ?? '',
+      city: value.city ?? '',
+      state: value.state ?? '',
+      country: value.country ?? '',
+      zip_code: value.zip_code ?? '',
+    }));
+    profileForm.clearErrors('address', 'city', 'state', 'country', 'zip_code');
+  }, [profileForm]);
 
   const handleProfileSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
@@ -347,6 +380,20 @@ export default function ProfilePage(): React.JSX.Element {
                   error={getProfileFieldError('phone')}
                   disabled={profileForm.processing}
                 />
+                <div className="sm:col-span-2 pt-2">
+                  <h3 className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>
+                    Address
+                  </h3>
+                </div>
+                <div className="sm:col-span-2">
+                  <UserAddressFields
+                    form={profileForm.data}
+                    errors={profileForm.errors}
+                    onChange={handleProfileInputChange}
+                    onAddressAutofill={handleProfileAddressAutofill}
+                    variant="premium"
+                  />
+                </div>
               </div>
 
               <div className="pt-4 flex justify-end relative z-10">

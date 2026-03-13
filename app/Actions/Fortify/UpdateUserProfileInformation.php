@@ -68,6 +68,12 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                     }
                 },
             ],
+            'address' => ['nullable', 'string', 'max:500'],
+            'address_2' => ['nullable', 'string', 'max:500'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'state' => ['nullable', 'string', 'max:255'],
+            'country' => ['nullable', 'string', 'max:255'],
+            'zip_code' => ['nullable', 'string', 'max:20'],
 
             'email' => [
                 'required',
@@ -95,6 +101,12 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'username' => $input['username'] ?? null,
                 'email' => $input['email'],
                 'phone' => $normalizedPhone,
+                'address' => $input['address'] ?? null,
+                'address_2' => $input['address_2'] ?? null,
+                'city' => $input['city'] ?? null,
+                'state' => $input['state'] ?? null,
+                'country' => $input['country'] ?? null,
+                'zip_code' => $input['zip_code'] ?? null,
             ])->save();
         }
 
@@ -114,6 +126,12 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'username' => $input['username'] ?? null,
             'email' => $input['email'],
             'phone' => $input['phone'],
+            'address' => $input['address'] ?? null,
+            'address_2' => $input['address_2'] ?? null,
+            'city' => $input['city'] ?? null,
+            'state' => $input['state'] ?? null,
+            'country' => $input['country'] ?? null,
+            'zip_code' => $input['zip_code'] ?? null,
             'email_verified_at' => null,
         ])->save();
 

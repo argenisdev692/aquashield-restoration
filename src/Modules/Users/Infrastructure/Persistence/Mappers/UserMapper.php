@@ -30,6 +30,7 @@ final class UserMapper
             phone: $model->phone,
             profilePhotoPath: $model->profile_photo_path,
             address: $model->address,
+            address2: $model->address_2,
             city: $model->city,
             state: $model->state,
             country: $model->country,

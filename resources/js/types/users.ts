@@ -20,6 +20,7 @@ export interface UserListItem {
   role: string | null;
   // Address info
   address?: string | null;
+  address_2?: string | null;
   city?: string | null;
   state?: string | null;
   country?: string | null;
@@ -42,6 +43,12 @@ export interface CreateUserPayload {
   email: string;
   username?: string;
   phone?: string;
+  address?: string;
+  address_2?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zip_code?: string;
   role: string;
 }
 
@@ -52,6 +59,7 @@ export interface UpdateUserPayload {
   username?: string;
   phone?: string;
   address?: string;
+  address_2?: string;
   city?: string;
   state?: string;
   country?: string;

@@ -40,6 +40,7 @@ final readonly class GetUserHandler
                 username: $user->username,
                 phone: $user->phone,
                 address: $user->address,
+                address2: $user->address2,
                 city: $user->city,
                 state: $user->state,
                 country: $user->country,

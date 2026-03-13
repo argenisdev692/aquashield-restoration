@@ -37,6 +37,7 @@ final readonly class UpdateUserHandler
             'username' => $command->dto->username,
             'phone' => PhoneHelper::normalizeUs($command->dto->phone),
             'address' => $command->dto->address,
+            'address_2' => $command->dto->address2,
             'city' => $command->dto->city,
             'state' => $command->dto->state,
             'country' => $command->dto->country,
