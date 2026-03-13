@@ -11,10 +11,13 @@ services:
         ports:
             - "${APP_PORT:-80}:80"
             - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
-            - "${REVERB_PORT:-8080}:${REVERB_PORT:-8080}"
         environment:
             WWWUSER: "${WWWUSER}"
             LARAVEL_SAIL: 1
+            REVERB_HOST: "reverb"
+            REVERB_PORT: "${REVERB_PORT:-8080}"
+            REVERB_SERVER_HOST: "0.0.0.0"
+            REVERB_SERVER_PORT: "${REVERB_PORT:-8080}"
             XDEBUG_MODE: "${SAIL_XDEBUG_MODE:-off}"
             XDEBUG_CONFIG: "${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}"
             IGNITION_LOCAL_SITES_PATH: "${PWD}"
@@ -42,6 +45,8 @@ services:
         environment:
             WWWUSER: "${WWWUSER}"
             LARAVEL_SAIL: 1
+            REVERB_HOST: "reverb"
+            REVERB_PORT: "${REVERB_PORT:-8080}"
             OTEL_PHP_AUTOLOAD_ENABLED: "true"
             OTEL_SERVICE_NAME: "google-antigravity"
             OTEL_TRACES_EXPORTER: "otlp"
@@ -67,6 +72,8 @@ services:
         environment:
             WWWUSER: "${WWWUSER}"
             LARAVEL_SAIL: 1
+            REVERB_HOST: "reverb"
+            REVERB_PORT: "${REVERB_PORT:-8080}"
             OTEL_PHP_AUTOLOAD_ENABLED: "true"
             OTEL_SERVICE_NAME: "google-antigravity"
             OTEL_TRACES_EXPORTER: "otlp"
@@ -74,6 +81,35 @@ services:
             OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
             OTEL_PROPAGATORS: "baggage,tracecontext"
         command: ["php", "artisan", "horizon"]
+        volumes:
+            - ".:/var/www/html"
+        networks:
+            - sail
+        depends_on:
+            - redis
+            - laravel.test
+
+    reverb:
+        build:
+            context: "./vendor/laravel/sail/runtimes/8.5"
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: "${WWWGROUP}"
+        image: "sail-8.5/app"
+        ports:
+            - "${REVERB_PORT:-8080}:${REVERB_PORT:-8080}"
+        environment:
+            WWWUSER: "${WWWUSER}"
+            LARAVEL_SAIL: 1
+            REVERB_SERVER_HOST: "0.0.0.0"
+            REVERB_SERVER_PORT: "${REVERB_PORT:-8080}"
+            OTEL_PHP_AUTOLOAD_ENABLED: "true"
+            OTEL_SERVICE_NAME: "google-antigravity"
+            OTEL_TRACES_EXPORTER: "otlp"
+            OTEL_EXPORTER_OTLP_ENDPOINT: "http://opentelemetry:4318"
+            OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+            OTEL_PROPAGATORS: "baggage,tracecontext"
+        command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=${REVERB_PORT:-8080}"]
         volumes:
             - ".:/var/www/html"
         networks:

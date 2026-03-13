@@ -3,10 +3,10 @@ name: frontend-react
 description: Primary guide for frontend tasks with React 19, Inertia 2.0, and strict TypeScript, including TanStack, token-based styling, components, and the project's UI patterns.
 ---
 
-# FRONTEND-REACT.md — React 19 + Inertia 2.0 + Styles · Enterprise Frontend Bible (2026)
+# FRONTEND-REACT.md — React 19 + Inertia 2.0 + Styles · Enterprise Frontend (2026)
 
 > **Authority**: This file is the SINGLE SOURCE OF TRUTH for all frontend rules.
-> **Stack**: React 19 · Inertia.js 2.0 · TypeScript 5 (strict) · TanStack Query v5 · TanStack Table v8 · Tailwind CSS v4 · shadcn/ui · Framer Motion · Sileo (toasts)
+> **Stack**: React 19 · Inertia.js 2.0 · TypeScript 5 (strict) · TanStack Query v5 · TanStack Table v8 · Zustand v5 · Tailwind CSS v4 · shadcn/ui · Framer Motion · Sileo (toasts)
 > **Design**: Developer UI inspired by VS Code, Linear, Raycast, Vercel. Dark-first, token-driven.
 
 > **CRITICAL — Backend ↔ Frontend Contract**: All TypeScript interfaces use `snake_case` keys (`full_name`, `created_at`, `deleted_at`).
@@ -193,6 +193,14 @@ resources/js/
 | `pages/`   | `modules/`, `common/`, `shadcn/`     | —                    |
 | `shadcn/`  | CLI-generated                        | never hand-edit      |
 
+### Zustand Placement Rules
+
+- Zustand stores belong in `resources/js/modules/{context}/stores/` by default.
+- Use `common/` only for truly cross-module UI primitives, never for domain-specific stores.
+- App-shell state shared across multiple modules may live in a tiny dedicated module such as `modules/app/stores/`.
+- Pages may consume stores, but must not define store factories inline.
+- Server state still belongs to TanStack Query, not Zustand.
+
 ---
 
 ## §4 — Route Architecture
@@ -348,6 +356,43 @@ export function use{Entity}Mutations() {
 - `keepPreviousData` option removed → `placeholderData: keepPreviousData` (imported function)
 - `onError`/`onSuccess`/`onSettled` removed from `useQuery` → use `useEffect`
 - Single-object API only — no positional argument overloads
+
+### §6.1 — Zustand v5 Rules
+
+```ts
+import { create } from "zustand";
+
+type UiStore = {
+    isFiltersOpen: boolean;
+    setFiltersOpen: (value: boolean) => void;
+};
+
+export const useUiStore = create<UiStore>((set) => ({
+    isFiltersOpen: false,
+    setFiltersOpen: (value) => set({ isFiltersOpen: value }),
+}));
+```
+
+**Use Zustand for:**
+
+- Shared client-side UI state across sibling components or pages
+- Multi-step flows that must survive navigation inside the authenticated shell
+- Non-sensitive persisted preferences such as sidebar, theme, density, or view mode
+
+**Do NOT use Zustand for:**
+
+- Server state fetched from backend endpoints
+- Data already owned by Inertia page props
+- Tokens, credentials, or sensitive personal data
+
+**Hard rules:**
+
+- Every store must be explicitly typed
+- Components must subscribe with selectors, not the whole store
+- Keep stores small and domain-scoped
+- TanStack Query remains the owner of async server data and cache invalidation
+- Use `persist` only for non-sensitive preferences and minimal UI state
+- Prefer store actions for client-state mutations instead of scattering setters across pages
 
 ---
 
@@ -754,6 +799,8 @@ export interface {Entity}ListItem {
 | **A05 XSS**            | React `{ }` interpolation only. No `dangerouslySetInnerHTML`. No `eval()`.             |
 | **A07 Auth**           | `router.visit('/login')` + `queryClient.clear()` on logout. Session cookies only.      |
 | **Client Validation**  | Client-side = UX only. Backend DTO = authoritative.                                    |
+**Authorization rule:** Frontend UI visibility must be based on `permissions`, not `roles`. If a user has the required permission (for example `VIEW_USERS` or `CREATE_USERS`), the UI must allow the action regardless of the user's role label. Roles may exist for backend assignment or grouping, but React/Inertia conditional rendering must check `permissions`.
+**Zustand security rule:** if `persist` middleware is used, store only non-sensitive UI preferences. Never persist auth tokens, secrets, raw API payloads with PII, or permission snapshots that can become stale.
 
 ---
 
@@ -776,9 +823,14 @@ export interface {Entity}ListItem {
 - [ ] `useTransition` wraps search/filter/export
 - [ ] `useOptimistic` inside `React.startTransition(async () => {...})`
 - [ ] `useRemember` for filter persistence
+- [ ] Zustand used only for shared client state, never as replacement for TanStack Query server state
+- [ ] Zustand stores live in `modules/{context}/stores/` and are explicitly typed
+- [ ] Components subscribe via selectors, not the entire Zustand store
+- [ ] Persisted Zustand state contains only non-sensitive UI preferences
 - [ ] Sliding paginator (5 pages around current)
 - [ ] shadcn components via CLI, never hand-edited
 - [ ] Sidebar nav item with `PermissionGuard`
+- [ ] Frontend UI authorization uses `permissions` only, never `roles`
 
 ### File Naming
 

@@ -8,6 +8,20 @@ description: Generates a Laravel 12 / PHP 8.5 CRUD module following architecture
 
 # BACKEND NEW MODULE AGENT — PHP 8.5 + Laravel 12
 
+## PHASE 0 — QUALIFY THE REQUEST
+
+Before planning the module, decide whether the request is actually a simple CRUD.
+
+If all or most of these are true:
+
+- One aggregate / one main entity
+- Around 3 to 8 persisted fields
+- Standard CRUD + restore
+- No files/media, exports, queues, WebSockets, external integrations, or complex orchestration
+- No rich workflow/state machine that justifies intermediate architecture
+
+STOP and instruct the user to use `/backend-new-crud` instead.
+
 ## PHASE 1 — PLAN NEW CRUD OR MODULE (produce checklist)
 
 Before writing any code, you MUST:
@@ -56,7 +70,7 @@ For each generated item mark ✅ DONE, ❌ SKIPPED (with reason) or ⚠️ WARN.
 - [ ] No raw SQL with user input
 - [ ] No `unserialize()` on external input
 - [ ] `->whereUuid('uuid')` on UUID routes
-- [ ] Permissions defined: `VIEW_X`, `CREATE_X`, `UPDATE_X`, `DELETE_X`
+- [ ] Permissions defined: `VIEW_X`, `CREATE_X`, `UPDATE_X`, `DELETE_X`, `RESTORE_X`
 - [ ] `forgetCachedPermissions()` called BEFORE creating permissions
 
 **Exports (§8)**

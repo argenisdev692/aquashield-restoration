@@ -16,12 +16,14 @@ trigger: always_on
 | Task type                              | Required reading                                  |
 | -------------------------------------- | ------------------------------------------------- |
 | PHP / Laravel / Backend / Business     | `.windsurf/skills/SKILLS-FULL-STACK/BACKEND-PHP.md`                   |
+| PHP simple CRUD / 3–8 fields           | `.windsurf/skills/SKILLS-FULL-STACK/ARCHITECTURE-SIMPLE-CRUD-PHP.md`  |
 | React / Inertia / TanStack / Frontend  | `.windsurf/skills/SKILLS-FULL-STACK/FRONTEND-REACT.md`                |
 | CSS / Styles / UI design tokens        | `.windsurf/skills/SKILLS-FULL-STACK/FRONTEND-REACT.md` §0–§2, §9      |
 | PHP project structure / directory tree | `.windsurf/skills/SKILLS-FULL-STACK/ARCHITECTURE-INTERMEDIATE-PHP.md` |
 | React directory tree / file placement  | `.windsurf/skills/SKILLS-FULL-STACK/ARCHITECTURE-REACT-INERTIA.md`    |
 
 > **Rule:** If a skill file covers the task, read it FIRST — no exceptions.
+> **Simple CRUD rule:** For standard backend CRUDs with low business complexity, prefer `.windsurf/skills/SKILLS-FULL-STACK/ARCHITECTURE-SIMPLE-CRUD-PHP.md` and the `/backend-new-crud` workflow instead of the intermediate architecture.
 > **Total files:** 5 (this router + 4 skills). No redundancy.
 
 # [MUST] CSS / Styles

@@ -7,7 +7,7 @@ description: Directory tree and file placement rules for the React and Inertia f
 
 # React 19 + Inertia.js 2.0 · Frontend Architecture (2026)
 
-> Stack: React 19 · Inertia.js 2.0 · TypeScript 5 · TanStack Query v5 · TanStack Table v8 · Tailwind CSS v4 · shadcn/ui (latest)
+> Stack: React 19 · Inertia.js 2.0 · TypeScript 5 · TanStack Query v5 · TanStack Table v8 · Zustand v5 · Tailwind CSS v4 · shadcn/ui (latest)
 
 ---
 
@@ -93,6 +93,7 @@ resources/
     │   │   │   ├── useUsers.ts                    # TanStack Query: paginated list
     │   │   │   ├── useUser.ts                     # TanStack Query: single record
     │   │   │   └── useUserMutations.ts            # create / update / softDelete / restore
+    │   │   ├── stores/                            # Zustand stores for shared client state only
     │   │   ├── helpers/
     │   │   │   └── userStatusColor.ts
     │   │   └── types.ts
@@ -105,6 +106,7 @@ resources/
     │       │   ├── use{YourEntities}.ts           # paginated list
     │       │   ├── use{YourEntity}.ts             # single record
     │       │   └── use{YourEntity}Mutations.ts    # create / update / softDelete / restore
+    │       ├── stores/                            # Zustand stores — typed, selector-based, no server state
     │       ├── helpers/
     │       │   └── {yourEntity}StatusColor.ts
     │       └── types.ts
@@ -194,5 +196,5 @@ resources/
         └── globals.d.ts                           # Global ambient declarations (route(), etc.)
 ```
 
-> **For rules, routes, layer constraints, and naming conventions** → see `FRONTEND-REACT.md` §3–§4, §15.
+> **For rules, routes, layer constraints, Zustand state rules, and naming conventions** → see `FRONTEND-REACT.md` §3–§4, §6.1, §15.
 > This file is the detailed directory tree ONLY.

@@ -1,6 +1,6 @@
 ---
 name: backend-php
-description: Primary guide for backend tasks with PHP 8.5 and Laravel 12, including layered architecture, CQRS, routes, security, DTOs, mappers, and the project's enterprise conventions.
+description: Primary guide for backend tasks with PHP 8.5 and Laravel 12, including Hexagonal Architecture, SOLID, DDD, Value Objects, Repository Pattern, CQRS, Event Driven Architecture, routes, security, DTOs, mappers, storage, and the project's enterprise conventions.
 ---
 
 # BACKEND-PHP.md — PHP 8.5 + Laravel 12 · Enterprise Backend Bible (2026)
@@ -480,11 +480,81 @@ createdAt: $user->created_at?->toISOString() ?? '',
 - **ReadModel/DTO**: `camelCase` (`createdAt`)
 - **Frontend**: receives camelCase from JSON
 
-### CQRS
+### Hexagonal Architecture
 
-- **Commands**: mutate state, dispatch domain events, return `void` or events.
-- **Queries**: read-only, return `ReadModel`s, use `Cache::remember`.
-- Inject handlers directly — no Bus.
+- **Domain** sits at the center and owns invariants, entities, value objects, domain services, and domain exceptions.
+- **Application** orchestrates use-cases through handlers, DTOs, ports, policies, transactions, and cache boundaries.
+- **Infrastructure** implements adapters for persistence, storage, queues, mail, exports, observability, and framework concerns.
+- Dependencies point inward: Domain knows nothing about Laravel, Eloquent, HTTP, queues, storage drivers, or third-party SDKs.
+- Controllers MUST stay thin: validate, authorize, map request → DTO/command, invoke handler, return response.
+- Business rules NEVER live in controllers, FormRequests, Blade/Inertia middleware, or Eloquent models when they belong to the domain.
+
+### SOLID + SRP
+
+- **SOLID** is mandatory in every module, with special attention to **SRP** and dependency inversion through ports.
+- **SRP**: each Handler, Service, Mapper, Adapter, Exporter, Listener, and Policy should have one primary reason to change.
+- **Open/Closed**: prefer extending behavior through handlers, policies, events, and adapters instead of editing unrelated classes.
+- **Liskov / Interface Segregation**: ports should stay small, cohesive, and specific to the use-case.
+- **Dependency Inversion**: Application depends on abstractions (`RepositoryPort`, `StoragePort`, `AuditPort`), never on concrete adapters.
+
+### Domain-Driven Design (DDD)
+
+- Use ubiquitous language consistently in class names, methods, exceptions, DTOs, events, routes, and permission names.
+- Domain owns business language, invariants, aggregate boundaries, and state transitions.
+- Favor explicit domain methods such as `enrollStudent()`, `publishCampaign()`, `restoreAttendance()` over generic setters.
+- Domain exceptions must express business intent, not framework internals.
+- If a rule matters to the business, it belongs in Domain or in an Application policy that protects the use-case boundary.
+
+### Value Objects
+
+- Use Value Objects to avoid primitive obsession for identifiers, emails, money, percentages, status flags, paths, slugs, and similar concepts.
+- Value Objects MUST be `readonly`, validate themselves on construction, and preserve invariants for their entire lifetime.
+- Prefer property hooks and explicit named constructors when they improve invariants and readability.
+- Equality should be value-based, not identity-based.
+- Never leak unvalidated primitives deep into the domain when a Value Object exists.
+
+### CQRS (básico o avanzado)
+
+- **Commands** mutate state, enforce business rules, may dispatch domain events, and return `void`, IDs, or explicit result objects.
+- **Queries** are side-effect free, return `ReadModel`s or paginated collections, and may use `Cache::remember`.
+- Basic CQRS is enough for most modules: separate handlers and DTOs for writes vs reads.
+- Advanced CQRS is allowed when justified: dedicated read repositories, projections, denormalized read models, async listeners, or specialized caching.
+- Queries MUST NOT mutate state. Commands MUST NOT act as generic read services.
+- Inject handlers directly — no Bus unless the module clearly benefits from it.
+
+### Repository Pattern
+
+- Every aggregate root with persistence must expose a `RepositoryPort` in `Domain/Ports/`.
+- Infrastructure repositories implement the port and hide Eloquent specifics, query builders, eager loading, and transaction details.
+- Application handlers depend on repository ports, never concrete Eloquent repositories.
+- The Mapper remains the only bridge between domain entities and Eloquent models.
+- Repositories should model aggregate persistence and retrieval, not become dumping grounds for unrelated helpers.
+
+### Event-Driven Architecture
+
+- Use domain/application events when a business action must trigger decoupled side effects.
+- Domain events should be immutable (`readonly`) and named in business language.
+- `AggregateRoot` records domain events; listeners/subscribers live in Infrastructure or Providers.
+- Use events to decouple reactions such as audit, notifications, cache invalidation, media processing, exports, or activity tracking.
+- Prefer synchronous listeners for simple local reactions and queued listeners when the workload is expensive or non-critical to the request.
+- Do NOT introduce events for trivial direct flows where a simple method call keeps the design clearer.
+
+### KISS / DRY / Clean Code / DX / Code Review
+
+- **KISS**: prefer the smallest architecture that preserves module boundaries. No speculative abstraction, no generic framework inside the app without a real second use-case.
+- **DRY**: extract duplicated mapping, validation, formatting, authorization glue, and cross-cutting logic to the correct layer.
+- **Clean Code**: use descriptive names, small methods, typed exceptions, explicit return types, and low branching complexity.
+- **DX**: modules should be predictable to navigate, with clear directories, naming, contracts, test placement, and actionable error messages.
+- **Code Review readiness**: no dead code, commented-out blocks, debug leftovers, hidden side effects, or inconsistent conventions.
+- If a reviewer cannot identify the use-case entry point, domain invariants, and adapter boundaries in under a minute, the module needs simplification.
+
+### Storage Strategy (R2 / S3-Compatible)
+
+- File storage concerns belong to Infrastructure adapters or dedicated storage services, never to Domain entities.
+- If the project standard is Cloudflare R2, review `config/filesystems.php` and the corresponding env defaults so the intended default disk is explicit.
+- If a module stores cloud artifacts, prefer an explicit configured disk (`r2` or config-driven alias) instead of relying on ambiguous implicit defaults.
+- Public or temporary URLs must be generated by adapters, not by manual string concatenation.
+- Storage policies must remain reviewable: `config/filesystems.php`, `.env.example`, and module-level storage config should not drift silently.
 
 ### Cache Management
 
@@ -555,6 +625,8 @@ Route::middleware(['auth:sanctum', 'role:super-admin'])->prefix('/api/{module}/a
 - [ ] `Domain/Entities/{YourEntity}.php` — extends `AggregateRoot`, no Eloquent
 - [ ] `Domain/ValueObjects/{YourId}.php` — `readonly` + uuid
 - [ ] `Domain/Ports/{YourEntity}RepositoryPort.php`
+- [ ] Domain invariants and business rules live in Domain, not controllers or Eloquent
+- [ ] Domain language is explicit in exceptions, events, and method names
 
 ### Application Layer
 
@@ -567,12 +639,17 @@ Route::middleware(['auth:sanctum', 'role:super-admin'])->prefix('/api/{module}/a
 - [ ] DTOs: Create, Update, Filter (extend `Spatie\LaravelData\Data`, no `readonly`)
 - [ ] ReadModels: List + Detail (no `readonly`)
 - [ ] Domain events + cache invalidation listeners
+- [ ] Handlers depend on ports/interfaces, not concrete infrastructure classes
+- [ ] Handlers keep SRP and contain orchestration only
 
 ### Infrastructure Layer
 
 - [ ] `{YourEntity}EloquentModel` — `@internal`, `SoftDeletes`, `LogsActivity`
 - [ ] `{YourEntity}Mapper` — only class importing domain + Eloquent
 - [ ] `Eloquent{YourEntity}Repository` — implements port
+- [ ] If files/media exist: `Infrastructure/ExternalServices/Storage/` or equivalent adapter layer
+- [ ] If using cloud file storage: dedicated disk / adapter for `r2` or equivalent S3-compatible storage
+- [ ] Review `config/filesystems.php` default disk and env alignment when the module depends on storage conventions
 - [ ] Web Controller (Inertia) + API Controller (JSON)
 - [ ] Requests + Resources
 - [ ] Routes: Inertia pages + `/data/admin/*` endpoints (export BEFORE `/{uuid}`)
@@ -580,7 +657,7 @@ Route::middleware(['auth:sanctum', 'role:super-admin'])->prefix('/api/{module}/a
 
 ### Permissions
 
-- [ ] `VIEW_{MODULE}`, `CREATE_{MODULE}`, `UPDATE_{MODULE}`, `DELETE_{MODULE}`
+- [ ] `VIEW_{MODULE}`, `CREATE_{MODULE}`, `UPDATE_{MODULE}`, `DELETE_{MODULE}`, `RESTORE_{MODULE}`
 - [ ] `forgetCachedPermissions()` BEFORE creating permissions
 - [ ] Super Admin gets all
 
@@ -597,6 +674,8 @@ Route::middleware(['auth:sanctum', 'role:super-admin'])->prefix('/api/{module}/a
 - [ ] `Tests/Unit/Application/` — handlers with mocked repository
 - [ ] `Tests/Integration/` — DB round-trip via Mapper
 - [ ] `Tests/Feature/` — full HTTP CRUD + export
+- [ ] Storage flows and file validation covered when the module manages files
+- [ ] Critical Value Objects and business rules covered by tests
 
 ---
 
@@ -869,6 +948,7 @@ Every API method: `@OA\Get`/`@OA\Post`/`@OA\Put`/`@OA\Delete`/`@OA\Patch`. Every
 | `spatie/laravel-activitylog` | `Shared/Infrastructure/Audit/`                  |
 | `maatwebsite/excel`          | `Shared/Infrastructure/Export/ExcelAdapter.php` |
 | `barryvdh/laravel-dompdf`    | `Shared/Infrastructure/Export/PdfAdapter.php`   |
+| `league/flysystem-aws-s3-v3` | S3-compatible disks such as AWS S3 / Cloudflare R2 |
 | `darkaonline/l5-swagger`     | API documentation                               |
 | `ramsey/uuid`                | `Shared/Domain/ValueObjects/Uuid.php`           |
 | `pestphp/pest`               | All modules `Tests/`                            |
@@ -887,6 +967,8 @@ Every API method: `@OA\Get`/`@OA\Post`/`@OA\Put`/`@OA\Delete`/`@OA\Patch`. Every
 | Property validation in VOs       | Property hooks `set { }` (§2, PHP 8.4)    |
 | Computed derived property        | Property hook `get =>` (§2, PHP 8.4)      |
 | Prevent child override           | `final` in promotion (§1)                 |
+| Shared file storage in backend   | Storage Port + Infrastructure adapter + configured disk |
+| Cross-cutting side effects       | Domain/App event + listener/subscriber    |
 | Static public-read private-write | `public private(set) static` (§1)         |
 | Anonymous recursion              | `Closure::getCurrent()` (§1)              |
 | Strict filter validation         | `FILTER_THROW_ON_FAILURE` (§1)            |

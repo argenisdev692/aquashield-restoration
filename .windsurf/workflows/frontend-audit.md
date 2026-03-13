@@ -47,6 +47,17 @@ For each item mark ✅ PASS, ❌ FAIL (with file:line and brief description) or 
 - [ ] `shadcn/` files are CLI-generated — no manual edits
 - [ ] File naming: components `PascalCase.tsx`, hooks `camelCase.ts`, dirs `kebab-case/`
 - [ ] Inertia pages named `{Module}IndexPage.tsx`, `{Entity}ShowPage.tsx`, etc.
+- [ ] State ownership is clear and minimal: local state stays local, shared state is elevated only when justified
+- [ ] KISS / DRY / Clean Code / SRP applied to components, hooks, and helpers
+
+**State Management**
+
+- [ ] Audit whether Zustand is installed and whether the module truly needs shared client state
+- [ ] Zustand stores live in `modules/{context}/stores/` or a tiny app-shell store location only
+- [ ] Stores are explicitly typed and consumed through selectors
+- [ ] No duplication between Zustand store state and TanStack Query server state
+- [ ] `persist` middleware stores only non-sensitive UI preferences
+- [ ] No oversized global store introduced without a concrete DX/complexity justification
 
 **Inertia 2.0 (§5)**
 
@@ -101,6 +112,7 @@ For each item mark ✅ PASS, ❌ FAIL (with file:line and brief description) or 
 - [ ] No `console.log()` of sensitive props
 - [ ] All restricted UI wrapped in `<PermissionGuard permission="VIEW_{MODULE}">`
 - [ ] `router.visit('/login')` + `queryClient.clear()` on logout
+- [ ] Authorization checks remain permission-based even if a global store exists
 
 **TypeScript (§13)**
 
@@ -128,6 +140,7 @@ For each ❌ FAIL, you MUST before writing the fix:
    OR to verify current React 19 / TanStack best practices if uncertain
 
 Then apply the minimal fix following the exact rules in FRONTEND-REACT.md.
+If the audit reveals missing or unnecessary global state management, prefer the simplest valid approach: React local state first, Zustand only when state must be shared beyond component boundaries, and TanStack Query for all server state.
 
 ---
 
