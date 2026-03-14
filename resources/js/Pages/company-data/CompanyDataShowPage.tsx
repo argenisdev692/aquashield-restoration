@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
+import { formatUsPhoneInput } from '@/common/helpers/phone';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useSingleCompanyData } from '@/modules/company-data/hooks/useCompanyData';
@@ -179,7 +180,7 @@ export default function CompanyDataShowPage(): React.JSX.Element {
                     <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       {company.phone ? (
                         <a href={`tel:${company.phone}`} className="hover:underline" style={{ color: 'var(--accent-info)' }}>
-                           {company.phone}
+                           {formatUsPhoneInput(company.phone)}
                         </a>
                       ) : 'Not specified'}
                     </p>

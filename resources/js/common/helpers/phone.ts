@@ -26,6 +26,16 @@ export function formatUsPhoneInput(value: string): string {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
 }
 
+export function normalizeUsPhoneForPayload(value: string): string | null {
+  const digits = toUsPhoneDigits(value);
+
+  if (digits.length !== 10) {
+    return null;
+  }
+
+  return `+1${digits}`;
+}
+
 export function hasCompleteUsPhone(value: string): boolean {
   return toUsPhoneDigits(value).length === 10;
 }

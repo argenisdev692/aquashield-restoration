@@ -63,7 +63,6 @@ const IconMoon    = () => <Moon size={icSize} />;
 const IconLogout  = () => <LogOut size={16} />;
 const IconSearch  = () => <Search size={14} />;
 const IconCaret   = () => <ChevronDown size={14} />;
-const IconShield  = () => <ShieldCheck size={20} className="text-white" />;
 const IconMenu    = () => <Menu size={icSize} />;
 const IconSettings = () => <Settings size={icSize} />;
 const IconArrowLeft = () => <ArrowLeft size={16} />;
@@ -75,6 +74,13 @@ const IconHome = () => <Home size={icSize} />;
 const IconBlog = () => <BookOpen size={icSize} />;
 const IconTags = () => <Tags size={icSize} />;
 const IconPost = () => <FileText size={icSize} />;
+
+interface TooltipRect {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
 
 // ══════════════════════════════════════════════════════════════════
 // Nav Items — Profile removed (accessible via avatar dropdown)
@@ -92,7 +98,14 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <IconGrid />, description: 'Overview & metrics' },
   { label: 'Kanban', href: '/kanban', icon: <IconKanban />, description: 'Project board' },
-  { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users', permission: 'VIEW_USERS' },
+  {
+    label: 'Management',
+    icon: <IconSettings />,
+    description: 'Administrative tools',
+    children: [
+      { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users', permission: 'VIEW_USERS' },
+    ]
+  },
   { 
     label: 'Companies', 
     icon: <IconBuilding />, 
@@ -117,6 +130,74 @@ const NAV_ITEMS: NavItem[] = [
     ]
   },
 ];
+
+function CollapsedNavTooltip({
+  collapsed,
+  label,
+  children,
+}: {
+  collapsed: boolean;
+  label: string;
+  children: React.ReactNode;
+}): React.JSX.Element {
+  const [targetRect, setTargetRect] = React.useState<TooltipRect | null>(null);
+  const wrapperRef = React.useRef<HTMLDivElement | null>(null);
+
+  const showTooltip = React.useCallback(() => {
+    if (!collapsed || wrapperRef.current === null) {
+      return;
+    }
+
+    const rect = wrapperRef.current.getBoundingClientRect();
+
+    setTargetRect({
+      left: rect.left,
+      top: rect.top,
+      right: rect.right,
+      bottom: rect.bottom,
+    });
+  }, [collapsed]);
+
+  const hideTooltip = React.useCallback(() => {
+    setTargetRect(null);
+  }, []);
+
+  if (!collapsed) {
+    return <>{children}</>;
+  }
+
+  return (
+    <div
+      ref={wrapperRef}
+      className="relative flex w-full justify-center"
+      onPointerEnter={showTooltip}
+      onPointerLeave={hideTooltip}
+      onFocusCapture={showTooltip}
+      onBlurCapture={hideTooltip}
+    >
+      {children}
+      {targetRect !== null && (
+        <div
+          role="tooltip"
+          className="pointer-events-none fixed z-[95] min-w-max whitespace-nowrap rounded-xl px-3 py-2 text-[11px] font-semibold shadow-xl"
+          style={{
+            left: targetRect.right + 12,
+            top: targetRect.top + ((targetRect.bottom - targetRect.top) / 2),
+            transform: 'translateY(-50%)',
+            background: 'color-mix(in srgb, var(--bg-surface) 94%, transparent)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border-default)',
+            backdropFilter: 'blur(16px)',
+            boxShadow: '0 18px 40px -20px color-mix(in srgb, var(--bg-base) 72%, transparent)',
+            fontFamily: 'var(--font-sans)',
+          }}
+        >
+          {label}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ══════════════════════════════════════════════════════════════════
 // ExpandableSearch — Desktop: expands to 320px. Mobile: full-width overlay.
@@ -504,23 +585,21 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapsed }: { onC
       {/* Logo + close arrow (arrow only visible on mobile) */}
       <div className={`flex h-[60px] items-center justify-between shrink-0 ${collapsed ? 'px-3' : 'px-5'}`}
         style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-            style={{ background: 'var(--grad-primary)' }}>
-            <IconShield />
+        <div className="flex min-w-0 flex-1 items-center justify-center">
+          <div
+            className={`flex items-center justify-center rounded-xl ${collapsed ? 'h-10 w-10' : 'h-11 w-11'}`}
+            style={{
+              background: 'color-mix(in srgb, var(--bg-card) 84%, transparent)',
+              border: '1px solid var(--border-default)',
+              boxShadow: '0 14px 28px -22px color-mix(in srgb, var(--bg-base) 80%, transparent)',
+            }}
+          >
+            <img
+              src="/img/Logo PNG-WHITE.png"
+              alt="AquaShield CRM"
+              className={collapsed ? 'h-6 w-auto object-contain' : 'h-7 w-auto object-contain'}
+            />
           </div>
-          {!collapsed && (
-          <div>
-            <span className="block text-[13px] font-bold tracking-tight leading-none"
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
-            AquaShield
-          </span>
-            <span className="block text-[10px] font-semibold uppercase tracking-widest leading-none mt-0.5"
-              style={{ color: 'var(--accent-secondary)' }}>
-              CRM
-            </span>
-          </div>
-          )}
         </div>
 
         {/* Close arrow — only rendered in mobile drawer */}
@@ -569,7 +648,7 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapsed }: { onC
       </div>
       )}
 
-      <nav className={`flex-1 space-y-1.5 uppercase text-xs tracking-wide overflow-y-auto ${collapsed ? 'px-2 py-3' : 'px-3'}`}>
+      <nav className={`flex-1 space-y-1.5 overflow-x-hidden overflow-y-auto uppercase text-xs tracking-wide ${collapsed ? 'px-2 py-3' : 'px-3'}`}>
         {NAV_ITEMS.map((item) => {
           // If item has children, render dropdown
           if (item.children) {
@@ -590,57 +669,59 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapsed }: { onC
 
             const groupElement = (
               <div key={item.label}>
-                <button
-                  onClick={() => handleGroupClick(item.label)}
-                  className={`group flex w-full cursor-pointer items-center rounded-lg py-2.5 transition-all duration-300 ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'}`}
-                  style={{
-                    color: hasActiveChild ? 'var(--text-primary)' : 'var(--text-muted)',
-                  }}
-                  aria-label={item.label}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <span 
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300"
+                <CollapsedNavTooltip collapsed={collapsed} label={item.label}>
+                  <button
+                    onClick={() => handleGroupClick(item.label)}
+                    className={`group flex w-full cursor-pointer items-center rounded-lg py-2.5 transition-all duration-300 ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'} ${hasActiveChild ? 'sidebar-active shadow-sm' : ''}`}
                     style={{
-                      background: hasActiveChild ? 'var(--grad-primary)' : 'color-mix(in srgb, var(--text-primary) 3%, transparent)',
                       color: hasActiveChild ? 'var(--text-primary)' : 'var(--text-muted)',
-                      border: hasActiveChild ? 'none' : '1px solid var(--border-default)'
                     }}
+                    aria-label={item.label}
+                    title={collapsed ? item.label : undefined}
                   >
-                    {item.icon}
-                  </span>
-                  {!collapsed && (
-                  <>
-                  <div className="min-w-0 flex-1 text-left">
                     <span 
-                      className="block text-[13px] font-semibold leading-none"
-                      style={{ 
-                        color: hasActiveChild ? 'var(--text-primary)' : 'var(--text-secondary)', 
-                        fontFamily: 'var(--font-sans)' 
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300"
+                      style={{
+                        background: hasActiveChild ? 'var(--grad-primary)' : 'color-mix(in srgb, var(--text-primary) 3%, transparent)',
+                        color: hasActiveChild ? 'var(--text-primary)' : 'var(--text-muted)',
+                        border: hasActiveChild ? 'none' : '1px solid var(--border-default)'
                       }}
                     >
-                      {item.label}
+                      {item.icon}
                     </span>
-                    <span 
-                      className="block text-[10px] normal-case leading-none mt-1" 
+                    {!collapsed && (
+                    <>
+                    <div className="min-w-0 flex-1 text-left">
+                      <span 
+                        className="block text-[13px] font-semibold leading-none"
+                        style={{ 
+                          color: hasActiveChild ? 'var(--text-primary)' : 'var(--text-secondary)', 
+                          fontFamily: 'var(--font-sans)' 
+                        }}
+                      >
+                        {item.label}
+                      </span>
+                      <span 
+                        className="block text-[10px] normal-case leading-none mt-1" 
+                        style={{ 
+                          color: hasActiveChild ? 'var(--accent-secondary)' : 'var(--text-secondary)' 
+                        }}
+                      >
+                        {item.description}
+                      </span>
+                    </div>
+                    <ChevronRight 
+                      size={14} 
+                      className="transition-transform duration-200"
                       style={{ 
-                        color: hasActiveChild ? 'var(--accent-secondary)' : 'var(--text-secondary)' 
+                        transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                        color: 'var(--text-disabled)'
                       }}
-                    >
-                      {item.description}
-                    </span>
-                  </div>
-                  <ChevronRight 
-                    size={14} 
-                    className="transition-transform duration-200"
-                    style={{ 
-                      transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                      color: 'var(--text-disabled)'
-                    }}
-                  />
-                  </>
-                  )}
-                </button>
+                    />
+                    </>
+                    )}
+                  </button>
+                </CollapsedNavTooltip>
 
                 {/* Dropdown children */}
                 {!collapsed && isExpanded && (
@@ -724,50 +805,51 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapsed }: { onC
           const active = item.href && (currentPath === item.href || currentPath.startsWith(item.href + '/'));
           
           const linkElement = (
-            <Link
-              key={item.href}
-              href={item.href!}
-              prefetch
-              onClick={onClose}
-              className={`group flex w-full items-center rounded-lg py-2.5 transition-all duration-300 ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'} ${active ? 'sidebar-active shadow-sm' : ''}`}
-              style={{
-                color: active ? 'var(--text-primary)' : 'var(--text-muted)',
-              }}
-              aria-label={item.label}
-              title={collapsed ? item.label : undefined}
-            >
-              <span 
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300"
+            <CollapsedNavTooltip key={item.href} collapsed={collapsed} label={item.label}>
+              <Link
+                href={item.href!}
+                prefetch
+                onClick={onClose}
+                className={`group flex w-full items-center rounded-lg py-2.5 transition-all duration-300 ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'} ${active ? 'sidebar-active shadow-sm' : ''}`}
                 style={{
-                  background: active ? 'var(--grad-primary)' : 'color-mix(in srgb, var(--text-primary) 3%, transparent)',
                   color: active ? 'var(--text-primary)' : 'var(--text-muted)',
-                  border: active ? 'none' : '1px solid var(--border-default)'
                 }}
+                aria-label={item.label}
+                title={collapsed ? item.label : undefined}
               >
-                {item.icon}
-              </span>
-              {!collapsed && (
-              <div className="min-w-0 flex-1">
                 <span 
-                  className="block text-[13px] font-semibold leading-none"
-                  style={{ 
-                    color: active ? 'var(--text-primary)' : 'var(--text-secondary)', 
-                    fontFamily: 'var(--font-sans)' 
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300"
+                  style={{
+                    background: active ? 'var(--grad-primary)' : 'color-mix(in srgb, var(--text-primary) 3%, transparent)',
+                    color: active ? 'var(--text-primary)' : 'var(--text-muted)',
+                    border: active ? 'none' : '1px solid var(--border-default)'
                   }}
                 >
-                  {item.label}
+                  {item.icon}
                 </span>
-                <span 
-                  className="block text-[10px] normal-case leading-none mt-1" 
-                  style={{ 
-                    color: active ? 'var(--accent-secondary)' : 'var(--text-secondary)' 
-                  }}
-                >
-                  {item.description}
-                </span>
-              </div>
-              )}
-            </Link>
+                {!collapsed && (
+                <div className="min-w-0 flex-1">
+                  <span 
+                    className="block text-[13px] font-semibold leading-none"
+                    style={{ 
+                      color: active ? 'var(--text-primary)' : 'var(--text-secondary)', 
+                      fontFamily: 'var(--font-sans)' 
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                  <span 
+                    className="block text-[10px] normal-case leading-none mt-1" 
+                    style={{ 
+                      color: active ? 'var(--accent-secondary)' : 'var(--text-secondary)' 
+                    }}
+                  >
+                    {item.description}
+                  </span>
+                </div>
+                )}
+              </Link>
+            </CollapsedNavTooltip>
           );
           
           // Wrap with PermissionGuard if permission is defined
@@ -828,14 +910,14 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
 
   return (
     <AuthProvider user={auth.user}>
-      <div className="min-h-screen" style={layoutStyle}>
+      <div className="min-h-screen overflow-x-hidden" style={layoutStyle}>
 
       {/* ── Desktop Sidebar (hidden on mobile) ── */}
       <aside
         className="fixed left-0 top-0 z-40 hidden h-screen flex-col overflow-hidden transition-[width] duration-300 lg:flex"
         style={{ width: 'var(--sidebar-width)', background: 'var(--bg-surface)', borderRight: '1px solid var(--border-subtle)' }}
       >
-        <div className="flex flex-1 flex-col overflow-y-auto">
+        <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
           <SidebarContent collapsed={desktopCollapsed} onToggleCollapsed={() => setDesktopCollapsed((prev) => !prev)} />
         </div>
 
@@ -886,12 +968,12 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
       </div>
 
       {/* ── Main content area ── */}
-      <div className="flex flex-col min-h-screen transition-[padding] duration-300 lg:pl-[var(--sidebar-width)]">
+      <div className="flex min-h-screen min-w-0 flex-col overflow-x-hidden transition-[padding] duration-300 lg:pl-[var(--sidebar-width)]">
 
 
         {/* ── Top Bar ── */}
         <header
-          className="sticky top-0 z-30 flex h-[60px] items-center justify-between gap-4 px-4 md:px-6"
+          className="sticky top-0 z-30 flex h-[60px] min-w-0 items-center justify-between gap-4 overflow-x-hidden px-4 md:px-6"
           style={{
             background: 'var(--bg-surface)',
             borderBottom: '1px solid var(--border-subtle)',
@@ -911,12 +993,29 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
           {/* Center: logo on mobile */}
           <div className="flex items-center gap-2 lg:hidden">
             <span className="text-[13px] font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
-            AquaShield
-          </span>
-        </div>
+              AquaShield
+            </span>
+          </div>
+
+          <div className="hidden min-w-0 items-center lg:flex">
+            <div className="flex min-w-0 items-center gap-2">
+              <span
+                className="text-[12px] font-bold uppercase tracking-[0.28em]"
+                style={{ color: 'var(--accent-primary)', fontFamily: 'var(--font-sans)' }}
+              >
+                CRM
+              </span>
+              <span
+                className="truncate text-[13px] font-semibold uppercase tracking-[0.18em]"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}
+              >
+                AQUASHIELD RESTORATION USA
+              </span>
+            </div>
+          </div>
 
           {/* Right side: search + avatar */}
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex min-w-0 items-center gap-3">
             <ExpandableSearch />
             <AvatarDropdown />
           </div>

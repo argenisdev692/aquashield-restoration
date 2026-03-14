@@ -18,7 +18,10 @@ final class UserPdfExport
 
     public function download(): Response
     {
+        $status = $this->filters->status?->value;
+
         $rows = UserEloquentModel::query()
+            ->withTrashed()
             ->select([
                 'uuid',
                 'name',
@@ -26,15 +29,21 @@ final class UserPdfExport
                 'email',
                 'phone',
                 'city',
-                'created_at'
+                'status',
+                'created_at',
+                'deleted_at',
             ])
-            ->whereNull('deleted_at')
             ->when($this->filters->search, fn($q, $s) => $q->where(
                 fn($bq) =>
                 $bq->where('name', 'like', "%{$s}%")
                     ->orWhere('last_name', 'like', "%{$s}%")
                     ->orWhere('email', 'like', "%{$s}%")
             ))
+            ->when($status === 'deleted', fn($q) => $q->onlyTrashed())
+            ->when(
+                $status !== null && $status !== 'deleted',
+                fn($q) => $q->whereNull('deleted_at')->where('status', $status),
+            )
             ->when(
                 $this->filters->dateFrom || $this->filters->dateTo,
                 fn($q) => $q->inDateRange($this->filters->dateFrom, $this->filters->dateTo)

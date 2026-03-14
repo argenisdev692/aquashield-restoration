@@ -35,6 +35,7 @@ final class CompanyDataExcelExport implements
     public function query(): Builder
     {
         return CompanyDataEloquentModel::query()
+            ->withTrashed()
             ->select([
                 'id',
                 'uuid',
@@ -45,8 +46,8 @@ final class CompanyDataExcelExport implements
                 'address',
                 'website',
                 'created_at',
+                'deleted_at',
             ])
-            ->whereNull('deleted_at')
             ->when(
                 $this->filters->search,
                 fn($q, $s) => $q->where(function ($q) use ($s): void {
@@ -72,6 +73,7 @@ final class CompanyDataExcelExport implements
             'Phone',
             'Address',
             'Website',
+            'Status',
             'Created At',
         ];
     }

@@ -82,9 +82,9 @@ final class ProductExcelExport implements FromQuery, WithHeadings, WithMapping, 
             number_format($product->price, 2),
             $product->unit,
             $product->order_position,
-            $product->deleted_at ? 'Deleted' : 'Active',
-            $product->created_at?->format('Y-m-d H:i:s') ?? '',
-            $product->updated_at?->format('Y-m-d H:i:s') ?? '',
+            $product->deleted_at ? 'Inactive' : 'Active',
+            $product->created_at?->format('F j, Y') ?? '—',
+            $product->updated_at?->format('F j, Y') ?? '—',
         ];
     }
 

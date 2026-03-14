@@ -18,7 +18,11 @@ final class InsuranceCompanyPdfExport
 
     public function stream(): Response
     {
+        $status = $this->filters->status;
+        $onlyDeleted = $status === 'deleted' || $this->filters->onlyTrashed === 'true';
+
         $rows = InsuranceCompanyEloquentModel::query()
+            ->withTrashed()
             ->select([
                 'insurance_company_name',
                 'address',
@@ -26,8 +30,10 @@ final class InsuranceCompanyPdfExport
                 'email',
                 'website',
                 'created_at',
+                'deleted_at',
             ])
-            ->whereNull('deleted_at')
+            ->when($onlyDeleted, fn($q) => $q->onlyTrashed())
+            ->when($status === 'active', fn($q) => $q->whereNull('deleted_at'))
             ->when(
                 $this->filters->search,
                 fn($q, $s) => $q->where(function ($q) use ($s): void {

@@ -6,6 +6,7 @@ namespace Modules\CompanyData\Infrastructure\Http\Export;
 
 use Carbon\CarbonImmutable;
 use Modules\CompanyData\Infrastructure\Persistence\Eloquent\Models\CompanyDataEloquentModel;
+use Shared\Infrastructure\Utils\PhoneHelper;
 
 final class CompanyDataExportTransformer
 {
@@ -37,10 +38,12 @@ final class CompanyDataExportTransformer
             'company_name' => $company->company_name,
             'name' => $company->name,
             'email' => $company->email,
-            'phone' => $company->phone,
+            'phone' => PhoneHelper::format($company->phone),
             'address' => $company->address,
             'website' => $company->website,
+            'status' => $company->deleted_at !== null ? 'Inactive' : 'Active',
             'created_at' => $company->created_at?->toIso8601String(),
+            'deleted_at' => $company->deleted_at?->toIso8601String(),
         ];
     }
 
@@ -55,7 +58,7 @@ final class CompanyDataExportTransformer
 
     private static function sanitizePayload(array $payload): array
     {
-        foreach (['company_name', 'name', 'email', 'phone', 'address', 'website'] as $field) {
+        foreach (['company_name', 'name', 'email', 'phone', 'address', 'website', 'status'] as $field) {
             $payload[$field] = $payload[$field] ?? '—';
         }
 
@@ -73,6 +76,7 @@ final class CompanyDataExportTransformer
             $payload['phone'],
             $payload['address'],
             $payload['website'],
+            $payload['status'],
             $payload['created_at'],
         ];
     }

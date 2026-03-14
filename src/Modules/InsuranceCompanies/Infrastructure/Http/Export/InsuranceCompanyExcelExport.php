@@ -14,6 +14,7 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use Modules\InsuranceCompanies\Application\DTOs\InsuranceCompanyFilterDTO;
 use Modules\InsuranceCompanies\Infrastructure\Persistence\Eloquent\Models\InsuranceCompanyEloquentModel;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Shared\Infrastructure\Utils\PhoneHelper;
 
 final class InsuranceCompanyExcelExport implements
     FromQuery,
@@ -32,7 +33,11 @@ final class InsuranceCompanyExcelExport implements
 
     public function query(): \Illuminate\Database\Eloquent\Builder
     {
+        $status = $this->filters->status;
+        $onlyDeleted = $status === 'deleted' || $this->filters->onlyTrashed === 'true';
+
         return InsuranceCompanyEloquentModel::query()
+            ->withTrashed()
             ->select([
                 'id',
                 'uuid',
@@ -42,8 +47,10 @@ final class InsuranceCompanyExcelExport implements
                 'email',
                 'website',
                 'created_at',
+                'deleted_at',
             ])
-            ->whereNull('deleted_at')
+            ->when($onlyDeleted, fn($q) => $q->onlyTrashed())
+            ->when($status === 'active', fn($q) => $q->whereNull('deleted_at'))
             ->when(
                 $this->filters->search,
                 fn($q, $s) => $q->where(function ($q) use ($s): void {
@@ -66,6 +73,7 @@ final class InsuranceCompanyExcelExport implements
             'Phone',
             'Email',
             'Website',
+            'Status',
             'Created At',
         ];
     }
@@ -75,9 +83,10 @@ final class InsuranceCompanyExcelExport implements
         return [
             $row->insurance_company_name,
             $row->address ?? '—',
-            $row->phone ?? '—',
+            PhoneHelper::format($row->phone) ?: '—',
             $row->email ?? '—',
             $row->website ?? '—',
+            $row->deleted_at ? 'Inactive' : 'Active',
             $row->created_at?->format('F j, Y') ?? '—',
         ];
     }

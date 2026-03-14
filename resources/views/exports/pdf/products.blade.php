@@ -68,7 +68,7 @@
             background-color: #d1fae5;
             color: #065f46;
         }
-        .status-deleted {
+        .status-inactive {
             background-color: #fee2e2;
             color: #991b1b;
         }
@@ -113,8 +113,8 @@
                     <td class="price">${{ number_format($product->price, 2) }}</td>
                     <td>{{ $product->unit }}</td>
                     <td>
-                        <span class="status-badge {{ $product->deleted_at ? 'status-deleted' : 'status-active' }}">
-                            {{ $product->deleted_at ? 'Deleted' : 'Active' }}
+                        <span class="status-badge {{ $product->deleted_at ? 'status-inactive' : 'status-active' }}">
+                            {{ $product->deleted_at ? 'Inactive' : 'Active' }}
                         </span>
                     </td>
                 </tr>

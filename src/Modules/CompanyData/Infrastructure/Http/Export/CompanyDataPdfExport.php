@@ -37,6 +37,7 @@ final class CompanyDataPdfExport
     private function query(): Builder
     {
         return CompanyDataEloquentModel::query()
+            ->withTrashed()
             ->select([
                 'company_name',
                 'name',
@@ -44,8 +45,8 @@ final class CompanyDataPdfExport
                 'phone',
                 'website',
                 'created_at',
+                'deleted_at',
             ])
-            ->whereNull('deleted_at')
             ->when(
                 $this->filters->search,
                 fn($q, $s) => $q->where(function ($q) use ($s): void {

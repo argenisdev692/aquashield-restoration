@@ -62,6 +62,7 @@ final class BlogCategoryExcelExport implements
             'Description',
             'Image',
             'User ID',
+            'Status',
             'Created At',
             'Updated At',
             'Deleted At',

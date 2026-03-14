@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { WaveBackground, GradientMesh } from '@/common/backgrounds';
+import { WaveBackground, GradientMesh, StormParticlesBackground } from '@/common/backgrounds';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -12,13 +12,15 @@ interface AuthLayoutProps {
 export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Element {
   return (
     <div
-      className="flex min-h-screen items-center justify-center px-4 py-8"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-8"
       style={{
         background: 'radial-gradient(circle at top right, color-mix(in srgb, var(--accent-secondary) 18%, transparent), transparent 40%), radial-gradient(circle at bottom left, color-mix(in srgb, var(--accent-primary) 20%, transparent), var(--bg-app) 55%)',
       }}
     >
       {/* Gradient mesh — blurred orbs (Vercel / Vite style) */}
       <GradientMesh variant="auth" className="fixed" />
+
+      <StormParticlesBackground className="fixed" />
 
       {/* Animated SVG waves at bottom */}
       <WaveBackground variant="auth" className="fixed" />

@@ -36,12 +36,13 @@ final class BlogCategoryPdfExport
             . '</style></head><body>'
             . '<h1>Blog Categories Report</h1>'
             . '<p class="meta">Generated: ' . now()->format('F j, Y H:i') . '</p>'
-            . '<table><thead><tr><th>Name</th><th>Description</th><th>Created At</th></tr></thead><tbody>';
+            . '<table><thead><tr><th>Name</th><th>Description</th><th>Status</th><th>Created At</th></tr></thead><tbody>';
 
         foreach ($rows as $row) {
             $html .= '<tr>'
                 . '<td>' . e($row['blog_category_name'] ?? '') . '</td>'
                 . '<td>' . e($row['blog_category_description'] ?? '—') . '</td>'
+                . '<td>' . e($row['status'] ?? '—') . '</td>'
                 . '<td>' . ($row['created_at'] ?? '—') . '</td>'
                 . '</tr>';
         }

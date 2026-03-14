@@ -34,8 +34,11 @@ final class UserExcelExport implements
 
     public function query(): Builder
     {
+        $status = $this->filters->status?->value;
+
         /** @var Builder $query */
         $query = UserEloquentModel::query()
+            ->withTrashed()
             ->select([
                 'id',
                 'uuid',
@@ -47,15 +50,21 @@ final class UserExcelExport implements
                 'city',
                 'state',
                 'country',
-                'created_at'
+                'status',
+                'created_at',
+                'deleted_at',
             ])
-            ->whereNull('deleted_at')
             ->when($this->filters->search, fn($q, $s) => $q->where(
                 fn($bq) =>
                 $bq->where('name', 'like', "%{$s}%")
                     ->orWhere('last_name', 'like', "%{$s}%")
                     ->orWhere('email', 'like', "%{$s}%")
             ))
+            ->when($status === 'deleted', fn($q) => $q->onlyTrashed())
+            ->when(
+                $status !== null && $status !== 'deleted',
+                fn($q) => $q->whereNull('deleted_at')->where('status', $status),
+            )
             ->when(
                 $this->filters->dateFrom || $this->filters->dateTo,
                 fn($q) => $q->inDateRange($this->filters->dateFrom, $this->filters->dateTo)
@@ -78,6 +87,7 @@ final class UserExcelExport implements
             'City',
             'State',
             'Country',
+            'Status',
             'Created At',
         ];
     }
@@ -95,8 +105,23 @@ final class UserExcelExport implements
             $user->city,
             $user->state,
             $user->country,
+            self::formatStatus($user->status, $user->deleted_at),
             $user->created_at?->format('F j, Y') ?? '—',
         ];
+    }
+
+    private static function formatStatus(?string $status, mixed $deletedAt): string
+    {
+        if ($deletedAt !== null) {
+            return 'Inactive';
+        }
+
+        return match ($status) {
+            'suspended' => 'Suspended',
+            'banned' => 'Banned',
+            'pending_setup' => 'Pending Setup',
+            default => 'Active',
+        };
     }
 
     public function title(): string

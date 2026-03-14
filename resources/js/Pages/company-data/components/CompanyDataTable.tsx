@@ -2,11 +2,12 @@ import * as React from 'react';
 import { createColumnHelper, type ColumnDef } from '@tanstack/react-table';
 import { Link } from '@inertiajs/react';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
+import { formatUsPhoneInput } from '@/common/helpers/phone';
 import { DataTable } from '@/shadcn/data-table';
 import type { CompanyDataListItem } from '@/modules/company-data/types';
 import { formatDateShort } from '@/utils/dateFormatter';
 
-import { Building2, CheckCircle, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Building2, CheckCircle, Pencil } from 'lucide-react';
 
 // ══════════════════════════════════════════════════════════════
 // Props
@@ -15,7 +16,6 @@ interface CompanyDataTableProps {
   data: CompanyDataListItem[];
   isLoading: boolean;
   isError: boolean;
-  onDelete: (uuid: string, name: string) => void;
   onRestore: (uuid: string) => void;
 }
 
@@ -25,7 +25,6 @@ export default function CompanyDataTable({
   data,
   isLoading,
   isError,
-  onDelete,
   onRestore,
 }: CompanyDataTableProps): React.JSX.Element {
   const columns = React.useMemo(() => [
@@ -64,7 +63,11 @@ export default function CompanyDataTable({
     }),
     columnHelper.accessor('phone', {
       header: 'Phone',
-      cell: (info) => <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{info.getValue() ?? '—'}</span>,
+      cell: (info) => (
+        <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          {formatUsPhoneInput(info.getValue() ?? '') || '—'}
+        </span>
+      ),
     }),
     columnHelper.accessor('created_at', {
       header: 'Created',
@@ -83,40 +86,17 @@ export default function CompanyDataTable({
 
         return (
           <div className="flex items-center justify-center gap-2">
-            <PermissionGuard permissions={['VIEW_COMPANY_DATA']}>
-              <Link
-                href={`/company-data/${company.uuid}`}
-                className="btn-action btn-action-view"
-                aria-label={`View ${company.company_name}`}
-                title="View"
-              >
-                <Eye size={14} />
-              </Link>
-            </PermissionGuard>
-
             {!isDeleted ? (
-              <>
-                <PermissionGuard permissions={['UPDATE_COMPANY_DATA']}>
-                  <Link
-                    href={`/company-data/${company.uuid}/edit`}
-                    className="btn-action btn-action-edit"
-                    aria-label={`Edit ${company.company_name}`}
-                    title="Edit"
-                  >
-                    <Pencil size={14} />
-                  </Link>
-                </PermissionGuard>
-                <PermissionGuard permissions={['DELETE_COMPANY_DATA']}>
-                  <button
-                    onClick={() => onDelete(company.uuid, company.company_name)}
-                    className="btn-action btn-action-delete"
-                    aria-label={`Delete ${company.company_name}`}
-                    title="Delete"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </PermissionGuard>
-              </>
+              <PermissionGuard permissions={['UPDATE_COMPANY_DATA']}>
+                <Link
+                  href={`/company-data/${company.uuid}/edit`}
+                  className="btn-action btn-action-edit"
+                  aria-label={`Edit ${company.company_name}`}
+                  title="Edit"
+                >
+                  <Pencil size={14} />
+                </Link>
+              </PermissionGuard>
             ) : (
               <PermissionGuard permissions={['RESTORE_COMPANY_DATA']}>
                 <button
@@ -133,7 +113,7 @@ export default function CompanyDataTable({
         );
       },
     }),
-  ], [onDelete, onRestore]);
+  ], [onRestore]);
 
   return (
     <DataTable

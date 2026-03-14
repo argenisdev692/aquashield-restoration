@@ -12,6 +12,7 @@ use Modules\CompanyData\Domain\ValueObjects\UserId;
 use Modules\CompanyData\Infrastructure\Persistence\Eloquent\Models\CompanyDataEloquentModel;
 use Modules\CompanyData\Infrastructure\Persistence\Mappers\CompanyDataMapper;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
+use Shared\Infrastructure\Utils\PhoneHelper;
 
 /**
  * EloquentCompanyDataRepository
@@ -65,7 +66,7 @@ final class EloquentCompanyDataRepository implements CompanyDataRepositoryPort
             'company_name' => $companyData->companyName,
             'name' => $companyData->name,
             'email' => $companyData->email,
-            'phone' => $companyData->phone,
+            'phone' => PhoneHelper::normalizeUs($companyData->phone) ?? $companyData->phone,
             'address' => $companyData->address,
             'address_2' => $companyData->address2,
             'website' => $socialLinks['website'],

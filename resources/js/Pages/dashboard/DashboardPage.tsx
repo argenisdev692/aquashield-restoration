@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import type { AuthPageProps } from '@/types/auth';
-import { WaveBackground, GradientMesh } from '@/common/backgrounds';
 import {
   Area,
   AreaChart,
@@ -86,11 +85,13 @@ const REVENUE_DATA = [
   { month: "Jun", revenue: 48520, target: 40000 },
 ];
 
-const TASK_STATUS_DATA = [
-  { status: "Backlog", count: 12, fill: "var(--color-chart-1)" },
-  { status: "To Do", count: 8, fill: "var(--color-chart-2)" },
-  { status: "In Progress", count: 5, fill: "var(--color-chart-3)" },
-  { status: "Done", count: 14, fill: "var(--color-chart-4)" },
+const NEW_CUSTOMER_CLAIMS = [
+  { customer: "Sophia Martinez", claim: "AQ-2031", category: "Water Damage", city: "Miami, FL", submitted_at: "2 min ago" },
+  { customer: "Daniel Carter", claim: "AQ-2030", category: "Roof Leak", city: "Orlando, FL", submitted_at: "8 min ago" },
+  { customer: "Olivia Bennett", claim: "AQ-2029", category: "Mold Remediation", city: "Tampa, FL", submitted_at: "14 min ago" },
+  { customer: "Ethan Brooks", claim: "AQ-2028", category: "Storm Damage", city: "Naples, FL", submitted_at: "21 min ago" },
+  { customer: "Ava Richardson", claim: "AQ-2027", category: "Fire Cleanup", city: "Sarasota, FL", submitted_at: "34 min ago" },
+  { customer: "Noah Peterson", claim: "AQ-2026", category: "Flood Extraction", city: "Fort Myers, FL", submitted_at: "42 min ago" },
 ];
 
 const USER_DIST_DATA = [
@@ -111,14 +112,6 @@ const revenueChartConfig = {
   },
 } satisfies ChartConfig;
 
-const taskChartConfig = {
-  count: { label: "Tasks" },
-  Backlog: { label: "Backlog", color: "var(--color-chart-1)" },
-  "To Do": { label: "To Do", color: "var(--color-chart-2)" },
-  "In Progress": { label: "In Progress", color: "var(--color-chart-3)" },
-  Done: { label: "Done", color: "var(--color-chart-4)" },
-} satisfies ChartConfig;
-
 const userChartConfig = {
   count: { label: "Users" },
   Contractors: { label: "Contractors", color: "var(--color-chart-4)" },
@@ -126,6 +119,13 @@ const userChartConfig = {
   Managers: { label: "Managers", color: "var(--color-chart-2)" },
   Admins: { label: "Admins", color: "var(--color-chart-5)" },
 } satisfies ChartConfig;
+
+const dashboardPanelStyle: React.CSSProperties = {
+  background: 'color-mix(in srgb, var(--bg-elevated) 92%, transparent)',
+  borderColor: 'color-mix(in srgb, var(--border-default) 72%, transparent)',
+  backdropFilter: 'blur(14px)',
+  boxShadow: '0 20px 44px -30px color-mix(in srgb, var(--bg-base) 80%, transparent)',
+};
 
 // ══════════════════════════════════════════════════════════════════
 // Metric Card Icon
@@ -179,28 +179,22 @@ function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
     <div
       className="group relative flex flex-col overflow-hidden rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1"
       style={{
-        background: 'color-mix(in srgb, var(--bg-card) 92%, transparent)',
-        borderColor: 'color-mix(in srgb, var(--border-default) 60%, transparent)',
+        background: 'color-mix(in srgb, var(--bg-elevated) 94%, transparent)',
+        borderColor: 'color-mix(in srgb, var(--border-default) 72%, transparent)',
         backdropFilter: 'blur(10px)',
+        boxShadow: '0 20px 42px -32px color-mix(in srgb, var(--bg-base) 84%, transparent)',
       }}
     >
-      {/* Background Glow Effect */}
       <div 
-        className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-5"
-        style={{ background: card.gradient }}
-      />
-      
-      {/* Top Border Glow */}
-      <div 
-        className="absolute inset-x-0 top-0 h-px opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        className="absolute inset-x-0 top-0 h-px"
         style={{
-          background: 'linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--border-strong) 70%, transparent) 50%, transparent 100%)',
+          background: 'linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--accent-primary) 35%, transparent) 50%, transparent 100%)',
         }}
       />
 
       <div className="flex items-center justify-between">
         <div 
-          className="flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg"
+          className="flex h-12 w-12 items-center justify-center rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
           style={{ 
             background: card.gradient,
             boxShadow: '0 12px 24px -10px color-mix(in srgb, var(--bg-base) 45%, transparent)',
@@ -237,12 +231,79 @@ function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
           </span>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Decorative Wave/Ambient Light (2026 aesthetics) */}
-      <div 
-        className="absolute -bottom-12 -right-12 h-28 w-28 rounded-full blur-[72px] opacity-15 transition-all duration-500 group-hover:scale-125 group-hover:opacity-25"
-        style={{ background: card.gradient }}
+function NewCustomerClaimsMarquee(): React.JSX.Element {
+  const claims = [...NEW_CUSTOMER_CLAIMS, ...NEW_CUSTOMER_CLAIMS];
+
+  return (
+    <div
+      className="relative h-[248px] overflow-hidden rounded-[20px]"
+      style={{
+        background: 'color-mix(in srgb, var(--bg-subtle) 88%, transparent)',
+        border: '1px solid color-mix(in srgb, var(--border-default) 68%, transparent)',
+      }}
+    >
+      <style>{`
+        @keyframes dashboard-claims-marquee {
+          from { transform: translateY(0); }
+          to { transform: translateY(-50%); }
+        }
+      `}</style>
+      <div
+        className="absolute inset-x-0 top-0 z-10 h-12"
+        style={{ background: 'linear-gradient(180deg, var(--bg-elevated) 0%, transparent 100%)' }}
       />
+      <div
+        className="absolute inset-x-0 bottom-0 z-10 h-12"
+        style={{ background: 'linear-gradient(0deg, var(--bg-elevated) 0%, transparent 100%)' }}
+      />
+      <div
+        className="flex flex-col gap-2.5 p-3.5"
+        style={{ animation: 'dashboard-claims-marquee 20s linear infinite' }}
+      >
+        {claims.map((claim, index) => (
+          <div
+            key={`${claim.claim}-${index}`}
+            className="rounded-[18px] px-4 py-3.5"
+            style={{
+              background: 'color-mix(in srgb, var(--bg-elevated) 86%, transparent)',
+              border: '1px solid color-mix(in srgb, var(--border-default) 64%, transparent)',
+              boxShadow: '0 12px 24px -20px color-mix(in srgb, var(--bg-base) 75%, transparent)',
+            }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate text-[13px] font-semibold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
+                  {claim.customer}
+                </p>
+                <p className="mt-1 text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--accent-secondary)', fontFamily: 'var(--font-sans)' }}>
+                  {claim.claim}
+                </p>
+              </div>
+              <span
+                className="shrink-0 rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em]"
+                style={{
+                  background: 'color-mix(in srgb, var(--accent-primary) 14%, transparent)',
+                  color: 'var(--accent-primary)',
+                  border: '1px solid color-mix(in srgb, var(--accent-primary) 24%, transparent)',
+                }}
+              >
+                New
+              </span>
+            </div>
+            <div className="mt-2.5 flex items-center justify-between gap-3 text-[11px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
+              <span className="truncate">{claim.category}</span>
+              <span className="shrink-0">{claim.city}</span>
+            </div>
+            <div className="mt-1.5 text-[10px]" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+              Submitted {claim.submitted_at}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -259,22 +320,19 @@ export default function DashboardPage(): React.JSX.Element {
       <Head title="Dashboard — AquaShield" />
       <AppLayout>
         <div className="relative min-h-full overflow-hidden">
-          <div className="pointer-events-none absolute inset-0 z-0">
-            <GradientMesh variant="dashboard" />
-            <WaveBackground variant="dashboard" />
-          </div>
-
           {/* ── Content layer ── */}
-          <div className="relative z-10">
+          <div className="relative">
 
           {/* ── Header ── */}
           <div className="mb-6">
-            <h1 className="text-xl font-bold md:text-2xl" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
-              Welcome back, {auth.user?.name ?? 'User'} 👋
-            </h1>
-            <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-              Here's your projects and revenue overview for today.
-            </p>
+            <div>
+              <h1 className="text-xl font-bold md:text-2xl" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
+                Welcome back, {auth.user?.name ?? 'User'} 👋
+              </h1>
+              <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+                Here's your projects and revenue overview for today.
+              </p>
+            </div>
           </div>
 
           {/* ═══════════════════════════════════════
@@ -292,7 +350,7 @@ export default function DashboardPage(): React.JSX.Element {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             
             {/* Linear Chart - Wide (Takes 2 columns on desktop) */}
-            <Card className="col-span-1 md:col-span-2 shadow-sm border-border bg-card">
+            <Card className="col-span-1 md:col-span-2 shadow-sm border-border bg-card" style={dashboardPanelStyle}>
               <CardHeader>
                 <CardTitle>Revenue & Targets</CardTitle>
                 <CardDescription>
@@ -346,67 +404,17 @@ export default function DashboardPage(): React.JSX.Element {
 
             <div className="flex flex-col gap-4">
               {/* Circular Chart 1 - Donut */}
-              <Card className="flex-1 flex flex-col shadow-sm border-border bg-card">
+              <Card className="flex-1 flex flex-col shadow-sm border-border bg-card" style={dashboardPanelStyle}>
                 <CardHeader className="items-center pb-0">
-                  <CardTitle>Task Status</CardTitle>
-                  <CardDescription>Current sprint</CardDescription>
+                  <CardTitle>New customers claims</CardTitle>
+                  <CardDescription>Live intake queue</CardDescription>
                 </CardHeader>
-                <CardContent className="flex-1 pb-0 mt-4">
-                  <ChartContainer
-                    config={taskChartConfig}
-                    className="mx-auto aspect-4/3 max-h-[220px]"
-                  >
-                    <PieChart>
-                      <ChartTooltip
-                        cursor={false}
-                        content={<ChartTooltipContent hideLabel />}
-                      />
-                      <Pie
-                        data={TASK_STATUS_DATA}
-                        dataKey="count"
-                        nameKey="status"
-                        innerRadius={50}
-                        outerRadius={75}
-                        strokeWidth={2}
-                        stroke="var(--background)"
-                      >
-                        <Label
-                          content={({ viewBox }) => {
-                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                              return (
-                                <text
-                                  x={viewBox.cx}
-                                  y={viewBox.cy}
-                                  textAnchor="middle"
-                                  dominantBaseline="middle"
-                                >
-                                  <tspan
-                                    x={viewBox.cx}
-                                    y={viewBox.cy}
-                                    className="fill-foreground text-3xl font-bold"
-                                  >
-                                    39
-                                  </tspan>
-                                  <tspan
-                                    x={viewBox.cx}
-                                    y={(viewBox.cy || 0) + 24}
-                                    className="fill-muted-foreground text-xs"
-                                  >
-                                    Total
-                                  </tspan>
-                                </text>
-                              )
-                            }
-                          }}
-                        />
-                      </Pie>
-                    </PieChart>
-                  </ChartContainer>
+                <CardContent className="mt-4 flex-1 pb-0">
+                  <NewCustomerClaimsMarquee />
                 </CardContent>
               </Card>
 
-              {/* Circular Chart 2 - Donut */}
-              <Card className="flex-1 flex flex-col shadow-sm border-border bg-card">
+              <Card className="flex-1 flex flex-col shadow-sm border-border bg-card" style={dashboardPanelStyle}>
                 <CardHeader className="items-center pb-0">
                   <CardTitle>User Distribution</CardTitle>
                   <CardDescription>Active platform roles</CardDescription>
@@ -428,7 +436,7 @@ export default function DashboardPage(): React.JSX.Element {
                         innerRadius={50}
                         outerRadius={75}
                         strokeWidth={2}
-                        stroke="var(--background)"
+                        stroke="var(--bg-elevated)"
                       >
                         <Label
                           content={({ viewBox }) => {

@@ -12,6 +12,7 @@ class InsuranceCompanyFilterDTO extends Data
         public ?string $search = null,
         public ?string $dateFrom = null,
         public ?string $dateTo = null,
+        public ?string $status = null,
         public ?string $onlyTrashed = null,
         public ?string $sortBy = 'created_at',
         public ?string $sortDir = 'desc',

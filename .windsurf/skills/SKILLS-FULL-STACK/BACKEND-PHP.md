@@ -689,6 +689,19 @@ Route::middleware(['auth:sanctum', 'role:super-admin'])->prefix('/api/{module}/a
 
 **CRITICAL**: All dates in exports (Excel and PDF) MUST use human-readable format `F j, Y` (e.g., "March 3, 2026"), NOT ISO8601.
 
+### Export Status + Phone Rule
+
+**MANDATORY**: Every CRUD export (Excel and PDF) MUST include a human-readable `Status` column/cell for soft-delete state.
+
+- If `deleted_at` is `null`, export status MUST be `Active`.
+- If `deleted_at` is not `null`, export status MUST be `Inactive`.
+- If the module also has a business/editorial lifecycle state, it MUST remain in a separate column such as `Publication Status`.
+
+**MANDATORY**: Every phone value shown in exports (Excel and PDF) MUST be formatted as `(XXX) XXX-XXXX`.
+
+- Use the shared backend phone formatter/helper.
+- Never expose raw `+1XXXXXXXXXX`, raw digits, or inconsistent phone formats in reports.
+
 ### ExportController
 
 ```php

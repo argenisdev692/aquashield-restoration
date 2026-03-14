@@ -47,6 +47,7 @@ final class BlogCategoryExportTransformer
             'blog_category_description' => $category->description,
             'blog_category_image' => $category->image,
             'user_id' => $category->userId,
+            'status' => $category->deletedAt !== null ? 'Inactive' : 'Active',
             'created_at' => is_string($category->createdAt) ? $category->createdAt : null,
             'updated_at' => is_string($category->updatedAt) ? $category->updatedAt : null,
             'deleted_at' => is_string($category->deletedAt) ? $category->deletedAt : null,
@@ -62,6 +63,7 @@ final class BlogCategoryExportTransformer
             'uuid' => $category->uuid,
             'blog_category_name' => $category->blogCategoryName,
             'blog_category_description' => $category->blogCategoryDescription,
+            'status' => $category->deletedAt !== null ? 'Inactive' : 'Active',
             'created_at' => $category->createdAt !== '' ? $category->createdAt : null,
         ];
     }

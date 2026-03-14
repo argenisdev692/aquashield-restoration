@@ -96,6 +96,7 @@
                 <th>Phone</th>
                 <th>Email</th>
                 <th>Website</th>
+                <th>Status</th>
                 <th>Created At</th>
             </tr>
         </thead>
@@ -104,9 +105,10 @@
                 <tr>
                     <td>{{ $item->insurance_company_name }}</td>
                     <td>{{ $item->address ?? '—' }}</td>
-                    <td>{{ $item->phone ?? '—' }}</td>
+                    <td>{{ \Shared\Infrastructure\Utils\PhoneHelper::format($item->phone) ?: '—' }}</td>
                     <td>{{ $item->email ?? '—' }}</td>
                     <td>{{ $item->website ?? '—' }}</td>
+                    <td>{{ $item->deleted_at ? 'Inactive' : 'Active' }}</td>
                     <td>{{ $item->created_at?->format('F j, Y') ?? '—' }}</td>
                 </tr>
             @endforeach

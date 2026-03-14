@@ -96,17 +96,29 @@
                 <th>Email</th>
                 <th>Phone</th>
                 <th>City</th>
+                <th>Status</th>
                 <th>Created</th>
             </tr>
         </thead>
         <tbody>
             @foreach($rows as $user)
+                @php
+                    $status = $user->deleted_at
+                        ? 'Inactive'
+                        : match ($user->status) {
+                            'suspended' => 'Suspended',
+                            'banned' => 'Banned',
+                            'pending_setup' => 'Pending Setup',
+                            default => 'Active',
+                        };
+                @endphp
                 <tr>
                     <td>{{ $user->uuid }}</td>
                     <td>{{ $user->name }} {{ $user->last_name }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ \Shared\Infrastructure\Utils\PhoneHelper::format($user->phone) ?: '—' }}</td>
                     <td>{{ $user->city }}</td>
+                    <td>{{ $status }}</td>
                     <td>{{ $user->created_at?->format('F j, Y') ?? '—' }}</td>
                 </tr>
             @endforeach

@@ -93,6 +93,7 @@
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Website</th>
+                <th>Status</th>
                 <th>Created</th>
             </tr>
         </thead>
@@ -104,6 +105,7 @@
                     <td>{{ $item->email }}</td>
                     <td>{{ $item->phone }}</td>
                     <td>{{ $item->website }}</td>
+                    <td>{{ $item->status }}</td>
                     <td>{{ $item->created_at }}</td>
                 </tr>
             @endforeach

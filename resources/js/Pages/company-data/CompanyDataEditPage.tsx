@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Building2, Download, MapPin, Save, Share2, Trash2 } from 'lucide-react';
+import { formatUsPhoneInput, normalizeUsPhoneForPayload } from '@/common/helpers/phone';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useCompanyData } from '@/modules/company-data/hooks/useCompanyData';
 import { useCompanyDataMutations } from '@/modules/company-data/hooks/useCompanyDataMutations';
@@ -55,7 +56,7 @@ export default function CompanyDataEditPage(): React.JSX.Element {
       company_name: company.company_name,
       name: company.name ?? '',
       email: company.email ?? '',
-      phone: company.phone ?? '',
+      phone: formatUsPhoneInput(company.phone ?? ''),
       address: company.address ?? '',
       website: company.website ?? '',
       facebook_link: company.facebook_link ?? '',
@@ -73,13 +74,18 @@ export default function CompanyDataEditPage(): React.JSX.Element {
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
     const { name, value } = e.target;
     const key = name as keyof UpdateCompanyDataDTO;
-    setForm((prev) => ({ ...prev, [key]: value }));
+    const nextValue = name === 'phone'
+      ? formatUsPhoneInput(value)
+      : value;
+    setForm((prev) => ({ ...prev, [key]: nextValue }));
   }
 
   function handleSubmit(e: React.FormEvent): void {
     e.preventDefault();
+    const normalizedPhone = normalizeUsPhoneForPayload(form.phone ?? '');
     const payload: UpdateCompanyDataDTO = {
       ...form,
+      phone: normalizedPhone ?? (form.phone?.trim().length ? form.phone.trim() : null),
       address_2: address2.trim().length > 0 ? address2.trim() : null,
       signature_data_url: signatureDataUrl,
       remove_signature: removeSignature,
@@ -174,7 +180,16 @@ export default function CompanyDataEditPage(): React.JSX.Element {
                 </div>
                 <PremiumField label="Legal Representative" name="name" value={form.name ?? ''} onChange={handleChange} placeholder="John Smith" />
                 <PremiumField label="Business Email" name="email" type="email" value={form.email ?? ''} onChange={handleChange} placeholder="billing@acme.com" />
-                <PremiumField label="Public Phone" name="phone" value={form.phone ?? ''} onChange={handleChange} placeholder="+1 800-ACME-CORP" />
+                <PremiumField
+                  label="Public Phone"
+                  name="phone"
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={14}
+                  value={form.phone ?? ''}
+                  onChange={handleChange}
+                  placeholder="(555) 000-0000"
+                />
                 <div className="md:col-span-2">
                   <PremiumField
                     label="Primary Address"

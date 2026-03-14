@@ -72,6 +72,7 @@
                 <th>Title</th>
                 <th>Slug</th>
                 <th>Category</th>
+                <th>Publication Status</th>
                 <th>Status</th>
                 <th>Published At</th>
                 <th>Created At</th>
@@ -84,6 +85,7 @@
                     <td>{{ $row['title'] }}</td>
                     <td>{{ $row['slug'] }}</td>
                     <td>{{ $row['category'] }}</td>
+                    <td>{{ $row['publication_status'] }}</td>
                     <td>{{ $row['status'] }}</td>
                     <td>{{ $row['published_at'] }}</td>
                     <td>{{ $row['created_at'] }}</td>
