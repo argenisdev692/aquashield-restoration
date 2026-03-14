@@ -527,7 +527,7 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapsed }: { onC
         {onClose && (
           <button
             onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-150"
+            className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg transition-all duration-150"
             style={{
               color: 'var(--text-muted)',
               background: 'var(--bg-hover)',
@@ -543,7 +543,7 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapsed }: { onC
         {!onClose && onToggleCollapsed && (
           <button
             onClick={onToggleCollapsed}
-            className="flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-150"
+            className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg transition-all duration-150"
             style={{
               color: 'var(--text-muted)',
               background: 'var(--bg-hover)',

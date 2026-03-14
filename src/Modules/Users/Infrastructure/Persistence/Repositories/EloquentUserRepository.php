@@ -115,10 +115,6 @@ final class EloquentUserRepository implements UserRepositoryPort
             ->with('roles:id,name')
             ->select(self::SELECT_COLUMNS)
             ->when(
-                ($filters['status'] ?? null) === null,
-                static fn($q) => $q->whereNull('deleted_at')
-            )
-            ->when(
                 $filters['status'] ?? null,
                 static function ($q, $status) {
                     $statusValue = $status instanceof UserStatus ? $status->value : (string) $status;

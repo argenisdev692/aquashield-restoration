@@ -14,18 +14,18 @@ namespace Modules\Auth\Domain\ValueObjects;
  */
 final readonly class IpAddress
 {
+    public string $value;
+
     public function __construct(
-        public string $value {
-            set {
-                try {
-                    $ip = filter_var($value, FILTER_VALIDATE_IP, FILTER_THROW_ON_FAILURE);
-                    $this->value = $ip;
-                } catch(\ValueError $e) {
-                    throw new \InvalidArgumentException("Invalid IP address: {$value}", previous: $e);
-                }
-            }
-        },
+        string $value,
     ) {
+        try {
+            $ip = filter_var($value, FILTER_VALIDATE_IP, FILTER_THROW_ON_FAILURE);
+        } catch (\ValueError $e) {
+            throw new \InvalidArgumentException("Invalid IP address: {$value}", previous: $e);
+        }
+
+        $this->value = $ip;
     }
 
     public function isIPv4(): bool

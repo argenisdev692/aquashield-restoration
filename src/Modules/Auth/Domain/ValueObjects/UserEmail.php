@@ -14,20 +14,20 @@ namespace Modules\Auth\Domain\ValueObjects;
  */
 final readonly class UserEmail
 {
+    public string $value;
+
     public function __construct(
-        public string $value {
-            get => strtolower($this->value);
-            set {
-                $normalized = strtolower(trim($value));
-                try {
-                    $email = filter_var($normalized, FILTER_VALIDATE_EMAIL, FILTER_THROW_ON_FAILURE);
-                    $this->value = $email;
-                } catch(\ValueError $e) {
-                    throw new \InvalidArgumentException("Invalid email address: {$normalized}", previous: $e);
-                }
-            }
-        },
+        string $value,
     ) {
+        $normalized = strtolower(trim($value));
+
+        try {
+            $email = filter_var($normalized, FILTER_VALIDATE_EMAIL, FILTER_THROW_ON_FAILURE);
+        } catch (\ValueError $e) {
+            throw new \InvalidArgumentException("Invalid email address: {$normalized}", previous: $e);
+        }
+
+        $this->value = $email;
     }
 
     public function domain(): string

@@ -7,32 +7,17 @@ namespace Modules\CompanyData\Domain\ValueObjects;
 final readonly class SocialLinks
 {
     public function __construct(
-        public private(set) ?string $facebook = null {
-            set {
-                $this->facebook = self::validateUrl('Facebook', $value);
-            }
-        },
-        public private(set) ?string $instagram = null {
-            set {
-                $this->instagram = self::validateUrl('Instagram', $value);
-            }
-        },
-        public private(set) ?string $linkedin = null {
-            set {
-                $this->linkedin = self::validateUrl('LinkedIn', $value);
-            }
-        },
-        public private(set) ?string $twitter = null {
-            set {
-                $this->twitter = self::validateUrl('Twitter', $value);
-            }
-        },
-        public private(set) ?string $website = null {
-            set {
-                $this->website = self::validateUrl('website', $value);
-            }
-        },
+        public ?string $facebook = null,
+        public ?string $instagram = null,
+        public ?string $linkedin = null,
+        public ?string $twitter = null,
+        public ?string $website = null,
     ) {
+        self::validateUrl('Facebook', $this->facebook);
+        self::validateUrl('Instagram', $this->instagram);
+        self::validateUrl('LinkedIn', $this->linkedin);
+        self::validateUrl('Twitter', $this->twitter);
+        self::validateUrl('website', $this->website);
     }
 
     private static function validateUrl(string $name, ?string $url): ?string

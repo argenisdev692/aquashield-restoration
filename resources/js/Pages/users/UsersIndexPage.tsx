@@ -15,8 +15,8 @@ import type { UserFilters, UserListItem } from '@/modules/users/types';
 import { Search, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 
 type OptimisticUsersAction =
-  | { type: 'delete'; uuid: string }
-  | { type: 'bulk-delete'; uuids: string[] }
+  | { type: 'delete'; uuid: string; removeFromList: boolean }
+  | { type: 'bulk-delete'; uuids: string[]; removeFromList: boolean }
   | { type: 'restore'; uuid: string; removeFromList: boolean };
 
 /**
@@ -36,18 +36,35 @@ export default function UsersIndexPage(): React.JSX.Element {
   const { data, isPending, isError } = useUsers(filters);
   const users = data?.data ?? [];
   const meta = data?.meta ?? { currentPage: 1, lastPage: 1, perPage: 15, total: 0 };
+  const isActiveFilter = filters.status === 'active';
   const isDeletedFilter = filters.status === 'deleted';
   const [optimisticUsers, setOptimisticUsers] = React.useOptimistic<UserListItem[], OptimisticUsersAction>(
     users,
     (currentState, action) => {
       if (action.type === 'delete') {
-        return currentState.filter((user) => user.uuid !== action.uuid);
+        if (action.removeFromList) {
+          return currentState.filter((user) => user.uuid !== action.uuid);
+        }
+
+        return currentState.map((user) =>
+          user.uuid === action.uuid
+            ? { ...user, status: 'deleted', deleted_at: new Date().toISOString() }
+            : user,
+        );
       }
 
       if (action.type === 'bulk-delete') {
         const uuids = new Set(action.uuids);
 
-        return currentState.filter((user) => !uuids.has(user.uuid));
+        if (action.removeFromList) {
+          return currentState.filter((user) => !uuids.has(user.uuid));
+        }
+
+        return currentState.map((user) =>
+          uuids.has(user.uuid)
+            ? { ...user, status: 'deleted', deleted_at: new Date().toISOString() }
+            : user,
+        );
       }
 
       if (action.removeFromList) {
@@ -109,7 +126,7 @@ export default function UsersIndexPage(): React.JSX.Element {
     const targetUuid = pendingDelete.uuid;
 
     React.startTransition(async () => {
-      setOptimisticUsers({ type: 'delete', uuid: targetUuid });
+      setOptimisticUsers({ type: 'delete', uuid: targetUuid, removeFromList: isActiveFilter });
 
       try {
         await deleteUser.mutateAsync(targetUuid);
@@ -155,7 +172,7 @@ export default function UsersIndexPage(): React.JSX.Element {
     const uuidsToDelete = [...selectedActiveUuids];
 
     React.startTransition(async () => {
-      setOptimisticUsers({ type: 'bulk-delete', uuids: uuidsToDelete });
+      setOptimisticUsers({ type: 'bulk-delete', uuids: uuidsToDelete, removeFromList: isActiveFilter });
 
       try {
         await bulkDeleteUsers.mutateAsync(uuidsToDelete);

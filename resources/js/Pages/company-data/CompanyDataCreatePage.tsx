@@ -87,7 +87,7 @@ export default function CompanyDataCreatePage(): React.JSX.Element {
   return (
     <AppLayout>
       <Head title="Create Company Profile" />
-      <div className="mx-auto max-w-[800px]">
+      <div className="mx-auto max-w-[800px] px-4 sm:px-0">
         
         {/* ── Header ── */}
         <div className="mb-6 flex items-center justify-between">
@@ -120,8 +120,8 @@ export default function CompanyDataCreatePage(): React.JSX.Element {
         </div>
 
         {/* ── Form Card ── */}
-        <div className="card">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="card p-5 sm:p-8">
+          <form onSubmit={handleSubmit} className="space-y-8">
             
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Company Name */}
