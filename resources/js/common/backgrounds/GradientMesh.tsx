@@ -7,6 +7,7 @@ interface MeshOrb {
   left: string;
   blur: string;
   animation: string;
+  opacity?: number;
 }
 
 interface GradientMeshProps {
@@ -49,6 +50,7 @@ const DASHBOARD_ORBS: MeshOrb[] = [
     left: '70%',
     blur: '140px',
     animation: 'mesh-float-1 14s ease-in-out infinite',
+    opacity: 0.08,
   },
   {
     color: 'var(--accent-secondary)',
@@ -57,6 +59,7 @@ const DASHBOARD_ORBS: MeshOrb[] = [
     left: '-5%',
     blur: '120px',
     animation: 'mesh-float-2 18s ease-in-out infinite',
+    opacity: 0.06,
   },
   {
     color: 'var(--accent-success)',
@@ -65,6 +68,7 @@ const DASHBOARD_ORBS: MeshOrb[] = [
     left: '30%',
     blur: '100px',
     animation: 'mesh-float-3 20s ease-in-out infinite',
+    opacity: 0.05,
   },
 ];
 
@@ -87,20 +91,25 @@ export function GradientMesh({ variant = 'auth', className = '' }: GradientMeshP
             left: orb.left,
             background: orb.color,
             filter: `blur(${orb.blur})`,
-            opacity: 0.15,
+            opacity: orb.opacity ?? 0.15,
             animation: orb.animation,
             willChange: 'transform, opacity',
           }}
         />
       ))}
 
-      {/* Noise / grain overlay for depth — Vercel-style */}
       <div
         className="absolute inset-0"
-        style={{
-          backdropFilter: 'blur(60px)',
-          WebkitBackdropFilter: 'blur(60px)',
-        }}
+        style={
+          variant === 'auth'
+            ? {
+                backdropFilter: 'blur(60px)',
+                WebkitBackdropFilter: 'blur(60px)',
+              }
+            : {
+                background: 'linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--bg-app) 12%, transparent) 100%)',
+              }
+        }
       />
     </div>
   );

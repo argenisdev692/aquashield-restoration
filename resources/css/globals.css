@@ -45,7 +45,7 @@
     --grad-glow:      linear-gradient(135deg, #00B5E2 0%, #33c4e8 100%);
     --grad-text:      linear-gradient(90deg, #00B5E2, #33c4e8);
 
-    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-sans: "Exo", ui-sans-serif, system-ui, sans-serif;
     --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 
     --radius-sm: 6px;
@@ -95,6 +95,13 @@ html, body {
 
 body {
     min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+    font-family: var(--font-sans);
 }
 
 :focus {
@@ -245,10 +252,10 @@ body {
 
 /* Sidebar Specifics */
 .sidebar-active {
-    background: color-mix(in srgb, #00B5E2 10%, transparent);
-    border: 1px solid color-mix(in srgb, #00B5E2 20%, transparent);
+    background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-primary) 20%, transparent);
     backdrop-filter: blur(8px);
-    color: #33c4e8;
+    color: var(--accent-secondary);
 }
 
 /* ── Wave & Gradient Mesh Animations ── */

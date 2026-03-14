@@ -20,14 +20,14 @@ const AUTH_LAYERS: WaveLayer[] = [
 ];
 
 const DASHBOARD_LAYERS: WaveLayer[] = [
-  { color: 'var(--accent-primary)',   opacity: 0.05, duration: '20s', yOffset: 0,  amplitude: 18 },
-  { color: 'var(--accent-secondary)', opacity: 0.04, duration: '16s', yOffset: 8,  amplitude: 12 },
-  { color: 'var(--accent-success)',   opacity: 0.03, duration: '24s', yOffset: 16, amplitude: 22 },
+  { color: 'var(--accent-primary)',   opacity: 0.025, duration: '22s', yOffset: 0,  amplitude: 12 },
+  { color: 'var(--accent-secondary)', opacity: 0.02, duration: '18s', yOffset: 8,  amplitude: 8 },
+  { color: 'var(--accent-success)',   opacity: 0.015, duration: '26s', yOffset: 14, amplitude: 14 },
 ];
 
-function buildSinePath(amplitude: number, yOffset: number): string {
+function buildSinePath(amplitude: number, yOffset: number, height: number): string {
   const w = 1440;
-  const h = 320;
+  const h = height;
   const mid = h / 2 + yOffset;
   const a = amplitude;
 
@@ -45,6 +45,7 @@ function buildSinePath(amplitude: number, yOffset: number): string {
 
 export function WaveBackground({ variant = 'auth', className = '' }: WaveBackgroundProps): React.JSX.Element {
   const layers = variant === 'auth' ? AUTH_LAYERS : DASHBOARD_LAYERS;
+  const waveHeight = variant === 'auth' ? 320 : 220;
 
   return (
     <div
@@ -54,11 +55,11 @@ export function WaveBackground({ variant = 'auth', className = '' }: WaveBackgro
       {layers.map((layer, i) => (
         <div
           key={i}
-          className="absolute bottom-0 left-0 h-[320px]"
-          style={{ width: '200%' }}
+          className="absolute bottom-0 left-0"
+          style={{ width: '200%', height: `${waveHeight}px` }}
         >
           <svg
-            viewBox="0 0 2880 320"
+            viewBox={`0 0 2880 ${waveHeight}`}
             preserveAspectRatio="none"
             className="h-full w-full"
             style={{
@@ -66,7 +67,7 @@ export function WaveBackground({ variant = 'auth', className = '' }: WaveBackgro
             }}
           >
             <path
-              d={buildSinePath(layer.amplitude, layer.yOffset)}
+              d={buildSinePath(layer.amplitude, layer.yOffset, waveHeight)}
               fill={layer.color}
               fillOpacity={layer.opacity}
             />

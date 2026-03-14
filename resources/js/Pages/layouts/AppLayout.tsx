@@ -67,6 +67,7 @@ const IconShield  = () => <ShieldCheck size={20} className="text-white" />;
 const IconMenu    = () => <Menu size={icSize} />;
 const IconSettings = () => <Settings size={icSize} />;
 const IconArrowLeft = () => <ArrowLeft size={16} />;
+const IconArrowRight = () => <ChevronRight size={16} />;
 const IconClose = () => <X size={16} />;
 const IconBuilding = () => <Building2 size={icSize} />;
 const IconPackage = () => <Package size={icSize} />;
@@ -373,7 +374,25 @@ function AvatarDropdown(): React.JSX.Element {
 // ══════════════════════════════════════════════════════════════════
 // Theme Toggle Button (shared between desktop sidebar & mobile drawer)
 // ══════════════════════════════════════════════════════════════════
-function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () => void }): React.JSX.Element {
+function ThemeToggle({ theme, onToggle, collapsed = false }: { theme: Theme; onToggle: () => void; collapsed?: boolean }): React.JSX.Element {
+  if (collapsed) {
+    return (
+      <button
+        onClick={onToggle}
+        className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all duration-150"
+        style={{ color: 'var(--text-muted)', border: '1px solid var(--border-default)', background: 'transparent' }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-hover)'; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md" style={{ background: 'var(--bg-hover)' }}>
+          {theme === 'dark' ? <IconSun /> : <IconMoon />}
+        </span>
+      </button>
+    );
+  }
+
   return (
     <button
       onClick={onToggle}
@@ -413,7 +432,7 @@ function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () => void }
 // ══════════════════════════════════════════════════════════════════
 // Sidebar Content (shared between desktop and mobile)
 // ══════════════════════════════════════════════════════════════════
-function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Element {
+function SidebarContent({ onClose, collapsed = false, onToggleCollapsed }: { onClose?: () => void; collapsed?: boolean; onToggleCollapsed?: () => void }): React.JSX.Element {
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
   const { auth } = usePage<AuthPageProps>().props;
   const userRoles = auth.user?.roles ?? [];
@@ -466,16 +485,31 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
     });
   };
 
+  const handleGroupClick = (label: string): void => {
+    if (collapsed && onToggleCollapsed) {
+      setExpandedItems(prev => {
+        const next = new Set(prev);
+        next.add(label);
+        return next;
+      });
+      onToggleCollapsed();
+      return;
+    }
+
+    toggleExpanded(label);
+  };
+
   return (
     <>
       {/* Logo + close arrow (arrow only visible on mobile) */}
-      <div className="flex h-[60px] items-center justify-between px-5 shrink-0"
+      <div className={`flex h-[60px] items-center justify-between shrink-0 ${collapsed ? 'px-3' : 'px-5'}`}
         style={{ borderBottom: '1px solid var(--border-subtle)' }}>
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
             style={{ background: 'var(--grad-primary)' }}>
             <IconShield />
           </div>
+          {!collapsed && (
           <div>
             <span className="block text-[13px] font-bold tracking-tight leading-none"
               style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
@@ -486,6 +520,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
               CRM
             </span>
           </div>
+          )}
         </div>
 
         {/* Close arrow — only rendered in mobile drawer */}
@@ -505,17 +540,36 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
             <IconArrowLeft />
           </button>
         )}
+        {!onClose && onToggleCollapsed && (
+          <button
+            onClick={onToggleCollapsed}
+            className="flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-150"
+            style={{
+              color: 'var(--text-muted)',
+              background: 'var(--bg-hover)',
+              border: '1px solid var(--border-default)',
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; }}
+            aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
+            title={collapsed ? 'Expand menu' : 'Collapse menu'}
+          >
+            {collapsed ? <IconArrowRight /> : <IconArrowLeft />}
+          </button>
+        )}
       </div>
 
       {/* Section label */}
+      {!collapsed && (
       <div className="px-4 pt-5 pb-2">
         <span className="text-[10px] font-semibold uppercase tracking-[1.8px]"
           style={{ color: 'var(--text-disabled)' }}>
           Navigation
         </span>
       </div>
+      )}
 
-      <nav className="flex-1 space-y-1.5 px-3 uppercase text-xs tracking-wide overflow-y-auto">
+      <nav className={`flex-1 space-y-1.5 uppercase text-xs tracking-wide overflow-y-auto ${collapsed ? 'px-2 py-3' : 'px-3'}`}>
         {NAV_ITEMS.map((item) => {
           // If item has children, render dropdown
           if (item.children) {
@@ -537,11 +591,13 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
             const groupElement = (
               <div key={item.label}>
                 <button
-                  onClick={() => toggleExpanded(item.label)}
-                  className="group flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-300"
+                  onClick={() => handleGroupClick(item.label)}
+                  className={`group flex w-full cursor-pointer items-center rounded-lg py-2.5 transition-all duration-300 ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'}`}
                   style={{
                     color: hasActiveChild ? 'var(--text-primary)' : 'var(--text-muted)',
                   }}
+                  aria-label={item.label}
+                  title={collapsed ? item.label : undefined}
                 >
                   <span 
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300"
@@ -553,6 +609,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
                   >
                     {item.icon}
                   </span>
+                  {!collapsed && (
+                  <>
                   <div className="min-w-0 flex-1 text-left">
                     <span 
                       className="block text-[13px] font-semibold leading-none"
@@ -580,10 +638,12 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
                       color: 'var(--text-disabled)'
                     }}
                   />
+                  </>
+                  )}
                 </button>
 
                 {/* Dropdown children */}
-                {isExpanded && (
+                {!collapsed && isExpanded && (
                   <div className="ml-4 mt-1 space-y-1">
                     {visibleChildren.map((child) => {
                       const childActive = child.href && (currentPath === child.href || currentPath.startsWith(child.href + '/'));
@@ -669,10 +729,12 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
               href={item.href!}
               prefetch
               onClick={onClose}
-              className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-300 ${active ? 'sidebar-active shadow-sm' : ''}`}
+              className={`group flex w-full items-center rounded-lg py-2.5 transition-all duration-300 ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'} ${active ? 'sidebar-active shadow-sm' : ''}`}
               style={{
                 color: active ? 'var(--text-primary)' : 'var(--text-muted)',
               }}
+              aria-label={item.label}
+              title={collapsed ? item.label : undefined}
             >
               <span 
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300"
@@ -684,6 +746,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
               >
                 {item.icon}
               </span>
+              {!collapsed && (
               <div className="min-w-0 flex-1">
                 <span 
                   className="block text-[13px] font-semibold leading-none"
@@ -703,6 +766,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
                   {item.description}
                 </span>
               </div>
+              )}
             </Link>
           );
           
@@ -731,27 +795,53 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
 // ══════════════════════════════════════════════════════════════════
 interface AppLayoutProps { children: React.ReactNode; }
 
+type LayoutStyle = React.CSSProperties & {
+  '--sidebar-width': string;
+};
+
 export default function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
   const { auth } = usePage<AuthPageProps>().props;
   const [theme, toggleTheme] = useTheme();
   const [mobileOpen, setMobileOpen] = React.useState<boolean>(false);
+  const [desktopCollapsed, setDesktopCollapsed] = React.useState<boolean>(() => {
+    if (typeof window === 'undefined') {
+      return true;
+    }
+
+    const storedValue = window.localStorage.getItem('aq-sidebar-collapsed');
+    return storedValue === null ? true : storedValue === 'true';
+  });
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem('aq-sidebar-collapsed', String(desktopCollapsed));
+  }, [desktopCollapsed]);
+
+  const layoutStyle = {
+    background: 'var(--bg-app)',
+    fontFamily: 'var(--font-sans)',
+    '--sidebar-width': desktopCollapsed ? '5.5rem' : '16rem',
+  } satisfies LayoutStyle;
 
   return (
     <AuthProvider user={auth.user}>
-      <div className="min-h-screen" style={{ background: 'var(--bg-app)', fontFamily: 'var(--font-sans)' }}>
+      <div className="min-h-screen" style={layoutStyle}>
 
       {/* ── Desktop Sidebar (hidden on mobile) ── */}
       <aside
-        className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col lg:flex"
-        style={{ background: 'var(--bg-surface)', borderRight: '1px solid var(--border-subtle)' }}
+        className="fixed left-0 top-0 z-40 hidden h-screen flex-col overflow-hidden transition-[width] duration-300 lg:flex"
+        style={{ width: 'var(--sidebar-width)', background: 'var(--bg-surface)', borderRight: '1px solid var(--border-subtle)' }}
       >
         <div className="flex flex-1 flex-col overflow-y-auto">
-          <SidebarContent />
+          <SidebarContent collapsed={desktopCollapsed} onToggleCollapsed={() => setDesktopCollapsed((prev) => !prev)} />
         </div>
 
         {/* Desktop theme toggle */}
-        <div className="shrink-0 space-y-2 px-3 pb-4 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-          <ThemeToggle theme={theme} onToggle={toggleTheme} />
+        <div className={`shrink-0 space-y-2 pb-4 pt-3 ${desktopCollapsed ? 'px-2' : 'px-3'}`} style={{ borderTop: '1px solid var(--border-subtle)' }}>
+          <ThemeToggle theme={theme} onToggle={toggleTheme} collapsed={desktopCollapsed} />
         </div>
       </aside>
 
@@ -796,7 +886,7 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
       </div>
 
       {/* ── Main content area ── */}
-      <div className="flex flex-col min-h-screen lg:pl-64">
+      <div className="flex flex-col min-h-screen transition-[padding] duration-300 lg:pl-[var(--sidebar-width)]">
 
 
         {/* ── Top Bar ── */}

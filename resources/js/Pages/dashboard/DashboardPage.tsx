@@ -161,23 +161,41 @@ interface MetricCardProps {
 }
 
 function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
+  const changeTone = card.changeType === 'positive'
+    ? 'var(--accent-success)'
+    : card.changeType === 'negative'
+      ? 'var(--accent-error)'
+      : 'var(--text-muted)';
+
+  const changeBackground = card.changeType === 'neutral'
+    ? 'color-mix(in srgb, var(--text-primary) 6%, transparent)'
+    : `color-mix(in srgb, ${changeTone} 12%, transparent)`;
+
+  const changeBorder = card.changeType === 'neutral'
+    ? 'color-mix(in srgb, var(--border-default) 75%, transparent)'
+    : `color-mix(in srgb, ${changeTone} 18%, transparent)`;
+
   return (
     <div
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/5 p-6 transition-all duration-500 hover:-translate-y-2"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1"
       style={{
-        background: 'linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
-        backdropFilter: 'blur(12px)',
+        background: 'color-mix(in srgb, var(--bg-card) 92%, transparent)',
+        borderColor: 'color-mix(in srgb, var(--border-default) 60%, transparent)',
+        backdropFilter: 'blur(10px)',
       }}
     >
       {/* Background Glow Effect */}
       <div 
-        className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-10"
+        className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-5"
         style={{ background: card.gradient }}
       />
       
       {/* Top Border Glow */}
       <div 
-        className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        className="absolute inset-x-0 top-0 h-px opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{
+          background: 'linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--border-strong) 70%, transparent) 50%, transparent 100%)',
+        }}
       />
 
       <div className="flex items-center justify-between">
@@ -185,10 +203,10 @@ function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
           className="flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg"
           style={{ 
             background: card.gradient,
-            boxShadow: '0 8px 16px -4px rgba(0,0,0,0.3)'
+            boxShadow: '0 12px 24px -10px color-mix(in srgb, var(--bg-base) 45%, transparent)',
           }}
         >
-          <div className="text-white">
+          <div style={{ color: 'var(--color-white)' }}>
             <CardIcon name={card.icon} />
           </div>
         </div>
@@ -196,23 +214,9 @@ function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
         <div 
           className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold tracking-tight shadow-sm"
           style={{
-            background: card.changeType === 'positive' 
-              ? 'rgba(16, 217, 136, 0.1)' 
-              : card.changeType === 'negative' 
-                ? 'rgba(244, 63, 94, 0.1)' 
-                : 'rgba(255, 255, 255, 0.05)',
-            color: card.changeType === 'positive' 
-              ? 'var(--accent-success)' 
-              : card.changeType === 'negative' 
-                ? 'var(--accent-error)' 
-                : 'var(--text-muted)',
-            border: `1px solid \${
-              card.changeType === 'positive' 
-                ? 'rgba(16, 217, 136, 0.15)' 
-                : card.changeType === 'negative' 
-                  ? 'rgba(244, 63, 94, 0.15)' 
-                  : 'rgba(255, 255, 255, 0.1)'
-            }`
+            background: changeBackground,
+            color: changeTone,
+            border: `1px solid ${changeBorder}`,
           }}
         >
           {card.changeType === 'positive' ? '↑' : card.changeType === 'negative' ? '↓' : '•'}
@@ -221,14 +225,14 @@ function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
       </div>
 
       <div className="mt-5">
-        <p className="text-xs font-medium uppercase tracking-widest text-cyan-400/70" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-xs font-medium uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>
           {card.title}
         </p>
         <div className="flex items-baseline gap-2 mt-1">
-          <h3 className="text-3xl font-black tracking-tighter text-white">
+          <h3 className="text-3xl font-black tracking-tighter" style={{ color: 'var(--text-primary)' }}>
             {card.value}
           </h3>
-          <span className="text-[10px] font-medium text-white/30 uppercase tracking-widest">
+          <span className="text-[10px] font-medium uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
             USD
           </span>
         </div>
@@ -236,7 +240,7 @@ function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
 
       {/* Decorative Wave/Ambient Light (2026 aesthetics) */}
       <div 
-        className="absolute -bottom-10 -right-10 h-32 w-32 rounded-full blur-[60px] opacity-20 transition-all duration-700 group-hover:scale-150 group-hover:opacity-40"
+        className="absolute -bottom-12 -right-12 h-28 w-28 rounded-full blur-[72px] opacity-15 transition-all duration-500 group-hover:scale-125 group-hover:opacity-25"
         style={{ background: card.gradient }}
       />
     </div>
@@ -255,11 +259,10 @@ export default function DashboardPage(): React.JSX.Element {
       <Head title="Dashboard — AquaShield" />
       <AppLayout>
         <div className="relative min-h-full overflow-hidden">
-          {/* Gradient mesh — blurred orbs (Vercel / Vite style) */}
-          <GradientMesh variant="dashboard" />
-
-          {/* Animated SVG waves at bottom */}
-          <WaveBackground variant="dashboard" />
+          <div className="pointer-events-none absolute inset-0 z-0">
+            <GradientMesh variant="dashboard" />
+            <WaveBackground variant="dashboard" />
+          </div>
 
           {/* ── Content layer ── */}
           <div className="relative z-10">

@@ -10,7 +10,7 @@
 
     <!-- Fonts — Inter primary, JetBrains Mono for code -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&family=jetbrains-mono:400,500,700"
+    <link href="https://fonts.bunny.net/css?family=exo:400,500,600,700,800&family=jetbrains-mono:400,500,700"
         rel="stylesheet" />
 
     <!--
