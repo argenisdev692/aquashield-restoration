@@ -35,6 +35,7 @@ final class UpdateCompanyDataDTO extends Data
         public ?string $email = null,
         public ?string $phone = null,
         public ?string $address = null,
+        public ?string $address2 = null,
         public ?string $website = null,
         public ?string $facebookLink = null,
         public ?string $instagramLink = null,

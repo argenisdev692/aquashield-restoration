@@ -4,113 +4,66 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Application\Queries\ListUsers;
 
+use Modules\Auth\Application\Support\AuthCacheKeys;
 use Modules\Auth\Contracts\DTOs\UserListReadModel;
-use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
-use Illuminate\Support\Facades\Cache;
-use Modules\Auth\Infrastructure\Persistence\Mappers\UserMapper;
+use Modules\Auth\Domain\Ports\AuthCachePort;
+use Modules\Auth\Domain\Ports\UserRepositoryPort;
 
 /**
  * ListUsersHandler — Handles user listing with caching, pagination and PHP 8.5 pipe operator.
  */
 final readonly class ListUsersHandler
 {
+    public function __construct(
+        private UserRepositoryPort $userRepository,
+        private AuthCachePort $cache,
+    ) {
+    }
+
     #[\NoDiscard]
     public function handle(ListUsersQuery $query): array
     {
-        $cacheData = $this->buildCacheKey($query);
-        $data = $this->getFromCacheOrDatabase($cacheData);
-        return $this->mapToReadModels($data);
-    }
-
-    private function buildCacheKey(ListUsersQuery $query): array
-    {
-        $cacheKey = sprintf(
-            'users_list_%d_%d_%s_%s_%s_%s',
-            $query->page,
-            $query->perPage,
-            $query->search ?? 'all',
-            $query->emailVerified === null ? 'all' : ($query->emailVerified ? 'verified' : 'unverified'),
-            $query->sortBy,
-            $query->sortDirection
-        );
-
-        return ['query' => $query, 'cacheKey' => $cacheKey];
-    }
-
-    private function getFromCacheOrDatabase(array $data): array
-    {
-        $query = $data['query'];
-        $cacheKey = $data['cacheKey'];
-
-        // Try cache with tags first (Redis/Memcached)
-        try {
-            $result = Cache::tags(['users_list'])->remember($cacheKey, 600, function () use ($query) {
-                return $this->fetchData($query);
-            });
-        } catch (\Exception $e) {
-            // Fallback to regular cache if tags not supported
-            $result = Cache::remember($cacheKey, 600, function () use ($query) {
-                return $this->fetchData($query);
-            });
-        }
-
-        return ['result' => $result];
-    }
-
-    private function fetchData(ListUsersQuery $query): array
-    {
-        $queryBuilder = UserEloquentModel::query();
-
-        // Apply search filter
-        if ($query->search) {
-            $queryBuilder->where(function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query->search}%")
-                    ->orWhere('email', 'like', "%{$query->search}%")
-                    ->orWhere('username', 'like', "%{$query->search}%");
-            });
-        }
-
-        // Apply email verified filter
-        if ($query->emailVerified !== null) {
-            if ($query->emailVerified) {
-                $queryBuilder->whereNotNull('email_verified_at');
-            } else {
-                $queryBuilder->whereNull('email_verified_at');
-            }
-        }
-
-        // Apply sorting
-        $queryBuilder->orderBy($query->sortBy, $query->sortDirection);
-
-        // Paginate
-        $paginator = $queryBuilder->paginate($query->perPage, ['*'], 'page', $query->page);
-
-        return [
-            'data' => $paginator->items(),
-            'total' => $paginator->total(),
-            'perPage' => $paginator->perPage(),
-            'currentPage' => $paginator->currentPage(),
-            'lastPage' => $paginator->lastPage(),
+        $filters = [
+            'page' => $query->page,
+            'perPage' => $query->perPage,
+            'search' => $query->search,
+            'emailVerified' => $query->emailVerified,
+            'sortBy' => $query->sortBy,
+            'sortDirection' => $query->sortDirection,
         ];
+        $cacheKey = AuthCacheKeys::usersList($filters);
+
+        return $this->cache->rememberTagged(
+            AuthCacheKeys::LIST_TAG,
+            $cacheKey,
+            600,
+            fn(): array => $this->mapToReadModels($this->userRepository->paginate(
+                page: $query->page,
+                perPage: $query->perPage,
+                search: $query->search,
+                emailVerified: $query->emailVerified,
+                sortBy: $query->sortBy,
+                sortDirection: $query->sortDirection,
+            )),
+        );
     }
 
-    private function mapToReadModels(array $data): array
+    private function mapToReadModels(array $result): array
     {
-        $result = $data['result'];
-
-        $domainUsers = array_map(fn($item) => UserMapper::toDomain($item), $result['data']);
-
-        $result['data'] = array_map(fn($user) => new UserListReadModel(
-            id: $user->id,
-            uuid: $user->uuid,
-            name: $user->name,
-            lastName: $user->lastName,
-            email: $user->email,
-            username: $user->username,
-            profilePhotoPath: $user->profilePhotoPath,
-            isEmailVerified: $user->isEmailVerified,
-            createdAt: $user->createdAt,
-        ), $domainUsers);
+        $result['data'] = array_map(
+            static fn($user) => new UserListReadModel(
+                id: $user->id,
+                uuid: $user->uuid,
+                name: $user->name,
+                lastName: $user->lastName,
+                email: $user->email,
+                username: $user->username,
+                profilePhotoPath: $user->profilePhotoPath,
+                isEmailVerified: $user->isEmailVerified,
+                createdAt: $user->createdAt,
+            ),
+            $result['data'],
+        );
 
         return $result;
     }

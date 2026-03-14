@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\CompanyData\Domain\ValueObjects;
 
-final class Coordinates
+final readonly class Coordinates
 {
     public function __construct(
         public private(set) ?float $latitude {

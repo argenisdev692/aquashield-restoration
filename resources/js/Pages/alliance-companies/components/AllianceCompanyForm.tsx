@@ -1,5 +1,7 @@
+import * as React from 'react';
 import { useForm } from '@inertiajs/react';
 import { AllianceCompany } from '@/modules/alliance-companies/types';
+import { type UserAddressAutocompleteValue, useGoogleMapsAddressAutocomplete } from '@/modules/users/hooks/useGoogleMapsAddressAutocomplete';
 import { PremiumField } from '@/shadcn/PremiumField';
 import { Plus, Save, X } from 'lucide-react';
 
@@ -8,6 +10,13 @@ interface AllianceCompanyFormProps {
     onSubmit: (data: Partial<AllianceCompany>) => void;
     isSubmitting: boolean;
     onCancel: () => void;
+}
+
+function buildFullUsAddress(value: UserAddressAutocompleteValue): string {
+    return [value.address, value.city, value.state, value.zip_code, value.country]
+        .map((segment) => segment.trim())
+        .filter((segment) => segment.length > 0)
+        .join(', ');
 }
 
 export default function AllianceCompanyForm({
@@ -23,10 +32,34 @@ export default function AllianceCompanyForm({
         email: initialData?.email || '',
         website: initialData?.website || '',
     });
+    const [address2, setAddress2] = React.useState<string>('');
+    const addressInputRef = React.useRef<HTMLInputElement | null>(null);
+    const address2InputRef = React.useRef<HTMLInputElement | null>(null);
+
+    const handleAddressSelected = React.useCallback((value: UserAddressAutocompleteValue): void => {
+        setData('address', buildFullUsAddress(value));
+        setAddress2('');
+        window.setTimeout(() => {
+            address2InputRef.current?.focus();
+        }, 0);
+    }, [setData]);
+
+    const { isLoading, isReady, errorMessage } = useGoogleMapsAddressAutocomplete({
+        inputRef: addressInputRef,
+        onAddressSelected: handleAddressSelected,
+    });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(data);
+        const address = [data.address ?? '', address2]
+            .map((segment) => segment.trim())
+            .filter((segment) => segment.length > 0)
+            .join(', ');
+
+        onSubmit({
+            ...data,
+            address: address.length > 0 ? address : data.address,
+        });
     };
 
     return (
@@ -71,11 +104,29 @@ export default function AllianceCompanyForm({
                     <PremiumField
                         label="Physical Address"
                         error={errors.address}
-                        isTextArea
                         value={data.address || ''}
-                        onChange={(e) => (setData as any)('address', e.target.value)}
-                        placeholder="Street, City, State, Zip..."
+                        onChange={(e) => setData('address', e.target.value)}
+                        inputRef={addressInputRef}
+                        autoComplete="street-address"
+                        placeholder="Start typing a USA address"
                     />
+                </div>
+
+                <div className="md:col-span-2">
+                    <PremiumField
+                        label="Address 2"
+                        value={address2}
+                        onChange={(e) => setAddress2(e.target.value)}
+                        inputRef={address2InputRef}
+                        autoComplete="address-line2"
+                        placeholder="Apartment, suite, unit, building, floor"
+                    />
+                </div>
+
+                <div className="md:col-span-2">
+                    <p className="text-xs text-(--text-muted)">
+                        {errorMessage ?? (isReady ? 'Autocomplete limited to USA addresses. Address 2 remains manual.' : isLoading ? 'Loading Google Maps autocomplete...' : 'Google Maps autocomplete is preparing...')}
+                    </p>
                 </div>
             </div>
 

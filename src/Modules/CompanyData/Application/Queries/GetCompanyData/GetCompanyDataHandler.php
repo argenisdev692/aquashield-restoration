@@ -5,34 +5,37 @@ declare(strict_types=1);
 namespace Modules\CompanyData\Application\Queries\GetCompanyData;
 
 use Modules\CompanyData\Application\Queries\ReadModels\CompanyDataReadModel;
+use Modules\CompanyData\Application\Support\CompanyDataCacheKeys;
 use Modules\CompanyData\Domain\Exceptions\CompanyDataNotFoundException;
+use Modules\CompanyData\Domain\Ports\CompanyDataCachePort;
 use Modules\CompanyData\Domain\Ports\CompanyDataRepositoryPort;
 use Modules\CompanyData\Domain\Ports\CompanySignatureStoragePort;
 use Modules\CompanyData\Domain\ValueObjects\CompanyDataId;
 use Modules\CompanyData\Domain\ValueObjects\UserId;
-use Illuminate\Support\Facades\Cache;
 
 final readonly class GetCompanyDataHandler
 {
     public function __construct(
         private CompanyDataRepositoryPort $repository,
         private CompanySignatureStoragePort $signatureStorage,
+        private CompanyDataCachePort $cache,
     ) {
     }
 
     public function handle(GetCompanyDataQuery $query): CompanyDataReadModel
     {
         $cacheKey = $query->companyUuid !== null
-            ? "company_data_company_{$query->companyUuid}"
-            : "company_data_user_{$query->userUuid}";
+            ? CompanyDataCacheKeys::company($query->companyUuid)
+            : CompanyDataCacheKeys::user((string) $query->userUuid);
 
         $ttl = 60 * 60; // 1 hour
 
-        try {
-            return Cache::tags(['company_data'])->remember($cacheKey, $ttl, fn() => $this->fetchReadModel($query));
-        } catch (\Exception) {
-            return Cache::remember($cacheKey, $ttl, fn() => $this->fetchReadModel($query));
-        }
+        return $this->cache->rememberTagged(
+            CompanyDataCacheKeys::READ_TAG,
+            $cacheKey,
+            $ttl,
+            fn(): CompanyDataReadModel => $this->fetchReadModel($query),
+        );
     }
 
     private function fetchReadModel(GetCompanyDataQuery $query): CompanyDataReadModel
@@ -58,6 +61,7 @@ final readonly class GetCompanyDataHandler
             email: $companyData->email,
             phone: $companyData->phone,
             address: $companyData->address,
+            address2: $companyData->address2,
             website: $socialLinks['website'] ?? null,
             facebookLink: $socialLinks['facebook'] ?? null,
             instagramLink: $socialLinks['instagram'] ?? null,

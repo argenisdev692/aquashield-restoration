@@ -7,9 +7,12 @@ use Intervention\Image\Facades\Image;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Shared\Infrastructure\Resilience\CircuitBreaker\CircuitBreakerInterface;
 
 class ImageHelper 
 {
+    private const STORAGE_DISK = 'r2';
+
     /**
      * Store and resize an image to AWS S3
      * @param mixed $image
@@ -43,18 +46,29 @@ class ImageHelper
             $s3Path = $path . '/' . $fileName;
 
             // Store in S3
-            $result = Storage::disk('s3')->put(
-                $s3Path, 
-                $resizedImage->encode('jpg', 80)->stream(),
-                'public'
+            $url = app(CircuitBreakerInterface::class)->execute(
+                'r2.shared.image.upload',
+                static function () use ($s3Path, $resizedImage): ?string {
+                    $result = Storage::disk(self::STORAGE_DISK)->put(
+                        $s3Path,
+                        $resizedImage->encode('jpg', 80)->stream(),
+                        'public'
+                    );
+
+                    if (!$result) {
+                        throw new \RuntimeException('Failed to upload image to R2');
+                    }
+
+                    return Storage::disk(self::STORAGE_DISK)->url($s3Path);
+                },
+                static function (): ?string {
+                    return null;
+                },
             );
 
-            if (!$result) {
-                throw new \Exception('Failed to upload image to S3');
+            if ($url === null) {
+                throw new \RuntimeException('Image storage is temporarily unavailable.');
             }
-
-            // Get the full URL
-            $url = Storage::disk('s3')->url($s3Path);
 
             Log::info('Image successfully uploaded to S3', [
                 'path' => $s3Path,
@@ -126,15 +140,15 @@ class ImageHelper
             $path = parse_url($url, PHP_URL_PATH);
             // Remove the bucket name and leading slash if present
             $path = ltrim($path, '/');
-            $path = preg_replace('/^' . config('filesystems.disks.s3.bucket') . '\//', '', $path);
+            $path = preg_replace('/^' . config('filesystems.disks.r2.bucket') . '\//', '', $path);
 
             Log::info('Attempting to delete image from S3', [
                 'url' => $url,
                 'path' => $path
             ]);
 
-            if (Storage::disk('s3')->exists($path)) {
-                $deleted = Storage::disk('s3')->delete($path);
+            if (Storage::disk(self::STORAGE_DISK)->exists($path)) {
+                $deleted = Storage::disk(self::STORAGE_DISK)->delete($path);
                 
                 Log::info('Image deletion result', [
                     'success' => $deleted,

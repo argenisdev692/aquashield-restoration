@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -60,7 +61,11 @@ class HandleInertiaRequests extends Middleware
                     'state' => $user->state,
                     'country' => $user->country,
                     'gender' => $user->gender,
-                    'profile_photo_path' => $user->profile_photo_path,
+                    'profile_photo_path' => $this->resolveProfilePhotoUrl(
+                        is_string($user->getRawOriginal('profile_photo_path'))
+                            ? $user->getRawOriginal('profile_photo_path')
+                            : null,
+                    ),
                     'roles' => $user->getRoleNames()->toArray(),
                     'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
                 ] : null,
@@ -74,5 +79,18 @@ class HandleInertiaRequests extends Middleware
                 'info' => fn() => $request->session()->get('info'),
             ],
         ];
+    }
+
+    private function resolveProfilePhotoUrl(?string $path): ?string
+    {
+        if ($path === null || $path === '') {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        return Storage::disk('r2')->url($path);
     }
 }

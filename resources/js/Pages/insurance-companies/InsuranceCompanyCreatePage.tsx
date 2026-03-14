@@ -1,13 +1,14 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useInsuranceCompanyMutations } from '@/modules/insurance-companies/hooks/useInsuranceCompanyMutations';
+import { InsuranceCompany } from '@/modules/insurance-companies/types';
 import InsuranceCompanyForm from './components/InsuranceCompanyForm';
 import { ShieldPlus } from 'lucide-react';
 
 export default function InsuranceCompanyCreatePage() {
     const { createInsuranceCompany } = useInsuranceCompanyMutations();
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: Partial<InsuranceCompany>) => {
         await createInsuranceCompany.mutateAsync(data);
     };
 

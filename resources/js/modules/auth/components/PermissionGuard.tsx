@@ -2,10 +2,9 @@
    PermissionGuard — Conditional rendering by role/permission
    Per ARQUITECTURE-REACT-INERTIA.md — modules/auth/components/
    ══════════════════════════════════════════════════════════════════ */
-import { usePage } from '@inertiajs/react';
+import { useAuthContext } from '@/modules/auth/context/AuthContext';
 
 interface PermissionGuardProps {
-  /** Required role(s) — user must have at least one */
   roles?: string[];
   /** Required permission(s) — user must have at least one */
   permissions?: string[];
@@ -21,20 +20,16 @@ export function PermissionGuard({
   children,
   fallback = null,
 }: PermissionGuardProps): React.JSX.Element | null {
-  const { auth } = usePage().props;
+  const { user, permissions: userPermissions, roles: userRoles, isSuperAdmin } = useAuthContext();
 
-  if (!auth.user) {
+  if (!user) {
     return fallback as React.JSX.Element | null;
   }
 
-  const userRoles: string[] = (auth.user as { roles?: string[] }).roles ?? [];
-  const userPermissions: string[] = (auth.user as { permissions?: string[] }).permissions ?? [];
-
-  if (userRoles.includes('SUPER_ADMIN')) {
+  if (isSuperAdmin) {
     return children as React.JSX.Element;
   }
 
-  // Check role match (at least one)
   if (roles && roles.length > 0) {
     const hasRole = roles.some((role) => userRoles.includes(role));
     if (!hasRole) {
@@ -42,12 +37,14 @@ export function PermissionGuard({
     }
   }
 
+  if (!permissions || permissions.length === 0) {
+    return children as React.JSX.Element;
+  }
+
   // Check permission match (at least one)
-  if (permissions && permissions.length > 0) {
-    const hasPermission = permissions.some((perm) => userPermissions.includes(perm));
-    if (!hasPermission) {
-      return fallback as React.JSX.Element | null;
-    }
+  const hasPermission = permissions.some((perm) => userPermissions.includes(perm));
+  if (!hasPermission) {
+    return fallback as React.JSX.Element | null;
   }
 
   return children as React.JSX.Element;

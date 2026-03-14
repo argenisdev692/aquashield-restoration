@@ -40,6 +40,7 @@ final class CompanyDataReadModel extends Data
         public ?string $email,
         public ?string $phone,
         public ?string $address,
+        public ?string $address2,
         public ?string $website,
         public ?string $facebookLink,
         public ?string $instagramLink,

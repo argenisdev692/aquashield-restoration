@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import type { AxiosError } from 'axios';
 import { sileo } from 'sileo';
-import { CreateCompanyDataDTO, UpdateCompanyDataDTO } from '@/types/api';
+import type { CreateCompanyDataDTO, UpdateCompanyDataDTO } from '@/modules/company-data/types';
 
 function getErrorMessage(error: AxiosError | Error | unknown, fallback: string): string {
   const axiosError = error as AxiosError<{ message?: string }>;
@@ -19,9 +19,9 @@ export const useCompanyDataMutations = () => {
     mutationFn: (payload: CreateCompanyDataDTO) => {
       return axios.post('/company-data/data/admin', payload);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       sileo.success({ title: 'Company created successfully' });
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      await queryClient.invalidateQueries({ queryKey: ['company-data'] });
     },
     onError: (error: AxiosError | Error | unknown) => {
       sileo.error({ title: getErrorMessage(error, 'Failed to create company') });
@@ -33,10 +33,12 @@ export const useCompanyDataMutations = () => {
       const url = companyUuid ? `/company-data/data/admin/${companyUuid}` : '/company-data/data/me';
       return axios.put(url, payload);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       sileo.success({ title: 'Company updated successfully' });
-      queryClient.invalidateQueries({ queryKey: ['company-data', variables.companyUuid || 'me'] });
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['company-data', 'detail', variables.companyUuid || 'me'] }),
+        queryClient.invalidateQueries({ queryKey: ['company-data'] }),
+      ]);
     },
     onError: (error: AxiosError | Error | unknown) => {
       sileo.error({ title: getErrorMessage(error, 'Failed to update company') });
@@ -48,9 +50,9 @@ export const useCompanyDataMutations = () => {
       const uuids = Array.isArray(uuid) ? uuid.join(',') : uuid;
       return axios.delete(`/company-data/data/admin/${uuids}`);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       sileo.success({ title: 'Company deleted successfully' });
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      await queryClient.invalidateQueries({ queryKey: ['company-data'] });
     },
     onError: (error: AxiosError | Error | unknown) => {
       sileo.error({ title: getErrorMessage(error, 'Failed to delete company') });
@@ -62,9 +64,9 @@ export const useCompanyDataMutations = () => {
       const uuids = Array.isArray(uuid) ? uuid.join(',') : uuid;
       return axios.patch(`/company-data/data/admin/${uuids}/restore`);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       sileo.success({ title: 'Company restored successfully' });
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      await queryClient.invalidateQueries({ queryKey: ['company-data'] });
     },
     onError: (error: AxiosError | Error | unknown) => {
       sileo.error({ title: getErrorMessage(error, 'Failed to restore company') });

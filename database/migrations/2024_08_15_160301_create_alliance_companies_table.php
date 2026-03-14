@@ -15,10 +15,11 @@ return new class extends Migration
         Schema::create('alliance_companies', function (Blueprint $table) {
             $table->id();
             $table->string('uuid')->unique();
-            $table->string('alliance_company_name'); 
+            $table->string('alliance_company_name');
+            $table->string('address')->nullable(); 
+            $table->string('address_2')->nullable(); 
             $table->string('phone')->nullable();
             $table->string('email')->nullable(); 
-            $table->string('address')->nullable(); 
             $table->string('website')->nullable(); 
             $table->foreignId('user_id')->constrained('users')->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();

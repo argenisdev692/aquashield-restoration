@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Modules\CompanyData\Application\Queries\ListCompanyData;
 
+use Modules\CompanyData\Application\DTOs\CompanyDataFilterDTO;
 use Modules\CompanyData\Application\Queries\ReadModels\CompanyDataReadModel;
+use Modules\CompanyData\Application\Support\CompanyDataCacheKeys;
+use Modules\CompanyData\Domain\Ports\CompanyDataCachePort;
 use Modules\CompanyData\Domain\Ports\CompanyDataRepositoryPort;
 use Modules\CompanyData\Domain\Ports\CompanySignatureStoragePort;
-use Illuminate\Support\Facades\Cache;
 
 final readonly class ListCompanyDataHandler
 {
     public function __construct(
         private CompanyDataRepositoryPort $repository,
         private CompanySignatureStoragePort $signatureStorage,
+        private CompanyDataCachePort $cache,
     ) {
     }
 
@@ -23,20 +26,21 @@ final readonly class ListCompanyDataHandler
     public function handle(ListCompanyDataQuery $query): array
     {
         $filters = $query->filters;
-        $cacheKey = "company_data_list_" . md5(serialize($filters->toArray()));
+        $cacheKey = CompanyDataCacheKeys::list($filters->toArray());
         $ttl = 60 * 15;
 
-        try {
-            return Cache::tags(['company_data_list'])->remember($cacheKey, $ttl, fn() => $this->fetchPaginatedData($filters));
-        } catch (\Exception) {
-            return Cache::remember($cacheKey, $ttl, fn() => $this->fetchPaginatedData($filters));
-        }
+        return $this->cache->rememberTagged(
+            CompanyDataCacheKeys::LIST_TAG,
+            $cacheKey,
+            $ttl,
+            fn(): array => $this->fetchPaginatedData($filters),
+        );
     }
 
     /**
      * @return array{data: list<CompanyDataReadModel>, meta: array{total: int, perPage: int, currentPage: int, lastPage: int}}
      */
-    private function fetchPaginatedData(\Modules\CompanyData\Application\DTOs\CompanyDataFilterDTO $filters): array
+    private function fetchPaginatedData(CompanyDataFilterDTO $filters): array
     {
         $result = $this->repository->findAllPaginated(
             filters: $filters->toArray(),
@@ -57,6 +61,7 @@ final readonly class ListCompanyDataHandler
                     email: $companyData->email,
                     phone: $companyData->phone,
                     address: $companyData->address,
+                    address2: $companyData->address2,
                     website: $socialLinks['website'] ?? null,
                     facebookLink: $socialLinks['facebook'] ?? null,
                     instagramLink: $socialLinks['instagram'] ?? null,

@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { createColumnHelper, type ColumnDef, type RowSelectionState, type OnChangeFn } from '@tanstack/react-table';
+import { createColumnHelper, type ColumnDef } from '@tanstack/react-table';
 import { Link } from '@inertiajs/react';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { DataTable } from '@/shadcn/data-table';
-import type { CompanyDataListItem } from '@/types/api';
+import type { CompanyDataListItem } from '@/modules/company-data/types';
 import { formatDateShort } from '@/utils/dateFormatter';
 
 import { Building2, CheckCircle, Eye, Pencil, Trash2 } from 'lucide-react';
@@ -17,8 +17,6 @@ interface CompanyDataTableProps {
   isError: boolean;
   onDelete: (uuid: string, name: string) => void;
   onRestore: (uuid: string) => void;
-  rowSelection: RowSelectionState;
-  onRowSelectionChange: OnChangeFn<RowSelectionState>;
 }
 
 const columnHelper = createColumnHelper<CompanyDataListItem>();
@@ -29,31 +27,8 @@ export default function CompanyDataTable({
   isError,
   onDelete,
   onRestore,
-  rowSelection,
-  onRowSelectionChange,
 }: CompanyDataTableProps): React.JSX.Element {
   const columns = React.useMemo(() => [
-    columnHelper.display({
-      id: 'select',
-      header: ({ table }) => (
-        <input
-          type="checkbox"
-          checked={table.getIsAllPageRowsSelected()}
-          onChange={table.getToggleAllPageRowsSelectedHandler()}
-          aria-label="Select all"
-          className="h-4 w-4 cursor-pointer rounded border-(--border-default) accent-(--accent-primary)"
-        />
-      ),
-      cell: ({ row }) => (
-        <input
-          type="checkbox"
-          checked={row.getIsSelected()}
-          onChange={row.getToggleSelectedHandler()}
-          aria-label="Select row"
-          className="h-4 w-4 cursor-pointer rounded border-(--border-default) accent-(--accent-primary)"
-        />
-      ),
-    }),
     columnHelper.accessor('company_name', {
       header: 'Company',
       cell: (info) => {
@@ -63,8 +38,8 @@ export default function CompanyDataTable({
             <div
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xs font-bold"
               style={{
-                background: 'color-mix(in srgb, var(--purple-500) 15%, transparent)',
-                color: 'var(--purple-500)',
+                background: 'color-mix(in srgb, var(--accent-primary) 15%, transparent)',
+                color: 'var(--accent-primary)',
               }}
             >
               <Building2 size={16} />
@@ -112,6 +87,7 @@ export default function CompanyDataTable({
               <Link
                 href={`/company-data/${company.uuid}`}
                 className="btn-action btn-action-view"
+                aria-label={`View ${company.company_name}`}
                 title="View"
               >
                 <Eye size={14} />
@@ -124,6 +100,7 @@ export default function CompanyDataTable({
                   <Link
                     href={`/company-data/${company.uuid}/edit`}
                     className="btn-action btn-action-edit"
+                    aria-label={`Edit ${company.company_name}`}
                     title="Edit"
                   >
                     <Pencil size={14} />
@@ -133,6 +110,7 @@ export default function CompanyDataTable({
                   <button
                     onClick={() => onDelete(company.uuid, company.company_name)}
                     className="btn-action btn-action-delete"
+                    aria-label={`Delete ${company.company_name}`}
                     title="Delete"
                   >
                     <Trash2 size={14} />
@@ -144,6 +122,7 @@ export default function CompanyDataTable({
                 <button
                   onClick={() => onRestore(company.uuid)}
                   className="btn-action btn-action-restore"
+                  aria-label={`Restore ${company.company_name}`}
                   title="Restore"
                 >
                   <CheckCircle size={14} />
@@ -164,8 +143,6 @@ export default function CompanyDataTable({
       isLoading={isLoading}
       isError={isError}
       noDataMessage="No companies found"
-      rowSelection={rowSelection}
-      onRowSelectionChange={onRowSelectionChange}
     />
   );
 }

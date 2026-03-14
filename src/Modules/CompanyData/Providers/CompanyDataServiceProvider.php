@@ -6,8 +6,12 @@ namespace Modules\CompanyData\Providers;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Modules\CompanyData\Domain\Ports\CompanyDataAuditPort;
+use Modules\CompanyData\Domain\Ports\CompanyDataCachePort;
 use Modules\CompanyData\Domain\Ports\CompanySignatureStoragePort;
 use Modules\CompanyData\Domain\Ports\CompanyDataRepositoryPort;
+use Modules\CompanyData\Infrastructure\ExternalServices\Audit\CompanyDataAuditAdapter;
+use Modules\CompanyData\Infrastructure\ExternalServices\Cache\LaravelCompanyDataCacheAdapter;
 use Modules\CompanyData\Infrastructure\ExternalServices\Storage\CompanySignatureStorageAdapter;
 use Modules\CompanyData\Infrastructure\Persistence\Repositories\EloquentCompanyDataRepository;
 use Shared\Infrastructure\Audit\AuditInterface;
@@ -20,6 +24,8 @@ final class CompanyDataServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(CompanyDataAuditPort::class, CompanyDataAuditAdapter::class);
+        $this->app->bind(CompanyDataCachePort::class, LaravelCompanyDataCacheAdapter::class);
         $this->app->bind(CompanyDataRepositoryPort::class, EloquentCompanyDataRepository::class);
         $this->app->bind(CompanySignatureStoragePort::class, CompanySignatureStorageAdapter::class);
         $this->app->bind(AuditInterface::class, SpatieAuditAdapter::class);

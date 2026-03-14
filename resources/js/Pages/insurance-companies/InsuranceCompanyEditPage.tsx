@@ -13,7 +13,7 @@ export default function InsuranceCompanyEditPage({ insuranceCompany }: Props) {
     const { updateInsuranceCompany } = useInsuranceCompanyMutations();
     const company = insuranceCompany.data;
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: Partial<InsuranceCompany>) => {
         await updateInsuranceCompany.mutateAsync({ 
             uuid: company.uuid, 
             data 

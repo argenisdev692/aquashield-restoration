@@ -7,6 +7,7 @@ return [
     App\Providers\TelescopeServiceProvider::class,
 
     Src\Providers\CoreServiceProvider::class,
+    Src\Providers\EventServiceProvider::class,
 
     // ── Bounded Context Providers ──
     Modules\Auth\Providers\AuthServiceProvider::class,

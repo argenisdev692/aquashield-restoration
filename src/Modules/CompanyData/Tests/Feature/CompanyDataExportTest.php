@@ -3,29 +3,38 @@
 declare(strict_types=1);
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
+use Modules\CompanyData\Infrastructure\Persistence\Eloquent\Models\CompanyDataEloquentModel;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel as User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-function createSuperAdminUser(): User
+function createCompanyDataExportAdmin(): User
 {
-    app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-    Permission::firstOrCreate(['name' => 'VIEW_COMPANY_DATA', 'guard_name' => 'sanctum']);
-    $role = Role::firstOrCreate(['name' => 'SUPER_ADMIN', 'guard_name' => 'sanctum']);
-    $role->givePermissionTo('VIEW_COMPANY_DATA');
+    app()[PermissionRegistrar::class]->forgetCachedPermissions();
+    Permission::firstOrCreate(['name' => 'VIEW_COMPANY_DATA', 'guard_name' => 'web'], ['uuid' => Str::uuid()->toString()]);
+    $role = Role::firstOrCreate(['name' => 'SUPER_ADMIN', 'guard_name' => 'web'], ['uuid' => Str::uuid()->toString()]);
+    $role->syncPermissions(['VIEW_COMPANY_DATA']);
 
     /** @var User $user */
-    $user = User::factory()->create();
-    $user->assignRole('SUPER_ADMIN');
+    $user = User::factory()->create([
+        'status' => 'active',
+        'terms_and_conditions' => true,
+    ]);
+    $user->assignRole($role);
 
     return $user;
 }
 
 it('exports company data to excel', function (): void {
-    $response = $this->actingAs(createSuperAdminUser())
+    $admin = createCompanyDataExportAdmin();
+    CompanyDataEloquentModel::factory()->create(['user_id' => $admin->id]);
+
+    $response = $this->actingAs($admin)
         ->get(route('api.admin.company_data.export', ['format' => 'excel']));
 
     $response->assertOk()
@@ -33,7 +42,10 @@ it('exports company data to excel', function (): void {
 });
 
 it('exports company data to pdf', function (): void {
-    $response = $this->actingAs(createSuperAdminUser())
+    $admin = createCompanyDataExportAdmin();
+    CompanyDataEloquentModel::factory()->create(['user_id' => $admin->id]);
+
+    $response = $this->actingAs($admin)
         ->get(route('api.admin.company_data.export', ['format' => 'pdf']));
 
     $response->assertOk()

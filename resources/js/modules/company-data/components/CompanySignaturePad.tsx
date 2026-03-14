@@ -39,13 +39,7 @@ export default function CompanySignaturePad({
   }
 
   return (
-    <section
-      className="rounded-xl p-4"
-      style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border-default)',
-      }}
-    >
+    <section className="card p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
           Signature
@@ -55,11 +49,7 @@ export default function CompanySignaturePad({
             type="button"
             onClick={handleCaptureSignature}
             disabled={disabled}
-            className="rounded-md px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50"
-            style={{
-              background: 'var(--accent-primary)',
-              color: 'var(--color-white)',
-            }}
+            className="btn-primary px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
           >
             Save Draw
           </button>
@@ -67,12 +57,7 @@ export default function CompanySignaturePad({
             type="button"
             onClick={handleClearSignature}
             disabled={disabled}
-            className="rounded-md px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50"
-            style={{
-              background: 'transparent',
-              border: '1px solid var(--border-default)',
-              color: 'var(--text-secondary)',
-            }}
+            className="btn-ghost px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
           >
             Clear
           </button>

@@ -21,6 +21,7 @@ final class UpdateCompanyDataRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:1000'],
+            'address_2' => ['nullable', 'string', 'max:255'],
             'website' => ['nullable', 'url', 'max:255'],
             'facebook_link' => ['nullable', 'url', 'max:255'],
             'instagram_link' => ['nullable', 'url', 'max:255'],
@@ -29,7 +30,6 @@ final class UpdateCompanyDataRequest extends FormRequest
             'latitude' => ['nullable', 'numeric'],
             'longitude' => ['nullable', 'numeric'],
             'signature_data_url' => ['nullable', 'string', 'starts_with:data:image/'],
-            'signature_path' => ['nullable', 'string', 'max:255'],
             'remove_signature' => ['nullable', 'boolean'],
         ];
     }

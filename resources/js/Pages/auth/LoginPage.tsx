@@ -10,6 +10,8 @@ import {
 } from '@/modules/auth/helpers/validators';
 import type { AuthMode, FormStatus } from '@/types/auth';
 
+const primaryButtonClassName = 'btn-primary flex h-11 w-full cursor-pointer items-center justify-center rounded-lg text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60';
+
 
 
 /** ── Mode Toggle ── */
@@ -23,7 +25,7 @@ function ModeToggle({
   return (
     <div
       className="flex rounded-lg p-1"
-      style={{ background: 'color-mix(in srgb, var(--color-white) 6%, transparent)' }}
+      style={{ background: 'color-mix(in srgb, var(--text-primary) 6%, transparent)' }}
       role="tablist"
       aria-label="Login method"
     >
@@ -35,8 +37,8 @@ function ModeToggle({
           onClick={() => onToggle(m)}
           className="flex-1 cursor-pointer rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-200"
           style={{
-            background: mode === m ? 'var(--purple-500)' : 'transparent',
-            color: mode === m ? '#ffffff' : 'var(--text-muted)',
+            background: mode === m ? 'var(--accent-primary)' : 'transparent',
+            color: mode === m ? 'var(--text-primary)' : 'var(--text-muted)',
           }}
         >
           {m === 'password' ? 'Password' : 'OTP Code'}
@@ -58,7 +60,7 @@ function EyeToggle({
     <button
       type="button"
       onClick={onToggle}
-      className="text-(--text-muted) cursor-pointer transition-colors hover:text-(--purple-500)"
+      className="text-(--text-muted) cursor-pointer transition-colors hover:text-(--accent-primary)"
       aria-label={show ? 'Hide password' : 'Show password'}
     >
       {show ? (
@@ -226,7 +228,7 @@ export default function LoginPage(): React.JSX.Element {
         <div className="mb-6 text-center">
           <h2
             className="text-2xl font-bold tracking-tight"
-            style={{ color: 'var(--color-white)' }}
+            style={{ color: 'var(--text-primary)' }}
           >
             Welcome back
           </h2>
@@ -302,7 +304,7 @@ export default function LoginPage(): React.JSX.Element {
                 type="button"
                 onClick={() => router.visit('/forgot-password')}
                 className="text-xs font-medium cursor-pointer transition-colors hover:underline"
-                style={{ color: 'var(--purple-500)' }}
+                style={{ color: 'var(--accent-primary)' }}
               >
                 Forgot password?
               </button>
@@ -311,12 +313,7 @@ export default function LoginPage(): React.JSX.Element {
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="flex h-11 w-full cursor-pointer items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-              style={{
-                background: 'var(--grad-primary)',
-                color: '#ffffff',
-                boxShadow: '0 4px 16px color-mix(in srgb, var(--purple-500) 30%, transparent)',
-              }}
+              className={primaryButtonClassName}
             >
               {status === 'loading' ? (
                 <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -346,12 +343,7 @@ export default function LoginPage(): React.JSX.Element {
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="flex h-11 w-full cursor-pointer items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-              style={{
-                background: 'var(--grad-primary)',
-                color: '#ffffff',
-                boxShadow: '0 4px 16px color-mix(in srgb, var(--purple-500) 30%, transparent)',
-              }}
+              className={primaryButtonClassName}
             >
               {status === 'loading' ? (
                 <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -370,9 +362,9 @@ export default function LoginPage(): React.JSX.Element {
             <div className="text-center">
               <div
                 className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full"
-                style={{ background: 'color-mix(in srgb, var(--purple-500) 15%, transparent)' }}
+                style={{ background: 'color-mix(in srgb, var(--accent-primary) 15%, transparent)' }}
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--purple-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="4" width="20" height="16" rx="2" />
                   <path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7" />
                 </svg>
@@ -380,7 +372,7 @@ export default function LoginPage(): React.JSX.Element {
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 We sent a 6-digit code to
               </p>
-              <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--purple-500)' }}>
+              <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--accent-primary)' }}>
                 {identifier}
               </p>
             </div>
@@ -405,12 +397,7 @@ export default function LoginPage(): React.JSX.Element {
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="flex h-11 w-full cursor-pointer items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-              style={{
-                background: 'var(--grad-primary)',
-                color: '#ffffff',
-                boxShadow: '0 4px 16px color-mix(in srgb, var(--purple-500) 30%, transparent)',
-              }}
+              className={primaryButtonClassName}
             >
               {status === 'loading' ? (
                 <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -447,7 +434,7 @@ export default function LoginPage(): React.JSX.Element {
                   onClick={handleResend}
                   disabled={status === 'loading'}
                   className="font-medium cursor-pointer transition-colors hover:underline"
-                  style={{ color: 'var(--purple-500)' }}
+                  style={{ color: 'var(--accent-primary)' }}
                 >
                   Resend code
                 </button>

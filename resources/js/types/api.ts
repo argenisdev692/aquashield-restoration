@@ -82,6 +82,7 @@ export interface CompanyDataListItem {
   email: string | null;
   phone: string | null;
   address: string | null;
+  address_2: string | null;
   website: string | null;
   status: string;
   signature_url: string | null;
@@ -109,6 +110,7 @@ export interface CreateCompanyDataDTO {
   email?: string | null;
   phone?: string | null;
   address?: string | null;
+  address_2?: string | null;
   website?: string | null;
   facebook_link?: string | null;
   instagram_link?: string | null;
@@ -126,6 +128,7 @@ export interface UpdateCompanyDataDTO {
   email?: string | null;
   phone?: string | null;
   address?: string | null;
+  address_2?: string | null;
   website?: string | null;
   facebook_link?: string | null;
   instagram_link?: string | null;

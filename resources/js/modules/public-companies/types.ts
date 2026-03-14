@@ -2,6 +2,7 @@ export interface PublicCompany {
     uuid: string;
     public_company_name: string;
     address: string | null;
+    address_2?: string | null;
     phone: string | null;
     email: string | null;
     website: string | null;

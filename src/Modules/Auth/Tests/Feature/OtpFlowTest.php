@@ -32,14 +32,13 @@ final class OtpFlowTest extends TestCase
 
         $response
             ->assertRedirect('/login')
-            ->assertSessionHas('success', 'If the account exists, an OTP has been sent.');
+            ->assertSessionHas('success', 'If the account exists, an OTP has been sent to the email address.');
 
         Notification::assertSentTo($user, SendOtpNotification::class);
 
         Event::assertDispatched(OtpGenerated::class, function (OtpGenerated $event) use ($user): bool {
-            return $event->aggregateId === $user->uuid
-                && $event->identifier === $user->email
-                && $event->channel === 'email';
+            return $event->identifier === $user->email
+                && $event->channel === 'mail';
         });
     }
 
@@ -51,7 +50,11 @@ final class OtpFlowTest extends TestCase
 
         Cache::put(
             'otp:' . strtolower((string) $user->email),
-            Hash::make('123456'),
+            [
+                'hash' => Hash::make('123456'),
+                'attempts' => 0,
+                'expires_at' => time() + 600,
+            ],
             600,
         );
 
@@ -67,8 +70,7 @@ final class OtpFlowTest extends TestCase
         $this->assertAuthenticatedAs($user);
 
         Event::assertDispatched(UserLoggedIn::class, function (UserLoggedIn $event) use ($user): bool {
-            return $event->aggregateId === $user->uuid
-                && $event->userId === $user->id
+            return $event->userId === $user->id
                 && $event->provider === 'otp';
         });
     }

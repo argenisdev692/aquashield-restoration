@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Modules\Auth\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Modules\Auth\Domain\Ports\AuthCachePort;
 use Modules\Auth\Domain\Ports\OtpServicePort;
 use Modules\Auth\Domain\Ports\SocialiteRepositoryPort;
 use Modules\Auth\Domain\Ports\UserRepositoryPort;
+use Modules\Auth\Infrastructure\ExternalServices\Cache\LaravelAuthCacheAdapter;
 use Modules\Auth\Infrastructure\ExternalServices\Otp\CacheOtpAdapter;
 use Modules\Auth\Infrastructure\Persistence\Repositories\EloquentSocialiteRepository;
 use Modules\Auth\Infrastructure\Persistence\Repositories\EloquentUserRepository;
@@ -30,6 +32,7 @@ final class AuthServiceProvider extends ServiceProvider
     public function register(): void
     {
         // ── Domain Ports → Infrastructure Adapters ──
+        $this->app->bind(AuthCachePort::class, LaravelAuthCacheAdapter::class);
         $this->app->bind(UserRepositoryPort::class, EloquentUserRepository::class);
         $this->app->bind(SocialiteRepositoryPort::class, EloquentSocialiteRepository::class);
         $this->app->bind(OtpServicePort::class, CacheOtpAdapter::class);

@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Modules\CompanyData\Application\Commands\CreateCompanyData;
 
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
+use Modules\CompanyData\Application\Support\CompanyDataCacheKeys;
 use Modules\CompanyData\Domain\Entities\CompanyData;
 use Modules\CompanyData\Domain\Enums\CompanyStatus;
+use Modules\CompanyData\Domain\Ports\CompanyDataAuditPort;
+use Modules\CompanyData\Domain\Ports\CompanyDataCachePort;
 use Modules\CompanyData\Domain\Ports\CompanyDataRepositoryPort;
 use Modules\CompanyData\Domain\Ports\CompanySignatureStoragePort;
 use Modules\CompanyData\Domain\ValueObjects\CompanyDataId;
 use Modules\CompanyData\Domain\ValueObjects\Coordinates;
 use Modules\CompanyData\Domain\ValueObjects\SocialLinks;
 use Modules\CompanyData\Domain\ValueObjects\UserId;
-use Shared\Infrastructure\Audit\AuditInterface;
 use Illuminate\Validation\ValidationException;
+use Ramsey\Uuid\Uuid;
 
 /**
  * CreateCompanyDataHandler
@@ -25,7 +26,8 @@ final readonly class CreateCompanyDataHandler
     public function __construct(
         private CompanyDataRepositoryPort $repository,
         private CompanySignatureStoragePort $signatureStorage,
-        private AuditInterface $audit,
+        private CompanyDataAuditPort $audit,
+        private CompanyDataCachePort $cache,
     ) {
     }
 
@@ -38,8 +40,8 @@ final readonly class CreateCompanyDataHandler
         }
 
         $dto = $command->dto;
-        $uuid = Str::uuid()->toString();
-        $signaturePath = $dto->signaturePath;
+        $uuid = Uuid::uuid7()->toString();
+        $signaturePath = null;
 
         if ($dto->signatureDataUrl !== null && $dto->signatureDataUrl !== '') {
             $signaturePath = $this->signatureStorage->storeFromDataUrl($dto->signatureDataUrl);
@@ -53,6 +55,7 @@ final readonly class CreateCompanyDataHandler
             email: $dto->email,
             phone: $dto->phone,
             address: $dto->address,
+            address2: $dto->address2,
             socialLinks: new SocialLinks(
                 facebook: $dto->facebookLink,
                 instagram: $dto->instagramLink,
@@ -77,12 +80,7 @@ final readonly class CreateCompanyDataHandler
             properties: ['uuid' => $uuid, 'company_name' => $dto->companyName],
         );
 
-        // Invalidate list caches
-        try {
-            Cache::tags(['company_data'])->flush();
-            Cache::tags(['company_data_list'])->flush();
-        } catch (\Exception) {
-            // Tags not supported — expires naturally
-        }
+        $this->cache->flushTag(CompanyDataCacheKeys::READ_TAG);
+        $this->cache->flushTag(CompanyDataCacheKeys::LIST_TAG);
     }
 }

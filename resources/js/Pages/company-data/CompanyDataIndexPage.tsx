@@ -1,17 +1,15 @@
 import * as React from 'react';
 import { Link, Head, useRemember } from '@inertiajs/react';
-import { type RowSelectionState } from '@tanstack/react-table';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { useCompanies } from '@/modules/company-data/hooks/useCompanies';
 import { useCompanyDataMutations } from '@/modules/company-data/hooks/useCompanyDataMutations';
+import type { CompanyDataFilters } from '@/modules/company-data/types';
 import CompanyDataTable from './components/CompanyDataTable';
-import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
 import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import { ExportButton } from '@/common/export/ExportButton';
-import type { CompanyDataFilters } from '@/types/api';
 
 // ══════════════════════════════════════════════════════════════
 // Icons
@@ -32,12 +30,12 @@ const IconChevRight = () => <svg {...ic} width={14} height={14}><polyline points
 export default function CompanyDataIndexPage(): React.JSX.Element {
   const [filters, setFilters] = useRemember<CompanyDataFilters>({ page: 1, per_page: 15 }, 'company-filters');
   const [search, setSearch] = React.useState<string>(filters.search || '');
-  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const [pendingDelete, setPendingDelete] = React.useState<{ uuid: string; name: string } | null>(null);
   const [pendingRestore, setPendingRestore] = React.useState<{ uuid: string; name: string } | null>(null);
   
   const [isPendingExport, startExportTransition] = React.useTransition();
   const [, startSearchTransition] = React.useTransition();
+  const [, startFilterTransition] = React.useTransition();
 
   // ── Export function ──
   async function handleExport(format: 'excel' | 'pdf'): Promise<void> {
@@ -57,6 +55,10 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
   const { deleteCompanyData, restoreCompanyData } = useCompanyDataMutations();
 
   const companyList = data?.data ?? [];
+  const [optimisticCompanies, removeOptimisticCompany] = React.useOptimistic(
+    companyList,
+    (currentCompanies, deletedUuid: string) => currentCompanies.filter((company) => company.uuid !== deletedUuid),
+  );
   const meta = data?.meta ?? { currentPage: 1, lastPage: 1, perPage: 15, total: 0 };
 
   // ── Search change ──
@@ -76,25 +78,14 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
 
   function handleConfirmSingleDelete(): void {
     if (!pendingDelete) return;
-    deleteCompanyData.mutate(pendingDelete.uuid, {
-      onSuccess: () => setPendingDelete(null),
-    });
-  }
+    React.startTransition(async () => {
+      const deletingUuid = pendingDelete.uuid;
+      removeOptimisticCompany(deletingUuid);
 
-  // ── Bulk Actions ──
-  const selectedUuids = Object.keys(rowSelection).filter((k) => rowSelection[k]);
-  
-  function handleBulkDelete(): void {
-    if (!selectedUuids.length) return;
-    deleteCompanyData.mutate(selectedUuids, {
-      onSuccess: () => setRowSelection({}),
-    });
-  }
-
-  function handleBulkRestore(): void {
-    if (!selectedUuids.length) return;
-    restoreCompanyData.mutate(selectedUuids, {
-      onSuccess: () => setRowSelection({}),
+      try {
+        await deleteCompanyData.mutateAsync(deletingUuid);
+        setPendingDelete(null);
+      } catch {}
     });
   }
 
@@ -119,7 +110,7 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
     <>
       <Head title="Company Profiles" />
       <AppLayout>
-      <div style={{ fontFamily: 'var(--font-sans)' }}>
+      <div className="flex flex-col gap-6">
         {/* ── Header ── */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -130,13 +121,13 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
               Company Profiles
             </h1>
             <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-              Manage corporate entries — {meta.total} total
+              {meta.total} {meta.total === 1 ? 'record' : 'records'} found
             </p>
           </div>
           <PermissionGuard permissions={['CREATE_COMPANY_DATA']}>
             <Link
               href="/company-data/create"
-              className="btn-modern btn-modern-primary px-4 py-2"
+              className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold"
             >
               <IconPlus /> New Company
             </Link>
@@ -144,13 +135,7 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
         </div>
 
         {/* ── Search bar ── */}
-        <div
-          className="mb-4 flex flex-col items-center gap-3 rounded-xl px-4 py-3 sm:flex-row"
-          style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-default)',
-          }}
-        >
+        <div className="card mb-4 flex flex-col items-center gap-3 px-4 py-3 sm:flex-row">
           <div className="flex flex-1 items-center gap-3 w-full">
             <span style={{ color: 'var(--text-secondary)' }}><IconSearch /></span>
             <input
@@ -172,14 +157,16 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
             <DataTableDateRangeFilter
               dateFrom={filters.date_from}
               dateTo={filters.date_to}
-              onChange={(range: { dateFrom?: string; dateTo?: string }) =>
-                setFilters((p) => ({
-                  ...p,
-                  date_from: range.dateFrom,
-                  date_to: range.dateTo,
-                  page: 1,
-                }))
-              }
+              onChange={(range: { dateFrom?: string; dateTo?: string }) => {
+                startFilterTransition(() => {
+                  setFilters((p) => ({
+                    ...p,
+                    date_from: range.dateFrom,
+                    date_to: range.dateTo,
+                    page: 1,
+                  }));
+                });
+              }}
             />
 
             <div className="h-8 w-px hidden sm:block" style={{ background: 'var(--border-subtle)' }} />
@@ -193,25 +180,14 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
           </div>
         </div>
 
-        {/* ── Bulk Actions Bar ── */}
-        <DataTableBulkActions
-          count={selectedUuids.length}
-          onDelete={handleBulkDelete}
-          onRestore={handleBulkRestore}
-          isDeleting={deleteCompanyData.isPending}
-          isRestoring={restoreCompanyData.isPending}
-        />
-
         {/* ── Table Card ── */}
-        <div className="card-modern shadow-lg">
+        <div className="card">
           <CompanyDataTable
-            data={companyList}
+            data={optimisticCompanies}
             isLoading={isPending}
             isError={isError}
             onDelete={handleDeleteClick}
             onRestore={handleSingleRestore}
-            rowSelection={rowSelection}
-            onRowSelectionChange={setRowSelection}
           />
 
           {/* ── Pagination ── */}
@@ -227,6 +203,7 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
                 <button
                   onClick={() => goToPage(meta.currentPage - 1)}
                   disabled={meta.currentPage <= 1}
+                  aria-label="Previous page"
                   className="flex h-8 w-8 items-center justify-center rounded-lg transition-all disabled:opacity-30"
                   style={{ color: 'var(--text-muted)', border: '1px solid var(--border-default)' }}
                 >
@@ -235,6 +212,7 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
                 <button
                   onClick={() => goToPage(meta.currentPage + 1)}
                   disabled={meta.currentPage >= meta.lastPage}
+                  aria-label="Next page"
                   className="flex h-8 w-8 items-center justify-center rounded-lg transition-all disabled:opacity-30"
                   style={{ color: 'var(--text-muted)', border: '1px solid var(--border-default)' }}
                 >

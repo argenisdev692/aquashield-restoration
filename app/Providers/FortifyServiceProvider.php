@@ -8,7 +8,6 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
-use App\Models\User;
 use App\Notifications\SuspiciousLoginAttemptNotification;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -20,6 +19,7 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Fortify;
+use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel as User;
 
 class FortifyServiceProvider extends ServiceProvider
 {

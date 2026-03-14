@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { WaveBackground, GradientMesh } from '@/common/backgrounds';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -13,23 +14,14 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
     <div
       className="flex min-h-screen items-center justify-center px-4 py-8"
       style={{
-        background: 'radial-gradient(circle at top right, var(--purple-900), transparent), radial-gradient(circle at bottom left, var(--blue-950), var(--bg-void))',
+        background: 'radial-gradient(circle at top right, color-mix(in srgb, var(--accent-secondary) 18%, transparent), transparent 40%), radial-gradient(circle at bottom left, color-mix(in srgb, var(--accent-primary) 20%, transparent), var(--bg-app) 55%)',
       }}
     >
-      {/* Decorative background circles */}
-      <div
-        className="pointer-events-none fixed inset-0 overflow-hidden"
-        aria-hidden="true"
-      >
-        <div
-          className="absolute -top-40 -right-40 h-96 w-96 rounded-full opacity-10"
-          style={{ background: 'var(--purple-500)' }}
-        />
-        <div
-          className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full opacity-8"
-          style={{ background: 'var(--blue-500)' }}
-        />
-      </div>
+      {/* Gradient mesh — blurred orbs (Vercel / Vite style) */}
+      <GradientMesh variant="auth" className="fixed" />
+
+      {/* Animated SVG waves at bottom */}
+      <WaveBackground variant="auth" className="fixed" />
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo / Brand */}
@@ -38,7 +30,7 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
             className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl"
             style={{
               background: 'var(--bg-surface)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              boxShadow: '0 8px 32px color-mix(in srgb, var(--bg-base) 50%, transparent)',
               border: '1px solid var(--border-strong)',
             }}
           >
@@ -50,13 +42,13 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
           </div>
           <h1
             className="mt-4 text-2xl font-bold tracking-tight"
-            style={{ color: 'var(--color-white)' }}
+            style={{ color: 'var(--text-primary)' }}
           >
             AquaShield
           </h1>
           <p
             className="mt-1 text-sm"
-            style={{ color: 'var(--color-silver)' }}
+            style={{ color: 'var(--text-secondary)' }}
           >
             Customer Relationship Management
           </p>
@@ -64,12 +56,10 @@ export default function AuthLayout({ children }: AuthLayoutProps): React.JSX.Ele
 
         {/* Auth Card */}
         <div
-          className="rounded-2xl p-8"
+          className="card rounded-2xl p-8"
           style={{
-            background: 'color-mix(in srgb, var(--color-white) 4%, transparent)',
             backdropFilter: 'blur(24px)',
-            border: '1px solid color-mix(in srgb, var(--color-white) 8%, transparent)',
-            boxShadow: '0 24px 64px color-mix(in srgb, #000 40%, transparent)',
+            boxShadow: '0 24px 64px color-mix(in srgb, var(--bg-base) 40%, transparent)',
           }}
         >
           {children}

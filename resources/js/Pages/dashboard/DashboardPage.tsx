@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import type { AuthPageProps } from '@/types/auth';
+import { WaveBackground, GradientMesh } from '@/common/backgrounds';
 import {
   Area,
   AreaChart,
@@ -253,6 +254,16 @@ export default function DashboardPage(): React.JSX.Element {
     <>
       <Head title="Dashboard — AquaShield" />
       <AppLayout>
+        <div className="relative min-h-full overflow-hidden">
+          {/* Gradient mesh — blurred orbs (Vercel / Vite style) */}
+          <GradientMesh variant="dashboard" />
+
+          {/* Animated SVG waves at bottom */}
+          <WaveBackground variant="dashboard" />
+
+          {/* ── Content layer ── */}
+          <div className="relative z-10">
+
           {/* ── Header ── */}
           <div className="mb-6">
             <h1 className="text-xl font-bold md:text-2xl" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
@@ -453,6 +464,9 @@ export default function DashboardPage(): React.JSX.Element {
             </div>
             
           </div>
+
+          </div>{/* z-10 content layer */}
+        </div>{/* relative overflow container */}
       </AppLayout>
     </>
   );

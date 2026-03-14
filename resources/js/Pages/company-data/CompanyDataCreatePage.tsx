@@ -2,7 +2,8 @@ import * as React from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useCompanyDataMutations } from '@/modules/company-data/hooks/useCompanyDataMutations';
-import type { CreateCompanyDataDTO } from '@/types/api';
+import type { CreateCompanyDataDTO } from '@/modules/company-data/types';
+import { type UserAddressAutocompleteValue, useGoogleMapsAddressAutocomplete } from '@/modules/users/hooks/useGoogleMapsAddressAutocomplete';
 import CompanySignaturePad from '@/modules/company-data/components/CompanySignaturePad';
 import type { AuthPageProps } from '@/types/auth';
 
@@ -16,6 +17,13 @@ const ic = {
 };
 const IconArrowLeft = () => <svg {...ic}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>;
 const IconSave = () => <svg {...ic}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
+
+function buildFullUsAddress(value: UserAddressAutocompleteValue): string {
+  return [value.address, value.city, value.state, value.zip_code, value.country]
+    .map((segment) => segment.trim())
+    .filter((segment) => segment.length > 0)
+    .join(', ');
+}
 
 // ══════════════════════════════════════════════════════════════
 // CompanyDataCreatePage
@@ -38,16 +46,36 @@ export default function CompanyDataCreatePage(): React.JSX.Element {
     twitter_link: '',
   });
   const [signatureDataUrl, setSignatureDataUrl] = React.useState<string | null>(null);
+  const [address2, setAddress2] = React.useState<string>('');
+  const addressInputRef = React.useRef<HTMLInputElement | null>(null);
+  const address2InputRef = React.useRef<HTMLInputElement | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleAddressSelected = React.useCallback((value: UserAddressAutocompleteValue): void => {
+    setFormData((prev) => ({ ...prev, address: buildFullUsAddress(value) }));
+    setAddress2('');
+    window.setTimeout(() => {
+      address2InputRef.current?.focus();
+    }, 0);
+  }, []);
+
+  const { isLoading, isReady, errorMessage } = useGoogleMapsAddressAutocomplete({
+    inputRef: addressInputRef,
+    onAddressSelected: handleAddressSelected,
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createMutation.mutate(
-      { ...formData, signature_data_url: signatureDataUrl },
+      {
+        ...formData,
+        address_2: address2.trim().length > 0 ? address2.trim() : null,
+        signature_data_url: signatureDataUrl,
+      },
       {
         onSuccess: () => {
           router.visit('/company-data');
@@ -59,14 +87,16 @@ export default function CompanyDataCreatePage(): React.JSX.Element {
   return (
     <AppLayout>
       <Head title="Create Company Profile" />
-      <div style={{ fontFamily: 'var(--font-sans)', maxWidth: '800px', margin: '0 auto' }}>
+      <div className="mx-auto max-w-[800px]">
         
         {/* ── Header ── */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/company-data"
-              className="flex h-9 w-9 items-center justify-center rounded-lg transition-all hover:bg-(--bg-hover)"
+              aria-label="Back to company profiles"
+              title="Back to company profiles"
+              className="btn-ghost flex h-9 w-9 items-center justify-center"
               style={{ color: 'var(--text-muted)' }}
             >
               <IconArrowLeft />
@@ -83,11 +113,7 @@ export default function CompanyDataCreatePage(): React.JSX.Element {
           <button
             onClick={handleSubmit}
             disabled={createMutation.isPending}
-            className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all disabled:opacity-50"
-            style={{
-              background: 'var(--accent-primary)',
-              color: 'var(--color-white)',
-            }}
+            className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold disabled:opacity-50"
           >
             {createMutation.isPending ? 'Saving...' : <><IconSave /> Save Profile</>}
           </button>
@@ -172,15 +198,37 @@ export default function CompanyDataCreatePage(): React.JSX.Element {
               {/* Address */}
               <div className="md:col-span-2">
                 <label className="input-label" htmlFor="address">Address</label>
-                <textarea
+                <input
                   id="address"
                   name="address"
-                  rows={3}
                   value={formData.address || ''}
                   onChange={handleChange}
-                  className="input h-auto! pt-2"
-                  placeholder="123 Corporate Blvd, Suite 100..."
+                  ref={addressInputRef}
+                  autoComplete="street-address"
+                  className="input"
+                  placeholder="Start typing a USA address"
                 />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="input-label" htmlFor="address_2">Address 2</label>
+                <input
+                  id="address_2"
+                  name="address_2"
+                  type="text"
+                  value={address2}
+                  onChange={(e) => setAddress2(e.target.value)}
+                  ref={address2InputRef}
+                  autoComplete="address-line2"
+                  className="input"
+                  placeholder="Apartment, suite, unit, building, floor"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  {errorMessage ?? (isReady ? 'Autocomplete limited to USA addresses. Address 2 remains manual.' : isLoading ? 'Loading Google Maps autocomplete...' : 'Google Maps autocomplete is preparing...')}
+                </p>
               </div>
             </div>
 

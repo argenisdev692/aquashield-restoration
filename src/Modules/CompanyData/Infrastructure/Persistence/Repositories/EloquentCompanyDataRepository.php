@@ -67,6 +67,7 @@ final class EloquentCompanyDataRepository implements CompanyDataRepositoryPort
             'email' => $companyData->email,
             'phone' => $companyData->phone,
             'address' => $companyData->address,
+            'address_2' => $companyData->address2,
             'website' => $socialLinks['website'],
             'facebook_link' => $socialLinks['facebook'],
             'instagram_link' => $socialLinks['instagram'],

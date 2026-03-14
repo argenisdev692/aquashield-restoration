@@ -7,13 +7,20 @@ namespace Modules\Users\Infrastructure\ExternalServices\Storage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Modules\Users\Domain\Ports\StoragePort;
+use Shared\Infrastructure\Resilience\CircuitBreaker\CircuitBreakerInterface;
 
 /**
  * AvatarStorageAdapter
  */
 final class AvatarStorageAdapter implements StoragePort
 {
+    private const AVATARS_DISK = 'r2';
     private const AVATARS_DIR = 'avatars';
+
+    public function __construct(
+        private readonly CircuitBreakerInterface $circuitBreaker,
+    ) {
+    }
 
     public function upload(mixed $file): string
     {
@@ -21,34 +28,35 @@ final class AvatarStorageAdapter implements StoragePort
             throw new \InvalidArgumentException('Avatar upload requires an uploaded file instance.');
         }
 
-        $path = $file->store(self::AVATARS_DIR, $this->diskName());
+        return $this->circuitBreaker->execute(
+            'r2.users.avatar.upload',
+            function () use ($file): string {
+                $path = $file->store(self::AVATARS_DIR, self::AVATARS_DISK);
 
-        if (! $path) {
-            throw new \RuntimeException('Failed to upload avatar.');
-        }
+                if (! $path) {
+                    throw new \RuntimeException('Failed to upload avatar.');
+                }
 
-        return $path;
+                return $path;
+            },
+            static function (): never {
+                throw new \RuntimeException('Avatar storage is temporarily unavailable.');
+            },
+        );
     }
 
     public function delete(string $path): void
     {
-        if (Storage::disk($this->diskName())->exists($path)) {
-            Storage::disk($this->diskName())->delete($path);
+        if (Storage::disk(self::AVATARS_DISK)->exists($path)) {
+            Storage::disk(self::AVATARS_DISK)->delete($path);
         }
     }
 
     public function getUrl(string $path): string
     {
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk($this->diskName());
+        $disk = Storage::disk(self::AVATARS_DISK);
 
         return $disk->url($path);
-    }
-
-    private function diskName(): string
-    {
-        $disk = (string) config('filesystems.default', 'public');
-
-        return $disk === 'local' ? 'public' : $disk;
     }
 }

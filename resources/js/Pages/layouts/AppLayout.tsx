@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import type { AuthPageProps } from '@/types/auth';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
+import { AuthProvider } from '@/modules/auth/context/AuthContext';
 import { queryClient } from '@/lib/queryClient';
 
 // ══════════════════════════════════════════════════════════════════
@@ -195,7 +196,7 @@ function ExpandableSearch(): React.JSX.Element {
           style={{
             background: 'var(--bg-surface)',
             borderBottom: '1px solid var(--border-subtle)',
-            boxShadow: '0 4px 20px color-mix(in srgb, #000 30%, transparent)',
+            boxShadow: '0 4px 20px color-mix(in srgb, var(--bg-base) 30%, transparent)',
           }}
         >
           <span style={{ color: 'var(--blue-400)' }}><IconSearch /></span>
@@ -277,7 +278,7 @@ function AvatarDropdown(): React.JSX.Element {
             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-bold"
             style={{
               background: 'var(--grad-primary)',
-              color: '#ffffff',
+              color: 'var(--text-primary)',
             }}
           >
             {initials}
@@ -300,7 +301,7 @@ function AvatarDropdown(): React.JSX.Element {
           style={{
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-default)',
-            boxShadow: '0 8px 32px color-mix(in srgb, #000 24%, transparent)',
+            boxShadow: '0 8px 32px color-mix(in srgb, var(--bg-base) 24%, transparent)',
           }}
         >
           {/* User info header */}
@@ -481,7 +482,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
             AquaShield
           </span>
             <span className="block text-[10px] font-semibold uppercase tracking-widest leading-none mt-0.5"
-              style={{ color: 'var(--purple-500)' }}>
+              style={{ color: 'var(--accent-secondary)' }}>
               CRM
             </span>
           </div>
@@ -497,7 +498,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
               background: 'var(--bg-hover)',
               border: '1px solid var(--border-default)',
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-aqua)'; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent-primary)'; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; }}
             aria-label="Close menu"
           >
@@ -545,8 +546,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
                   <span 
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300"
                     style={{
-                      background: hasActiveChild ? 'var(--grad-primary)' : 'rgba(255, 255, 255, 0.03)',
-                      color: hasActiveChild ? '#ffffff' : 'var(--text-muted)',
+                      background: hasActiveChild ? 'var(--grad-primary)' : 'color-mix(in srgb, var(--text-primary) 3%, transparent)',
+                      color: hasActiveChild ? 'var(--text-primary)' : 'var(--text-muted)',
                       border: hasActiveChild ? 'none' : '1px solid var(--border-default)'
                     }}
                   >
@@ -603,7 +604,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
                             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all"
                             style={{
                               background: childActive ? 'var(--accent-primary)' : 'transparent',
-                              color: childActive ? '#ffffff' : 'var(--text-disabled)',
+                              color: childActive ? 'var(--text-primary)' : 'var(--text-disabled)',
                             }}
                           >
                             {child.icon}
@@ -676,8 +677,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
               <span 
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-all duration-300"
                 style={{
-                  background: active ? 'var(--grad-primary)' : 'rgba(255, 255, 255, 0.03)',
-                  color: active ? '#ffffff' : 'var(--text-muted)',
+                  background: active ? 'var(--grad-primary)' : 'color-mix(in srgb, var(--text-primary) 3%, transparent)',
+                  color: active ? 'var(--text-primary)' : 'var(--text-muted)',
                   border: active ? 'none' : '1px solid var(--border-default)'
                 }}
               >
@@ -731,11 +732,13 @@ function SidebarContent({ onClose }: { onClose?: () => void }): React.JSX.Elemen
 interface AppLayoutProps { children: React.ReactNode; }
 
 export default function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
+  const { auth } = usePage<AuthPageProps>().props;
   const [theme, toggleTheme] = useTheme();
   const [mobileOpen, setMobileOpen] = React.useState<boolean>(false);
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg-app)', fontFamily: 'var(--font-sans)' }}>
+    <AuthProvider user={auth.user}>
+      <div className="min-h-screen" style={{ background: 'var(--bg-app)', fontFamily: 'var(--font-sans)' }}>
 
       {/* ── Desktop Sidebar (hidden on mobile) ── */}
       <aside
@@ -765,7 +768,7 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
           className="absolute inset-0"
           onClick={() => setMobileOpen(false)}
           style={{
-            background: 'color-mix(in srgb, #000 60%, transparent)',
+            background: 'color-mix(in srgb, var(--bg-base) 60%, transparent)',
             opacity: mobileOpen ? 1 : 0,
             transition: 'opacity 300ms cubic-bezier(0.4, 0, 0.2, 1)',
           }}
@@ -835,6 +838,7 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
           <div className="p-4 md:p-6 lg:p-8">{children}</div>
         </main>
       </div>
-    </div>
+      </div>
+    </AuthProvider>
   );
 }

@@ -5,12 +5,14 @@ interface PremiumFieldProps extends React.InputHTMLAttributes<HTMLInputElement |
   label: string;
   error?: string;
   isTextArea?: boolean;
+  inputRef?: React.Ref<HTMLInputElement | HTMLTextAreaElement>;
 }
 
 export const PremiumField = ({
   label,
   error,
   isTextArea = false,
+  inputRef,
   className,
   id,
   required,
@@ -39,12 +41,14 @@ export const PremiumField = ({
       
       {isTextArea ? (
         <textarea
+          ref={inputRef as React.Ref<HTMLTextAreaElement>}
           id={fieldId}
           className={cn(baseClasses, "min-h-[100px] resize-y")}
           {...(props as any)}
         />
       ) : (
         <input
+          ref={inputRef as React.Ref<HTMLInputElement>}
           id={fieldId}
           className={baseClasses}
           {...props}

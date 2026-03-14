@@ -41,7 +41,7 @@ export function PasswordStrengthBar({ password }: PasswordStrengthBarProps): Rea
     <div className="mt-2 space-y-1">
       <div
         className="h-1.5 w-full overflow-hidden rounded-full"
-        style={{ background: 'rgba(255, 255, 255, 0.08)' }}
+        style={{ background: 'color-mix(in srgb, var(--text-primary) 8%, transparent)' }}
       >
         <div
           className="h-full rounded-full transition-all duration-300"

@@ -13,7 +13,7 @@ export default function AllianceCompanyEditPage({ AllianceCompany }: Props) {
     const { updateAllianceCompany } = useAllianceCompanyMutations();
     const company = AllianceCompany.data;
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: Partial<AllianceCompany>) => {
         await updateAllianceCompany.mutateAsync({ 
             uuid: company.uuid, 
             data 

@@ -39,14 +39,15 @@ export function AuthInput({
             'focus:outline-none focus:ring-2 focus:ring-offset-1',
             error
               ? 'border-(--accent-error) focus:ring-(--accent-error)/20'
-              : 'focus:border-(--purple-500) focus:ring-(--purple-500)/20',
+              : 'focus:border-(--accent-primary) focus:ring-(--accent-primary)/20',
             rightElement && 'pr-12',
             className,
           )}
           style={{
-            background: 'rgba(255, 255, 255, 0.06)',
-            borderColor: error ? 'var(--accent-error)' : 'color-mix(in srgb, var(--purple-500) 25%, transparent)',
-            color: 'var(--color-white)',
+            background: 'var(--input-bg)',
+            borderColor: error ? 'var(--accent-error)' : 'var(--input-border)',
+            color: 'var(--text-primary)',
+            fontFamily: 'var(--font-sans)',
           }}
           aria-invalid={!!error}
           aria-describedby={error ? `${inputId}-error` : undefined}

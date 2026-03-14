@@ -6,6 +6,9 @@ use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel a
 use Modules\CompanyData\Infrastructure\Persistence\Eloquent\Models\CompanyDataEloquentModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 // Pest uses $this for assertions and requests
@@ -15,11 +18,40 @@ beforeEach(function () {
     // Generate a user to authenticate with during tests
 });
 
-it('lists company data', function () {
-    $user = User::factory()->create();
-    CompanyDataEloquentModel::factory()->count(3)->create(['user_id' => $user->id]);
+function createCompanyDataCrudAdmin(): User
+{
+    app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-    $this->actingAs($user)
+    $permissions = [
+        'VIEW_COMPANY_DATA',
+        'CREATE_COMPANY_DATA',
+        'UPDATE_COMPANY_DATA',
+        'DELETE_COMPANY_DATA',
+        'RESTORE_COMPANY_DATA',
+    ];
+
+    foreach ($permissions as $permission) {
+        Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web'], ['uuid' => Str::uuid()->toString()]);
+    }
+
+    $role = Role::firstOrCreate(['name' => 'SUPER_ADMIN', 'guard_name' => 'web'], ['uuid' => Str::uuid()->toString()]);
+    $role->syncPermissions($permissions);
+
+    /** @var User $user */
+    $user = User::factory()->create([
+        'status' => 'active',
+        'terms_and_conditions' => true,
+    ]);
+    $user->assignRole($role);
+
+    return $user;
+}
+
+it('lists company data', function () {
+    $admin = createCompanyDataCrudAdmin();
+    CompanyDataEloquentModel::factory()->count(3)->create(['user_id' => $admin->id]);
+
+    $this->actingAs($admin)
         ->getJson(route('api.admin.company_data.index'))
         ->assertOk()
         ->assertJsonStructure([
@@ -31,7 +63,11 @@ it('lists company data', function () {
 });
 
 it('creates company data', function () {
-    $user = User::factory()->create();
+    $admin = createCompanyDataCrudAdmin();
+    $user = User::factory()->create([
+        'status' => 'active',
+        'terms_and_conditions' => true,
+    ]);
     $payload = [
         'user_uuid' => $user->uuid,
         'company_name' => 'Acme Corp',
@@ -39,7 +75,7 @@ it('creates company data', function () {
         'phone' => '1234567890'
     ];
 
-    $this->actingAs($user)
+    $this->actingAs($admin)
         ->postJson(route('api.admin.company_data.store'), $payload)
         ->assertCreated()
         ->assertJsonStructure(['message']);
@@ -51,38 +87,38 @@ it('creates company data', function () {
 });
 
 it('validates required fields on create', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user)
+    $admin = createCompanyDataCrudAdmin();
+    $this->actingAs($admin)
         ->postJson(route('api.admin.company_data.store'), [])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['user_uuid', 'company_name']);
 });
 
 it('shows company data', function () {
-    $user = User::factory()->create();
+    $admin = createCompanyDataCrudAdmin();
     $uuid = (string) Str::uuid();
-    $companyData = CompanyDataEloquentModel::factory()->create([
+    CompanyDataEloquentModel::factory()->create([
         'uuid' => $uuid,
-        'user_id' => $user->id,
+        'user_id' => $admin->id,
         'company_name' => 'Show Test Corp'
     ]);
 
-    $this->actingAs($user)
+    $this->actingAs($admin)
         ->getJson(route('api.admin.company_data.show', $uuid))
         ->assertOk()
         ->assertJsonPath('data.company_name', 'Show Test Corp');
 });
 
 it('updates company data', function () {
-    $user = User::factory()->create();
+    $admin = createCompanyDataCrudAdmin();
     $uuid = (string) Str::uuid();
-    $companyData = CompanyDataEloquentModel::factory()->create([
+    CompanyDataEloquentModel::factory()->create([
         'uuid' => $uuid,
-        'user_id' => $user->id,
+        'user_id' => $admin->id,
         'company_name' => 'Old Name'
     ]);
 
-    $this->actingAs($user)
+    $this->actingAs($admin)
         ->putJson(route('api.admin.company_data.update', $uuid), [
             'company_name' => 'New Name'
         ])
@@ -96,14 +132,14 @@ it('updates company data', function () {
 });
 
 it('soft deletes company data', function () {
-    $user = User::factory()->create();
+    $admin = createCompanyDataCrudAdmin();
     $uuid = (string) Str::uuid();
-    $companyData = CompanyDataEloquentModel::factory()->create([
+    CompanyDataEloquentModel::factory()->create([
         'uuid' => $uuid,
-        'user_id' => $user->id,
+        'user_id' => $admin->id,
     ]);
 
-    $this->actingAs($user)
+    $this->actingAs($admin)
         ->deleteJson(route('api.admin.company_data.destroy', $uuid))
         ->assertOk()
         ->assertJson(['message' => 'Company data deleted successfully']);
@@ -116,15 +152,15 @@ it('soft deletes company data', function () {
 });
 
 it('restores soft deleted company data', function () {
-    $user = User::factory()->create();
+    $admin = createCompanyDataCrudAdmin();
     $uuid = (string) Str::uuid();
-    $companyData = CompanyDataEloquentModel::factory()->create([
+    CompanyDataEloquentModel::factory()->create([
         'uuid' => $uuid,
-        'user_id' => $user->id,
+        'user_id' => $admin->id,
         'deleted_at' => now(),
     ]);
 
-    $this->actingAs($user)
+    $this->actingAs($admin)
         ->patchJson(route('api.admin.company_data.restore', $uuid))
         ->assertOk()
         ->assertJson(['message' => 'Company data restored successfully']);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\CompanyData\Infrastructure\Http\Export;
 
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Response;
 use Modules\CompanyData\Application\DTOs\CompanyDataFilterDTO;
 use Modules\CompanyData\Infrastructure\Persistence\Eloquent\Models\CompanyDataEloquentModel;
@@ -18,7 +19,24 @@ final class CompanyDataPdfExport
 
     public function stream(): Response
     {
-        $rows = CompanyDataEloquentModel::query()
+        $rows = $this->query()
+            ->cursor()
+            ->map(fn(CompanyDataEloquentModel $company): array => CompanyDataExportTransformer::transformForPdf($company))
+            ->values()
+            ->all();
+
+        $pdf = Pdf::loadView('exports.pdf.company_data', [
+            'title' => 'Company Profiles Report',
+            'generatedAt' => now()->format('F j, Y H:i'),
+            'rows' => $rows,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->stream('company-report-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    private function query(): Builder
+    {
+        return CompanyDataEloquentModel::query()
             ->select([
                 'company_name',
                 'name',
@@ -39,15 +57,6 @@ final class CompanyDataPdfExport
                 $this->filters->dateFrom || $this->filters->dateTo,
                 fn($q) => $q->inDateRange($this->filters->dateFrom, $this->filters->dateTo),
             )
-            ->orderBy($this->filters->sortBy ?? 'created_at', $this->filters->sortDir ?? 'desc')
-            ->get();
-
-        $pdf = Pdf::loadView('company-data::exports.pdf', [
-            'title' => 'Company Profiles Report',
-            'generatedAt' => now()->format('F j, Y H:i'),
-            'rows' => $rows,
-        ])->setPaper('a4', 'landscape');
-
-        return $pdf->stream('company-report-' . now()->format('Y-m-d') . '.pdf');
+            ->orderBy($this->filters->sortBy ?? 'created_at', $this->filters->sortDir ?? 'desc');
     }
 }

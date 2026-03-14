@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Users\Infrastructure\Persistence\Mappers;
 
+use Illuminate\Support\Facades\Storage;
 use Modules\Users\Domain\Entities\User;
 use Modules\Users\Domain\Enums\UserStatus;
 use Modules\Users\Domain\ValueObjects\UserId;
@@ -28,7 +29,7 @@ final class UserMapper
             email: $model->email,
             username: $model->username,
             phone: $model->phone,
-            profilePhotoPath: $model->profile_photo_path,
+            profilePhotoPath: self::resolveProfilePhotoPath($model->profile_photo_path),
             address: $model->address,
             address2: $model->address_2,
             city: $model->city,
@@ -43,5 +44,18 @@ final class UserMapper
             updatedAt: $model->updated_at?->toIso8601String(),
             deletedAt: $model->deleted_at?->toIso8601String(),
         );
+    }
+
+    private static function resolveProfilePhotoPath(?string $path): ?string
+    {
+        if ($path === null || $path === '') {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        return Storage::disk('r2')->url($path);
     }
 }

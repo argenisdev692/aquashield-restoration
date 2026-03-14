@@ -1,7 +1,6 @@
-import { usePage } from '@inertiajs/react';
-import type { AuthUser, AuthPageProps } from '@/types/auth';
+import { useAuthContext } from '@/modules/auth/context/AuthContext';
+import type { AuthUser } from '@/types/auth';
 
 export function useCurrentUser(): AuthUser | null {
-  const { auth } = usePage<AuthPageProps>().props;
-  return auth.user;
+  return useAuthContext().user;
 }

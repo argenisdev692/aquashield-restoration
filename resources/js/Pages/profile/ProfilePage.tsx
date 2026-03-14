@@ -12,6 +12,7 @@ import { UserAddressFields } from '@/modules/users/components/UserAddressFields'
 import type { ProfilePageProps } from '@/types/auth';
 import { sileo } from 'sileo';
 import { Globe, LockKeyhole, Smartphone, User } from 'lucide-react';
+import ProfileAvatarUploader from './ProfileAvatarUploader';
 
 type ProfileFormState = {
   name: string;
@@ -45,6 +46,23 @@ type PasswordFormState = {
   current_password: string;
   password: string;
   password_confirmation: string;
+};
+
+type AvatarFormState = {
+  _method: 'put';
+  name: string;
+  last_name: string;
+  email: string;
+  username: string;
+  phone: string;
+  address: string;
+  address_2: string;
+  city: string;
+  state: string;
+  country: string;
+  zip_code: string;
+  avatar: File | null;
+  remove_avatar: boolean;
 };
 
 function getFirstError(errors: Record<string, string | undefined>): string | null {
@@ -127,6 +145,22 @@ export default function ProfilePage(): React.JSX.Element {
     current_password: '',
     password: '',
     password_confirmation: '',
+  });
+  const avatarForm = useForm<AvatarFormState>({
+    _method: 'put',
+    name: user.name,
+    last_name: user.last_name ?? '',
+    email: user.email,
+    username: user.username ?? '',
+    phone: formatUsPhoneInput(user.phone ?? ''),
+    address: user.address ?? '',
+    address_2: user.address_2 ?? '',
+    city: user.city ?? '',
+    state: user.state ?? '',
+    country: user.country ?? '',
+    zip_code: user.zip_code ?? '',
+    avatar: null,
+    remove_avatar: false,
   });
   const [availabilityErrors, setAvailabilityErrors] = React.useState<Record<string, string>>({});
   const emailAvailability = useUserFieldAvailability({ field: 'email', value: profileForm.data.email, scope: 'profile', ignoreUuid: user.uuid });
@@ -250,6 +284,65 @@ export default function ProfilePage(): React.JSX.Element {
       },
     });
   };
+
+  const handleAvatarUpload = React.useCallback((file: File): Promise<void> => (
+    new Promise((resolve, reject) => {
+      avatarForm.setData((previous) => ({
+        ...previous,
+        ...profileForm.data,
+        avatar: file,
+        remove_avatar: false,
+      }));
+
+      avatarForm.post('/user/profile-information', {
+        preserveScroll: true,
+        forceFormData: true,
+        onSuccess: () => {
+          avatarForm.reset('avatar');
+          avatarForm.setData('_method', 'put');
+          avatarForm.setData('remove_avatar', false);
+          sileo.success({ title: 'Avatar updated successfully' });
+          resolve();
+        },
+        onError: (errors) => {
+          const message = getFirstError(errors) ?? 'Failed to update avatar';
+          sileo.error({ title: message });
+          reject(new Error(message));
+        },
+        onFinish: () => {
+          avatarForm.setData('avatar', null);
+        },
+      });
+    })
+  ), [avatarForm, profileForm.data]);
+
+  const handleAvatarRemove = React.useCallback((): Promise<void> => (
+    new Promise((resolve, reject) => {
+      avatarForm.setData((previous) => ({
+        ...previous,
+        ...profileForm.data,
+        avatar: null,
+        remove_avatar: true,
+      }));
+
+      avatarForm.post('/user/profile-information', {
+        preserveScroll: true,
+        forceFormData: true,
+        onSuccess: () => {
+          avatarForm.reset('avatar');
+          avatarForm.setData('_method', 'put');
+          avatarForm.setData('remove_avatar', false);
+          sileo.success({ title: 'Avatar removed successfully' });
+          resolve();
+        },
+        onError: (errors) => {
+          const message = getFirstError(errors) ?? 'Failed to remove avatar';
+          sileo.error({ title: message });
+          reject(new Error(message));
+        },
+      });
+    })
+  ), [avatarForm, profileForm.data]);
 
   return (
     <AppLayout>
@@ -405,6 +498,17 @@ export default function ProfilePage(): React.JSX.Element {
           </div>
 
           <div className="space-y-6">
+            <ProfileAvatarUploader
+              name={user.name}
+              lastName={user.last_name}
+              photoUrl={user.profile_photo_path}
+              isUploading={avatarForm.processing}
+              uploadProgress={avatarForm.progress?.percentage ?? null}
+              error={avatarForm.errors.avatar}
+              onUpload={handleAvatarUpload}
+              onRemove={handleAvatarRemove}
+            />
+
             <form onSubmit={handlePasswordSubmit} className="card p-6 space-y-4 shadow-sm" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}>
               <div className="mb-2 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
                 <LockKeyhole size={16} />

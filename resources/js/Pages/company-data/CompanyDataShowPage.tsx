@@ -49,6 +49,7 @@ export default function CompanyDataShowPage(): React.JSX.Element {
         email: company.email,
         phone: company.phone,
         address: company.address,
+        address_2: company.address_2,
         website: company.website,
         facebook_link: company.facebook_link,
         instagram_link: company.instagram_link,
@@ -84,14 +85,16 @@ export default function CompanyDataShowPage(): React.JSX.Element {
   return (
     <AppLayout>
       <Head title={`${company.company_name} Profile`} />
-      <div style={{ fontFamily: 'var(--font-sans)', maxWidth: '900px', margin: '0 auto' }}>
+      <div className="mx-auto max-w-[900px]">
         
         {/* ── Header ── */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/company-data"
-              className="flex h-9 w-9 items-center justify-center rounded-lg transition-all hover:bg-(--bg-hover)"
+              aria-label="Back to company profiles"
+              title="Back to company profiles"
+              className="btn-ghost flex h-9 w-9 items-center justify-center"
               style={{ color: 'var(--text-muted)' }}
             >
               <IconArrowLeft />
@@ -114,11 +117,7 @@ export default function CompanyDataShowPage(): React.JSX.Element {
           <PermissionGuard permissions={['UPDATE_COMPANY_DATA']}>
             <Link
               href={`/company-data/${company.uuid}/edit`}
-              className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:bg-(--bg-hover)"
-              style={{
-                background: 'var(--accent-primary)',
-                color: 'var(--color-white)',
-              }}
+              className="btn-primary inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold"
             >
               <IconEdit /> Edit Profile
             </Link>
@@ -132,7 +131,7 @@ export default function CompanyDataShowPage(): React.JSX.Element {
           <div className="md:col-span-2 space-y-6">
             
             {/* Contact Details Card */}
-            <div className="card-modern shadow-md">
+            <div className="card p-6 shadow-md">
               <h2 className="mb-4 text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
                 Contact Information
               </h2>
@@ -222,7 +221,7 @@ export default function CompanyDataShowPage(): React.JSX.Element {
             </div>
 
             {/* Geographic Coordinates Card (if map is needed later) */}
-            <div className="card-modern shadow-md">
+            <div className="card p-6 shadow-md">
                <h2 className="mb-4 text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
                 Geographic Data
               </h2>
@@ -242,7 +241,7 @@ export default function CompanyDataShowPage(): React.JSX.Element {
 
           {/* Social Links & Metadata Column */}
           <div className="space-y-6">
-            <div className="card-modern">
+            <div className="card p-6">
               <h2 className="mb-4 text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
                 Signature
               </h2>
@@ -262,11 +261,7 @@ export default function CompanyDataShowPage(): React.JSX.Element {
                       href={company.signature_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold"
-                      style={{
-                        borderColor: 'var(--border-default)',
-                        color: 'var(--text-secondary)',
-                      }}
+                      className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold"
                     >
                       <IconDownload /> Download
                     </a>
@@ -275,11 +270,8 @@ export default function CompanyDataShowPage(): React.JSX.Element {
                         type="button"
                         onClick={handleRemoveSignature}
                         disabled={updateCompanyData.isPending}
-                        className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50"
-                        style={{
-                          borderColor: 'var(--border-default)',
-                          color: 'var(--accent-error)',
-                        }}
+                        className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold disabled:opacity-50"
+                        style={{ color: 'var(--accent-error)' }}
                       >
                         <IconTrash /> Delete
                       </button>
@@ -287,11 +279,7 @@ export default function CompanyDataShowPage(): React.JSX.Element {
                     <PermissionGuard permissions={['UPDATE_COMPANY_DATA']}>
                       <Link
                         href={`/company-data/${company.uuid}/edit`}
-                        className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold"
-                        style={{
-                          borderColor: 'var(--border-default)',
-                          color: 'var(--text-secondary)',
-                        }}
+                        className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold"
                       >
                         <IconEdit /> Edit
                       </Link>
@@ -306,11 +294,7 @@ export default function CompanyDataShowPage(): React.JSX.Element {
                   <PermissionGuard permissions={['UPDATE_COMPANY_DATA']}>
                     <Link
                       href={`/company-data/${company.uuid}/edit`}
-                      className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold"
-                      style={{
-                        borderColor: 'var(--border-default)',
-                        color: 'var(--text-secondary)',
-                      }}
+                      className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold"
                     >
                       <IconEdit /> Add Signature
                     </Link>
@@ -319,7 +303,7 @@ export default function CompanyDataShowPage(): React.JSX.Element {
               )}
             </div>
 
-            <div className="card-modern">
+            <div className="card p-6">
               <h2 className="mb-4 text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
                 Social Profiles
               </h2>
@@ -346,7 +330,7 @@ export default function CompanyDataShowPage(): React.JSX.Element {
               </div>
             </div>
 
-            <div className="card-modern">
+            <div className="card p-6">
                <h2 className="mb-4 text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
                 Metadata
               </h2>

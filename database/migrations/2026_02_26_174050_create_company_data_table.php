@@ -18,7 +18,8 @@ return new class extends Migration {
             $table->string('signature_path')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
-            $table->text('address')->nullable();
+            $table->string('address')->nullable();
+            $table->string('address_2')->nullable();
             $table->string('website')->nullable();
             $table->string('facebook_link')->nullable();
             $table->string('instagram_link')->nullable();

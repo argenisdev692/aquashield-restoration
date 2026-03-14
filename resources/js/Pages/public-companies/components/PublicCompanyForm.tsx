@@ -1,5 +1,7 @@
+import * as React from 'react';
 import { useForm } from '@inertiajs/react';
 import { PublicCompany } from '@/modules/public-companies/types';
+import { type UserAddressAutocompleteValue, useGoogleMapsAddressAutocomplete } from '@/modules/users/hooks/useGoogleMapsAddressAutocomplete';
 import { PremiumField } from '@/shadcn/PremiumField';
 import { Plus, Save, X } from 'lucide-react';
 
@@ -8,6 +10,13 @@ interface PublicCompanyFormProps {
     onSubmit: (data: Partial<PublicCompany>) => void;
     isSubmitting: boolean;
     onCancel: () => void;
+}
+
+function buildFullUsAddress(value: UserAddressAutocompleteValue): string {
+    return [value.address, value.city, value.state, value.zip_code, value.country]
+        .map((segment) => segment.trim())
+        .filter((segment) => segment.length > 0)
+        .join(', ');
 }
 
 export default function PublicCompanyForm({
@@ -23,6 +32,20 @@ export default function PublicCompanyForm({
         email: initialData?.email || '',
         website: initialData?.website || '',
         unit: initialData?.unit || '',
+    });
+    const addressInputRef = React.useRef<HTMLInputElement | null>(null);
+    const unitInputRef = React.useRef<HTMLInputElement | null>(null);
+
+    const handleAddressSelected = React.useCallback((value: UserAddressAutocompleteValue): void => {
+        setData('address', buildFullUsAddress(value));
+        window.setTimeout(() => {
+            unitInputRef.current?.focus();
+        }, 0);
+    }, [setData]);
+
+    const { isLoading, isReady, errorMessage } = useGoogleMapsAddressAutocomplete({
+        inputRef: addressInputRef,
+        onAddressSelected: handleAddressSelected,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -69,10 +92,12 @@ export default function PublicCompanyForm({
                 />
 
                 <PremiumField
-                    label="Unit"
+                    label="Address 2 / Unit"
                     error={errors.unit}
                     value={data.unit || ''}
                     onChange={(e) => setData('unit', e.target.value)}
+                    inputRef={unitInputRef}
+                    autoComplete="address-line2"
                     placeholder="e.g. Unit 4B"
                 />
 
@@ -80,11 +105,18 @@ export default function PublicCompanyForm({
                     <PremiumField
                         label="Physical Address"
                         error={errors.address}
-                        isTextArea
                         value={data.address || ''}
-                        onChange={(e) => (setData as any)('address', e.target.value)}
-                        placeholder="Street, City, State, Zip..."
+                        onChange={(e) => setData('address', e.target.value)}
+                        inputRef={addressInputRef}
+                        autoComplete="street-address"
+                        placeholder="Start typing a USA address"
                     />
+                </div>
+
+                <div className="md:col-span-2">
+                    <p className="text-xs text-(--text-muted)">
+                        {errorMessage ?? (isReady ? 'Autocomplete limited to USA addresses. Address 2 / Unit remains manual.' : isLoading ? 'Loading Google Maps autocomplete...' : 'Google Maps autocomplete is preparing...')}
+                    </p>
                 </div>
             </div>
 

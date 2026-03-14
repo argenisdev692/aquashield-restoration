@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\CompanyData\Infrastructure\Http\Export;
 
 
+use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -31,7 +32,7 @@ final class CompanyDataExcelExport implements
     ) {
     }
 
-    public function query()
+    public function query(): Builder
     {
         return CompanyDataEloquentModel::query()
             ->select([
@@ -45,7 +46,7 @@ final class CompanyDataExcelExport implements
                 'website',
                 'created_at',
             ])
-            ->where('deleted_at', '=', null)
+            ->whereNull('deleted_at')
             ->when(
                 $this->filters->search,
                 fn($q, $s) => $q->where(function ($q) use ($s): void {
@@ -77,17 +78,7 @@ final class CompanyDataExcelExport implements
 
     public function map($company): array
     {
-        return [
-            $company->id,
-            $company->uuid,
-            $company->company_name,
-            $company->name ?? '—',
-            $company->email ?? '—',
-            $company->phone ?? '—',
-            $company->address ?? '—',
-            $company->website ?? '—',
-            $company->created_at?->format('F j, Y') ?? '—',
-        ];
+        return CompanyDataExportTransformer::transformForExcel($company);
     }
 
     public function title(): string

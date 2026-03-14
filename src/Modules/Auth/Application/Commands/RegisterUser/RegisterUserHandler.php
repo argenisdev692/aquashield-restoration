@@ -12,8 +12,8 @@ use Modules\Auth\Domain\ValueObjects\UserEmail;
 use Modules\Auth\Domain\ValueObjects\Password;
 use Modules\Auth\Domain\ValueObjects\Username;
 use Modules\Auth\Domain\Exceptions\ValidationException;
+use Shared\Domain\ValueObjects\Uuid;
 use Shared\Infrastructure\Audit\AuditInterface;
-use Illuminate\Support\Str;
 
 /**
  * RegisterUserHandler — Handles user registration with PHP 8.5 pipe operator.
@@ -74,7 +74,7 @@ final readonly class RegisterUserHandler
             : $this->usernameSuggestionService->generateUnique($command->name);
 
         return [
-            'uuid' => (string) Str::uuid(),
+            'uuid' => Uuid::random()->value,
             'name' => $command->name,
             'lastName' => $command->lastName,
             'email' => $command->email,

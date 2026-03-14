@@ -22,9 +22,20 @@ interface UserRepositoryPort
 
     public function findById(int $id): ?User;
 
+    public function findByUuid(string $uuid): ?User;
+
     public function getPasswordHashById(int $id): ?string;
 
     public function create(array $data): User;
 
     public function update(User $user, array $data): User;
+
+    public function paginate(
+        int $page,
+        int $perPage,
+        ?string $search,
+        ?bool $emailVerified,
+        ?string $sortBy,
+        string $sortDirection,
+    ): array;
 }

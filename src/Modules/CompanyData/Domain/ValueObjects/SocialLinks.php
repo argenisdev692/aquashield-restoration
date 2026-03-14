@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\CompanyData\Domain\ValueObjects;
 
-final class SocialLinks
+final readonly class SocialLinks
 {
     public function __construct(
         public private(set) ?string $facebook = null {

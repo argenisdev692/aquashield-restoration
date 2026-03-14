@@ -1,13 +1,14 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { useAllianceCompanyMutations } from '@/modules/alliance-companies/hooks/useAllianceCompanyMutations';
+import { AllianceCompany } from '@/modules/alliance-companies/types';
 import AllianceCompanyForm from './components/AllianceCompanyForm';
 import { ShieldPlus } from 'lucide-react';
 
 export default function AllianceCompanyCreatePage() {
     const { createAllianceCompany } = useAllianceCompanyMutations();
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: Partial<AllianceCompany>) => {
         await createAllianceCompany.mutateAsync(data);
     };
 

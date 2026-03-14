@@ -1,13 +1,14 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { usePublicCompanyMutations } from '@/modules/public-companies/hooks/usePublicCompanyMutations';
+import { PublicCompany } from '@/modules/public-companies/types';
 import PublicCompanyForm from './components/PublicCompanyForm';
 import { ShieldPlus } from 'lucide-react';
 
 export default function PublicCompanyCreatePage() {
     const { createPublicCompany } = usePublicCompanyMutations();
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: Partial<PublicCompany>) => {
         await createPublicCompany.mutateAsync(data);
     };
 

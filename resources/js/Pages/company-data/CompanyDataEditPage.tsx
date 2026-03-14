@@ -5,13 +5,21 @@ import AppLayout from '@/pages/layouts/AppLayout';
 import { useCompanyData } from '@/modules/company-data/hooks/useCompanyData';
 import { useCompanyDataMutations } from '@/modules/company-data/hooks/useCompanyDataMutations';
 import CompanySignaturePad from '@/modules/company-data/components/CompanySignaturePad';
+import { type UserAddressAutocompleteValue, useGoogleMapsAddressAutocomplete } from '@/modules/users/hooks/useGoogleMapsAddressAutocomplete';
 import { PremiumField } from '@/shadcn/PremiumField';
-import type { UpdateCompanyDataDTO } from '@/types/api';
+import type { UpdateCompanyDataDTO } from '@/modules/company-data/types';
 import type { AuthPageProps } from '@/types/auth';
 
 function parseNullableNumber(value: string): number | null {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function buildFullUsAddress(value: UserAddressAutocompleteValue): string {
+  return [value.address, value.city, value.state, value.zip_code, value.country]
+    .map((segment) => segment.trim())
+    .filter((segment) => segment.length > 0)
+    .join(', ');
 }
 
 export default function CompanyDataEditPage(): React.JSX.Element {
@@ -34,6 +42,9 @@ export default function CompanyDataEditPage(): React.JSX.Element {
   });
   const [signatureDataUrl, setSignatureDataUrl] = React.useState<string | null>(null);
   const [removeSignature, setRemoveSignature] = React.useState<boolean>(false);
+  const [address2, setAddress2] = React.useState<string>('');
+  const addressInputRef = React.useRef<HTMLInputElement | null>(null);
+  const address2InputRef = React.useRef<HTMLInputElement | null>(null);
 
   React.useEffect(() => {
     if (!company) {
@@ -56,6 +67,7 @@ export default function CompanyDataEditPage(): React.JSX.Element {
     });
     setSignatureDataUrl(null);
     setRemoveSignature(false);
+    setAddress2(company.address_2 ?? '');
   }, [company]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
@@ -66,9 +78,9 @@ export default function CompanyDataEditPage(): React.JSX.Element {
 
   function handleSubmit(e: React.FormEvent): void {
     e.preventDefault();
-
     const payload: UpdateCompanyDataDTO = {
       ...form,
+      address_2: address2.trim().length > 0 ? address2.trim() : null,
       signature_data_url: signatureDataUrl,
       remove_signature: removeSignature,
     };
@@ -84,6 +96,19 @@ export default function CompanyDataEditPage(): React.JSX.Element {
       },
     );
   }
+
+  const handleAddressSelected = React.useCallback((value: UserAddressAutocompleteValue): void => {
+    setForm((prev) => ({ ...prev, address: buildFullUsAddress(value) }));
+    setAddress2('');
+    window.setTimeout(() => {
+      address2InputRef.current?.focus();
+    }, 0);
+  }, []);
+
+  const { isLoading, isReady, errorMessage } = useGoogleMapsAddressAutocomplete({
+    inputRef: addressInputRef,
+    onAddressSelected: handleAddressSelected,
+  });
 
   if (isPending) {
     return (
@@ -104,7 +129,9 @@ export default function CompanyDataEditPage(): React.JSX.Element {
           <div className="flex items-center gap-4">
             <Link
               href="/company-data"
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-(--border-default) bg-(--bg-card) text-(--text-muted) transition-all hover:bg-(--bg-hover)"
+              aria-label="Back to company profiles"
+              title="Back to company profiles"
+              className="btn-ghost flex h-10 w-10 items-center justify-center"
             >
               <ArrowLeft size={20} />
             </Link>
@@ -120,7 +147,7 @@ export default function CompanyDataEditPage(): React.JSX.Element {
           <button
             onClick={handleSubmit}
             disabled={updateCompanyData.isPending}
-            className="btn-modern btn-modern-primary flex items-center gap-2 px-8 py-3 font-bold disabled:opacity-50"
+            className="btn-primary inline-flex items-center gap-2 px-8 py-3 font-bold disabled:opacity-50"
           >
             {updateCompanyData.isPending ? 'Syncing...' : <><Save size={18} /> Save Identity</>}
           </button>
@@ -128,7 +155,7 @@ export default function CompanyDataEditPage(): React.JSX.Element {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="space-y-8 lg:col-span-2">
-            <section className="card-modern space-y-8 border border-(--border-default) p-8">
+            <section className="card space-y-8 p-8">
               <div className="flex items-center gap-3">
                 <Building2 className="text-(--accent-primary)" size={24} />
                 <h2 className="text-xl font-bold text-(--text-primary)">Core Information</h2>
@@ -154,14 +181,30 @@ export default function CompanyDataEditPage(): React.JSX.Element {
                     name="address"
                     value={form.address ?? ''}
                     onChange={handleChange}
-                    isTextArea
-                    placeholder="123 Corporate Way, Silicon Valley, CA"
+                    inputRef={addressInputRef}
+                    autoComplete="street-address"
+                    placeholder="Start typing a USA address"
                   />
+                </div>
+                <div className="md:col-span-2">
+                  <PremiumField
+                    label="Address 2"
+                    value={address2}
+                    onChange={(e) => setAddress2(e.target.value)}
+                    inputRef={address2InputRef}
+                    autoComplete="address-line2"
+                    placeholder="Apartment, suite, unit, building, floor"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <p className="text-xs text-(--text-muted)">
+                    {errorMessage ?? (isReady ? 'Autocomplete limited to USA addresses. Address 2 remains manual.' : isLoading ? 'Loading Google Maps autocomplete...' : 'Google Maps autocomplete is preparing...')}
+                  </p>
                 </div>
               </div>
             </section>
 
-            <section className="card-modern space-y-8 border border-(--border-default) p-8">
+            <section className="card space-y-8 p-8">
               <div className="flex items-center gap-3">
                 <Share2 className="text-(--accent-primary)" size={24} />
                 <h2 className="text-xl font-bold text-(--text-primary)">Social Media & Public Presence</h2>
@@ -178,7 +221,7 @@ export default function CompanyDataEditPage(): React.JSX.Element {
               </div>
             </section>
 
-            <section className="card-modern space-y-6 border border-(--border-default) p-8">
+            <section className="card space-y-6 p-8">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-xl font-bold text-(--text-primary)">Signature Management</h2>
                 {company?.signature_url && !removeSignature && (
@@ -187,7 +230,7 @@ export default function CompanyDataEditPage(): React.JSX.Element {
                       href={company.signature_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-lg border border-(--border-default) px-3 py-2 text-xs font-semibold text-(--text-secondary)"
+                      className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold"
                     >
                       <Download size={14} /> Download
                     </a>
@@ -197,7 +240,8 @@ export default function CompanyDataEditPage(): React.JSX.Element {
                         setRemoveSignature(true);
                         setSignatureDataUrl(null);
                       }}
-                      className="inline-flex items-center gap-2 rounded-lg border border-(--border-default) px-3 py-2 text-xs font-semibold text-(--accent-error)"
+                      className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold"
+                      style={{ color: 'var(--accent-error)' }}
                     >
                       <Trash2 size={14} /> Remove
                     </button>
@@ -237,7 +281,7 @@ export default function CompanyDataEditPage(): React.JSX.Element {
           </div>
 
           <div className="space-y-8">
-            <section className="card-modern space-y-6 border border-(--border-subtle) bg-(--bg-surface) p-6">
+            <section className="card space-y-6 p-6">
               <div className="mb-2 flex items-center gap-3">
                 <MapPin className="text-(--accent-primary)" size={20} />
                 <h3 className="text-sm font-bold uppercase tracking-widest text-(--text-muted)">Geolocation</h3>
@@ -263,8 +307,8 @@ export default function CompanyDataEditPage(): React.JSX.Element {
               </div>
             </section>
 
-            <section className="card-modern space-y-4 border border-(--border-subtle) bg-(--bg-surface) p-6">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-(--text-muted)">Status</h3>
+            <section className="card space-y-4 p-6">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-(--text-muted)">Visibility</h3>
               <div className="flex items-center justify-between rounded-xl border border-(--border-default) bg-(--bg-card) px-4 py-3">
                 <span className="text-sm font-medium text-(--text-primary)">Public Visibility</span>
                 <div className={`h-2.5 w-2.5 rounded-full ${!company?.deleted_at ? 'bg-(--accent-success)' : 'bg-(--accent-warning)'}`} />

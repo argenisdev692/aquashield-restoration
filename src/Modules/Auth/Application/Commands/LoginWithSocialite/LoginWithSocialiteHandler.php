@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Modules\Auth\Application\Commands\LoginWithSocialite;
 
 use Modules\Auth\Domain\Entities\User;
-use Illuminate\Support\Str;
 use Modules\Auth\Domain\Events\UserLoggedIn;
 use Modules\Auth\Domain\Ports\SocialiteRepositoryPort;
 use Modules\Auth\Domain\Ports\UserRepositoryPort;
+use Modules\Auth\Domain\Services\UsernameSuggestionService;
+use Shared\Domain\ValueObjects\Uuid;
 
 /**
  * LoginWithSocialiteHandler — Orchestrates OAuth find-or-create logic.
@@ -18,6 +19,7 @@ final readonly class LoginWithSocialiteHandler
     public function __construct(
         private UserRepositoryPort $userRepository,
         private SocialiteRepositoryPort $socialiteRepository,
+        private UsernameSuggestionService $usernameSuggestionService,
     ) {
     }
 
@@ -64,7 +66,7 @@ final readonly class LoginWithSocialiteHandler
         $nameParts = explode(' ', $command->name ?? 'User', 2);
 
         $user = $this->userRepository->create([
-            'uuid' => (string) Str::uuid(),
+            'uuid' => Uuid::random()->value,
             'name' => $nameParts[0],
             'last_name' => $nameParts[1] ?? null,
             'email' => $command->email,
@@ -113,18 +115,14 @@ final readonly class LoginWithSocialiteHandler
 
     private function generateUsername(LoginWithSocialiteCommand $command): string
     {
-        $base = $command->nickname
-            ?? Str::before($command->email ?? 'user', '@');
+        $emailBase = $command->email !== null
+            ? (strstr($command->email, '@', true) ?: $command->email)
+            : null;
+        $baseName = $command->nickname
+            ?? $emailBase
+            ?? $command->name
+            ?? 'user';
 
-        $base = Str::slug($base, '_');
-        $username = $base;
-        $counter = 1;
-
-        while ($this->userRepository->findByUsername($username) !== null) {
-            $username = $base . '_' . $counter;
-            $counter++;
-        }
-
-        return $username;
+        return $this->usernameSuggestionService->generateUnique($baseName)->value;
     }
 }

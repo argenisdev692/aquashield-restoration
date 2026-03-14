@@ -90,14 +90,14 @@ export function OtpInput({
             'h-14 w-12 rounded-lg border text-center text-xl font-bold transition-all duration-200',
             'focus:outline-none focus:ring-2 focus:ring-offset-1',
             hasError
-              ? 'border-red-500 text-red-400 focus:ring-red-500/30'
-              : 'focus:ring-(--color-aqua)/30 focus:border-(--color-aqua)',
+              ? 'border-(--accent-error) focus:ring-(--accent-error)/20'
+              : 'focus:ring-(--accent-primary)/20 focus:border-(--accent-primary)',
             disabled && 'cursor-not-allowed opacity-50',
           )}
           style={{
-            background: 'rgba(255, 255, 255, 0.06)',
-            borderColor: hasError ? 'var(--accent-error)' : 'rgba(255, 255, 255, 0.12)',
-            color: 'var(--color-white)',
+            background: 'var(--input-bg)',
+            borderColor: hasError ? 'var(--accent-error)' : 'var(--input-border)',
+            color: hasError ? 'var(--accent-error)' : 'var(--text-primary)',
             fontFamily: 'var(--font-mono)',
           }}
         />

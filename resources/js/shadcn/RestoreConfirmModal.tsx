@@ -79,7 +79,7 @@ export function RestoreConfirmModal({
                     alignItems: "center",
                     justifyContent: "center",
                     padding: "1rem",
-                    background: "color-mix(in srgb, #000 55%, transparent)",
+                    background: "color-mix(in srgb, var(--bg-void) 55%, transparent)",
                     backdropFilter: "blur(6px)",
                     WebkitBackdropFilter: "blur(6px)",
                 }}
@@ -99,7 +99,7 @@ export function RestoreConfirmModal({
                         background: "color-mix(in srgb, var(--bg-card) 92%, transparent)",
                         border: "1px solid color-mix(in srgb, var(--success-primary) 30%, var(--border-default))",
                         boxShadow:
-                            "0 24px 60px color-mix(in srgb, #000 40%, transparent), 0 0 0 1px color-mix(in srgb, var(--success-primary) 10%, transparent)",
+                            "0 24px 60px color-mix(in srgb, var(--bg-void) 40%, transparent), 0 0 0 1px color-mix(in srgb, var(--success-primary) 10%, transparent)",
                         backdropFilter: "blur(20px)",
                         WebkitBackdropFilter: "blur(20px)",
                     }}
@@ -194,6 +194,7 @@ export function RestoreConfirmModal({
                         </button>
 
                         <button
+                            autoFocus
                             onClick={onConfirm}
                             disabled={isPending}
                             style={{

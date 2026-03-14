@@ -13,7 +13,7 @@ export default function PublicCompanyEditPage({ PublicCompany }: Props) {
     const { updatePublicCompany } = usePublicCompanyMutations();
     const company = PublicCompany.data;
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: Partial<PublicCompany>) => {
         await updatePublicCompany.mutateAsync({ 
             uuid: company.uuid, 
             data 

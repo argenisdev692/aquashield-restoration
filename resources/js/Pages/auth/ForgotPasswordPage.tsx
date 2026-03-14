@@ -11,6 +11,8 @@ import {
 } from '@/modules/auth/helpers/validators';
 import type { ForgotPasswordStep, FormStatus } from '@/types/auth';
 
+const primaryButtonClassName = 'btn-primary flex h-11 w-full items-center justify-center rounded-lg text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60';
+
 export default function ForgotPasswordPage(): React.JSX.Element {
   const [step, setStep] = React.useState<ForgotPasswordStep>('email');
   const [status, setStatus] = React.useState<FormStatus>('idle');
@@ -172,7 +174,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
       <button
         type="button"
         onClick={onToggle}
-        className="text-(--text-muted) transition-colors hover:text-(--color-aqua)"
+        className="text-(--text-muted) transition-colors hover:text-(--accent-primary)"
         aria-label={show ? 'Hide password' : 'Show password'}
       >
         {show ? (
@@ -208,8 +210,8 @@ export default function ForgotPasswordPage(): React.JSX.Element {
               <div
                 className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all duration-300"
                 style={{
-                  background: i <= currentIdx ? 'var(--color-aqua)' : 'color-mix(in srgb, var(--color-white) 8%, transparent)',
-                  color: i <= currentIdx ? 'var(--color-navy-dark)' : 'var(--text-disabled)',
+                  background: i <= currentIdx ? 'var(--accent-primary)' : 'color-mix(in srgb, var(--text-primary) 8%, transparent)',
+                  color: i <= currentIdx ? 'var(--bg-app)' : 'var(--text-disabled)',
                 }}
               >
                 {i + 1}
@@ -217,7 +219,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
               <span
                 className="hidden text-xs font-medium sm:inline"
                 style={{
-                  color: i <= currentIdx ? 'var(--color-aqua)' : 'var(--text-disabled)',
+                  color: i <= currentIdx ? 'var(--accent-primary)' : 'var(--text-disabled)',
                 }}
               >
                 {s.label}
@@ -227,7 +229,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
               <div
                 className="h-px w-8 transition-all duration-300"
                 style={{
-                  background: i < currentIdx ? 'var(--color-aqua)' : 'color-mix(in srgb, var(--color-white) 10%, transparent)',
+                  background: i < currentIdx ? 'var(--accent-primary)' : 'color-mix(in srgb, var(--text-primary) 10%, transparent)',
                 }}
               />
             )}
@@ -242,7 +244,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
       <Head title="Forgot Password — AquaShield" />
       <AuthLayout>
         <div className="mb-6 text-center">
-          <h2 className="text-xl font-bold" style={{ color: 'var(--color-white)' }}>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
             Reset Password
           </h2>
           <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -310,12 +312,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="flex h-11 w-full items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60"
-              style={{
-                background: 'linear-gradient(135deg, var(--color-aqua) 0%, var(--color-aqua-dark) 100%)',
-                color: 'var(--color-white)',
-                boxShadow: '0 4px 16px color-mix(in srgb, var(--color-aqua) 30%, transparent)',
-              }}
+              className={primaryButtonClassName}
             >
               {status === 'loading' ? (
                 <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -331,7 +328,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
                 type="button"
                 onClick={() => router.visit('/login')}
                 className="text-xs font-medium transition-colors hover:underline"
-                style={{ color: 'var(--color-aqua)' }}
+                style={{ color: 'var(--accent-primary)' }}
               >
                 ← Back to Sign In
               </button>
@@ -345,9 +342,9 @@ export default function ForgotPasswordPage(): React.JSX.Element {
             <div className="text-center">
               <div
                 className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full"
-                style={{ background: 'color-mix(in srgb, var(--color-aqua) 15%, transparent)' }}
+                style={{ background: 'color-mix(in srgb, var(--accent-primary) 15%, transparent)' }}
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-aqua)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="4" width="20" height="16" rx="2" />
                   <path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7" />
                 </svg>
@@ -355,7 +352,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 Code sent to
               </p>
-              <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--color-aqua)' }}>
+              <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--accent-primary)' }}>
                 {email}
               </p>
             </div>
@@ -380,12 +377,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="flex h-11 w-full items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60"
-              style={{
-                background: 'linear-gradient(135deg, var(--color-aqua) 0%, var(--color-aqua-dark) 100%)',
-                color: 'var(--color-white)',
-                boxShadow: '0 4px 16px rgba(0, 181, 226, 0.3)',
-              }}
+              className={primaryButtonClassName}
             >
               {status === 'loading' ? (
                 <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -422,7 +414,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
                   onClick={handleResend}
                   disabled={status === 'loading'}
                   className="font-medium transition-colors hover:underline"
-                  style={{ color: 'var(--color-aqua)' }}
+                  style={{ color: 'var(--accent-primary)' }}
                 >
                   Resend code
                 </button>
@@ -474,12 +466,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="flex h-11 w-full items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60"
-              style={{
-                background: 'linear-gradient(135deg, var(--color-aqua) 0%, var(--color-aqua-dark) 100%)',
-                color: 'var(--color-white)',
-                boxShadow: '0 4px 16px color-mix(in srgb, var(--color-aqua) 30%, transparent)',
-              }}
+              className={primaryButtonClassName}
             >
               {status === 'loading' ? (
                 <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
