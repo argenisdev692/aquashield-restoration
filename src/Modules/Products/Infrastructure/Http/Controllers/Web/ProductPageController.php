@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Src\Modules\Products\Infrastructure\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\CategoryProduct;
 use Inertia\Inertia;
 use Inertia\Response;
+use Src\Modules\CategoryProducts\Infrastructure\Persistence\Eloquent\Models\CategoryProductEloquentModel;
 use Src\Modules\Products\Application\Queries\GetProduct\GetProductHandler;
 use Src\Modules\Products\Application\Queries\GetProduct\GetProductQuery;
 
@@ -20,7 +20,8 @@ class ProductPageController extends Controller
 
     public function create(): Response
     {
-        $categories = CategoryProduct::select(['uuid', 'category_product_name'])
+        $categories = CategoryProductEloquentModel::query()
+            ->select(['uuid', 'category_product_name'])
             ->orderBy('category_product_name')
             ->get();
 
@@ -50,7 +51,8 @@ class ProductPageController extends Controller
             abort(404);
         }
 
-        $categories = CategoryProduct::select(['uuid', 'category_product_name'])
+        $categories = CategoryProductEloquentModel::query()
+            ->select(['uuid', 'category_product_name'])
             ->orderBy('category_product_name')
             ->get();
 

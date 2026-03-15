@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Src\Modules\Products\Application\Queries\ListProducts;
 
-use App\Models\Product;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Src\Modules\Products\Application\Queries\ReadModels\ProductListReadModel;
+use Src\Modules\Products\Infrastructure\Persistence\Eloquent\Models\ProductEloquentModel;
 
 class ListProductsHandler
 {
@@ -25,7 +25,7 @@ class ListProductsHandler
 
     private function fetchData($filters): LengthAwarePaginator
     {
-        $query = Product::query()
+        $query = ProductEloquentModel::query()
             ->select([
                 'products.uuid',
                 'products.product_name',

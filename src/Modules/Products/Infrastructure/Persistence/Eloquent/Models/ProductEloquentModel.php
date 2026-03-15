@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Src\Modules\Products\Infrastructure\Persistence\Eloquent\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Src\Modules\CategoryProducts\Infrastructure\Persistence\Eloquent\Models\CategoryProductEloquentModel;
 
 /** @internal */
 final class ProductEloquentModel extends Model
@@ -26,6 +28,12 @@ final class ProductEloquentModel extends Model
         'unit',
         'order_position',
     ];
+
+    public function categoryProduct(): BelongsTo
+    {
+        return $this->belongsTo(CategoryProductEloquentModel::class, 'product_category_id')
+            ->withTrashed();
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

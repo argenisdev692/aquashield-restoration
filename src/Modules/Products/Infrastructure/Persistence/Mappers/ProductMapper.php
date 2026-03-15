@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Modules\Products\Infrastructure\Persistence\Mappers;
 
-use App\Models\CategoryProduct;
+use Src\Modules\CategoryProducts\Infrastructure\Persistence\Eloquent\Models\CategoryProductEloquentModel;
 use Src\Modules\Products\Domain\Entities\Product;
 use Src\Modules\Products\Domain\ValueObjects\ProductId;
 use Src\Modules\Products\Infrastructure\Persistence\Eloquent\Models\ProductEloquentModel;
@@ -15,7 +15,9 @@ class ProductMapper
     {
         return Product::create(
             id: ProductId::fromString($model->uuid),
-            categoryId: CategoryProduct::find($model->product_category_id)?->uuid ?? '',
+            categoryId: CategoryProductEloquentModel::withTrashed()
+                ->whereKey($model->product_category_id)
+                ->value('uuid') ?? '',
             name: $model->product_name,
             description: $model->product_description,
             price: (float) $model->price,
@@ -27,7 +29,9 @@ class ProductMapper
 
     public function toEloquent(Product $product): ProductEloquentModel
     {
-        $categoryId = CategoryProduct::where('uuid', $product->categoryId())->value('id');
+        $categoryId = CategoryProductEloquentModel::withTrashed()
+            ->where('uuid', $product->categoryId())
+            ->value('id');
 
         $model = ProductEloquentModel::firstOrNew(['uuid' => $product->id()->toString()]);
         $model->uuid = $product->id()->toString();

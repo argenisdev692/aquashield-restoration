@@ -131,10 +131,12 @@ const NAV_ITEMS: NavItem[] = [
     icon: <IconCatalogs />,
     description: 'Reference data catalogs',
     children: [
+      { label: 'Cause of Losses', href: '/cause-of-losses', icon: <IconTypeDamage />, description: 'Cause of loss catalog', permission: 'READ_CAUSE_OF_LOSS' },
+      { label: 'Category Products', href: '/category-products', icon: <IconTags />, description: 'Product category catalog', permission: 'READ_CATEGORY_PRODUCT' },
       { label: 'Type Damages', href: '/type-damages', icon: <IconTypeDamage />, description: 'Damage type catalog', permission: 'READ_TYPE_DAMAGE' },
+      { label: 'Products', href: '/products', icon: <IconPackage />, description: 'Product catalog', permission: 'READ_PRODUCT' },
     ]
   },
-  { label: 'Products', href: '/products', icon: <IconPackage />, description: 'Product catalog', permission: 'READ_PRODUCT' },
   {
     label: 'Blog',
     icon: <IconBlog />,

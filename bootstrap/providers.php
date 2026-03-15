@@ -22,4 +22,6 @@ return [
     Modules\PublicCompanies\Providers\PublicCompaniesServiceProvider::class,
     Src\Modules\Products\Providers\ProductsServiceProvider::class,
     Src\Modules\TypeDamages\Providers\TypeDamagesServiceProvider::class,
+    Src\Modules\CauseOfLosses\Providers\CauseOfLossesServiceProvider::class,
+    Src\Modules\CategoryProducts\Providers\CategoryProductsServiceProvider::class,
 ];
