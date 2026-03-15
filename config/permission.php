@@ -13,7 +13,7 @@ return [
          * `Spatie\Permission\Contracts\Permission` contract.
          */
 
-        'permission' => Spatie\Permission\Models\Permission::class,
+        'permission' => Modules\AccessControl\Infrastructure\Persistence\Eloquent\Models\PermissionEloquentModel::class,
 
         /*
          * When using the "HasRoles" trait from this package, we need to know which
@@ -24,7 +24,7 @@ return [
          * `Spatie\Permission\Contracts\Role` contract.
          */
 
-        'role' => Spatie\Permission\Models\Role::class,
+        'role' => Modules\AccessControl\Infrastructure\Persistence\Eloquent\Models\RoleEloquentModel::class,
 
     ],
 

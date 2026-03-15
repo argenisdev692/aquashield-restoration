@@ -11,6 +11,8 @@ return [
 
     // ── Bounded Context Providers ──
     Modules\Auth\Providers\AuthServiceProvider::class,
+    Modules\AccessControl\Providers\AccessControlServiceProvider::class,
+    Modules\Roles\Providers\RolesServiceProvider::class,
     Modules\Users\Providers\UsersServiceProvider::class,
     Modules\CompanyData\Providers\CompanyDataServiceProvider::class,
     Modules\Blog\Providers\BlogServiceProvider::class,

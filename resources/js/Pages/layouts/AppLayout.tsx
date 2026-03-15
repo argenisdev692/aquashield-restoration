@@ -50,7 +50,8 @@ import {
   ChevronRight,
   BookOpen,
   Tags,
-  FileText
+  FileText,
+  KeyRound
 } from 'lucide-react';
 
 const icSize = 18;
@@ -74,6 +75,7 @@ const IconHome = () => <Home size={icSize} />;
 const IconBlog = () => <BookOpen size={icSize} />;
 const IconTags = () => <Tags size={icSize} />;
 const IconPost = () => <FileText size={icSize} />;
+const IconPermission = () => <KeyRound size={icSize} />;
 
 interface TooltipRect {
   left: number;
@@ -104,6 +106,8 @@ const NAV_ITEMS: NavItem[] = [
     description: 'Administrative tools',
     children: [
       { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users', permission: 'VIEW_USERS' },
+      { label: 'Roles', href: '/roles', icon: <ShieldCheck size={icSize} />, description: 'Manage access roles', permission: 'READ_ROLE' },
+      { label: 'Permissions', href: '/permissions', icon: <IconPermission />, description: 'Manage permissions and user access', permission: ['READ_PERMISSION', 'VIEW_USERS'] },
     ]
   },
   { 

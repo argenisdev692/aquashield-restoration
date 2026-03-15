@@ -3,9 +3,9 @@ import { createRoot } from 'react-dom/client';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from '@/lib/queryClient';
-import '../css/app.css';
 import './bootstrap';
 import 'sileo/styles.css';
+import '../css/app.css';
 import { Toaster } from 'sileo';
 
 createInertiaApp({

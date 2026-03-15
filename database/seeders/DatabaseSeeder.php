@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\Blog\Infrastructure\Persistence\Eloquent\Seeders\PostPermissionsSeeder;
+use Modules\Users\Infrastructure\Persistence\Eloquent\Seeders\UsersPermissionsSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -25,6 +26,7 @@ class DatabaseSeeder extends Seeder
 
         // USERS AND ROLES - Call UserSeeder (Refactored)
         $this->call(UserSeeder::class);
+        $this->call(UsersPermissionsSeeder::class);
 
         // COMPANY DATA - Call CompanySeeder
         $this->call(CompanySeeder::class);
