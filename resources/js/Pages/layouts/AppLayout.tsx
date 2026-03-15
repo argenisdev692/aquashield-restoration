@@ -51,7 +51,9 @@ import {
   BookOpen,
   Tags,
   FileText,
-  KeyRound
+  KeyRound,
+  FolderTree,
+  AlertTriangle
 } from 'lucide-react';
 
 const icSize = 18;
@@ -76,6 +78,8 @@ const IconBlog = () => <BookOpen size={icSize} />;
 const IconTags = () => <Tags size={icSize} />;
 const IconPost = () => <FileText size={icSize} />;
 const IconPermission = () => <KeyRound size={icSize} />;
+const IconCatalogs = () => <FolderTree size={icSize} />;
+const IconTypeDamage = () => <AlertTriangle size={icSize} />;
 
 interface TooltipRect {
   left: number;
@@ -120,6 +124,14 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Mortgage Companies', href: '/mortgage-companies', icon: <IconHome />, description: 'Mortgage lenders', permission: 'READ_MORTGAGE_COMPANY' },
       { label: 'Public Companies', href: '/public-companies', icon: <Building2 size={icSize} />, description: 'Public companies', permission: 'READ_PUBLIC_COMPANY' },
       { label: 'Alliance Companies', href: '/alliance-companies', icon: <Building2 size={icSize} />, description: 'Alliance partners', permission: 'READ_ALLIANCE_COMPANY' },
+    ]
+  },
+  {
+    label: 'Catalogs',
+    icon: <IconCatalogs />,
+    description: 'Reference data catalogs',
+    children: [
+      { label: 'Type Damages', href: '/type-damages', icon: <IconTypeDamage />, description: 'Damage type catalog', permission: 'READ_TYPE_DAMAGE' },
     ]
   },
   { label: 'Products', href: '/products', icon: <IconPackage />, description: 'Product catalog', permission: 'READ_PRODUCT' },

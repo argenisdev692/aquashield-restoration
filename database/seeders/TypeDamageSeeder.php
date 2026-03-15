@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\TypeDamage;
 use Ramsey\Uuid\Uuid;
+use Src\Modules\TypeDamages\Infrastructure\Persistence\Eloquent\Models\TypeDamageEloquentModel;
 
 class TypeDamageSeeder extends Seeder
 {
@@ -51,12 +53,14 @@ class TypeDamageSeeder extends Seeder
         ];
 
         foreach ($typeDamages as $damage) {
-            TypeDamage::create([
-                'uuid' => Uuid::uuid4()->toString(),
-                'type_damage_name' => $damage,
-                'description' => 'Descripción de ' . $damage,
-                'severity' => 'low',
-            ]);
+            TypeDamageEloquentModel::query()->firstOrCreate(
+                ['type_damage_name' => $damage],
+                [
+                    'uuid' => Uuid::uuid4()->toString(),
+                    'description' => 'Descripción de ' . $damage,
+                    'severity' => 'low',
+                ],
+            );
         }
     }
-} 
+}

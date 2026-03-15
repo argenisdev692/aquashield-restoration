@@ -21,4 +21,5 @@ return [
     Modules\AllianceCompanies\Providers\AllianceCompaniesServiceProvider::class,
     Modules\PublicCompanies\Providers\PublicCompaniesServiceProvider::class,
     Src\Modules\Products\Providers\ProductsServiceProvider::class,
+    Src\Modules\TypeDamages\Providers\TypeDamagesServiceProvider::class,
 ];
