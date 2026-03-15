@@ -53,7 +53,9 @@ import {
   FileText,
   KeyRound,
   FolderTree,
-  AlertTriangle
+  AlertTriangle,
+  CalendarRange,
+  MessageSquareText
 } from 'lucide-react';
 
 const icSize = 18;
@@ -80,6 +82,9 @@ const IconPost = () => <FileText size={icSize} />;
 const IconPermission = () => <KeyRound size={icSize} />;
 const IconCatalogs = () => <FolderTree size={icSize} />;
 const IconTypeDamage = () => <AlertTriangle size={icSize} />;
+const IconClientIntake = () => <CalendarRange size={icSize} />;
+const IconAppointment = () => <CalendarRange size={icSize} />;
+const IconContactSupport = () => <MessageSquareText size={icSize} />;
 
 interface TooltipRect {
   left: number;
@@ -135,6 +140,15 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Category Products', href: '/category-products', icon: <IconTags />, description: 'Product category catalog', permission: 'READ_CATEGORY_PRODUCT' },
       { label: 'Type Damages', href: '/type-damages', icon: <IconTypeDamage />, description: 'Damage type catalog', permission: 'READ_TYPE_DAMAGE' },
       { label: 'Products', href: '/products', icon: <IconPackage />, description: 'Product catalog', permission: 'READ_PRODUCT' },
+    ]
+  },
+  {
+    label: 'Client Intake',
+    icon: <IconClientIntake />,
+    description: 'Inbound leads and support requests',
+    children: [
+      { label: 'Appointments', href: '/appointments', icon: <IconAppointment />, description: 'Manage appointment leads', permission: 'READ_APPOINTMENT' },
+      { label: 'Contact Supports', href: '/contact-supports', icon: <IconContactSupport />, description: 'Manage support contact requests', permission: 'READ_CONTACT_SUPPORT' },
     ]
   },
   {
