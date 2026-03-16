@@ -1,0 +1,23 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "php85", "php85Extensions.composer", "php85Extensions.dom", "php85Extensions.fileinfo", "php85Extensions.gd", "php85Extensions.mbstring", "php85Extensions.pdo", "php85Extensions.pdo_pgsql", "php85Extensions.pdo_sqlite", "php85Extensions.sqlite3", "php85Extensions.tokenizer", "php85Extensions.xml", "php85Extensions.curl", "php85Extensions.zip", "php85Extensions.bcmath", "php85Extensions.intl", "php85Extensions.ctype", "php85Extensions.filter", "php85Extensions.hash", "php85Extensions.json", "php85Extensions.openssl", "php85Extensions.session", "php85Extensions.simplexml", "php85Extensions.sodium", "php85Extensions.xmlwriter", "netcat"]
+
+[phases.build]
+cmds = [
+    "composer install --no-dev --optimize-autoloader",
+    "npm install",
+    "npm run build"
+]
+
+[start]
+cmd = "chmod +x start.sh && ./start.sh"
+
+[variables]
+APP_ENV = "production"
+APP_DEBUG = "false"
+APP_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+ASSET_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+LOG_CHANNEL = "errorlog"
+LOG_LEVEL = "error"
+SESSION_DRIVER = "cookie"
+CACHE_STORE = "redis"
+QUEUE_CONNECTION = "redis"

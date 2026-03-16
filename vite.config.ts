@@ -9,10 +9,22 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
+            buildDirectory: 'public/build',
         }),
         tailwindcss(),
         react(),
     ],
+    build: {
+        assetsInlineLimit: 4096,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['react', 'react-dom'],
+                    inertia: ['@inertiajs/react'],
+                },
+            },
+        },
+    },
     server: {
         watch: { ignored: ['**/storage/framework/views/**'] },
     },
