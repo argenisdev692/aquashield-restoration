@@ -3,21 +3,14 @@ nixPkgs = ["nodejs_20", "php85", "php85Extensions.composer", "php85Extensions.do
 
 [phases.build]
 cmds = [
-    "composer install --no-dev --optimize-autoloader",
-    "npm install",
-    "npm run build"
+    "composer install --no-dev --optimize-autoloader"
 ]
 
 [start]
-cmd = "chmod +x start.sh && ./start.sh"
+cmd = "chmod +x horizon-start.sh && ./horizon-start.sh"
 
 [variables]
 APP_ENV = "production"
 APP_DEBUG = "false"
-APP_URL = "${RAILWAY_PUBLIC_DOMAIN}"
-ASSET_URL = "${RAILWAY_PUBLIC_DOMAIN}"
-LOG_CHANNEL = "errorlog"
-LOG_LEVEL = "error"
-SESSION_DRIVER = "cookie"
-CACHE_STORE = "redis"
 QUEUE_CONNECTION = "redis"
+CACHE_STORE = "redis"
