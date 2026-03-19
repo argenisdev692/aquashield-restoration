@@ -7,7 +7,6 @@ namespace Src\Modules\CauseOfLosses\Infrastructure\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use RuntimeException;
 use Shared\Infrastructure\Export\SimpleTableExportResponder;
@@ -23,6 +22,7 @@ use Src\Modules\CauseOfLosses\Application\DTOs\UpdateCauseOfLossData;
 use Src\Modules\CauseOfLosses\Application\Queries\GetCauseOfLossHandler;
 use Src\Modules\CauseOfLosses\Application\Queries\ListCauseOfLossesHandler;
 use Src\Modules\CauseOfLosses\Infrastructure\Http\Requests\BulkDeleteCauseOfLossRequest;
+use Src\Modules\CauseOfLosses\Infrastructure\Http\Requests\ExportCauseOfLossRequest;
 use Src\Modules\CauseOfLosses\Infrastructure\Http\Requests\StoreCauseOfLossRequest;
 use Src\Modules\CauseOfLosses\Infrastructure\Http\Requests\UpdateCauseOfLossRequest;
 use Src\Modules\CauseOfLosses\Infrastructure\Persistence\Eloquent\Models\CauseOfLossEloquentModel;
@@ -45,9 +45,10 @@ final class CauseOfLossController extends Controller
         ]);
     }
 
-    public function export(Request $request, SimpleTableExportResponder $exportResponder): Response|BinaryFileResponse
+    public function export(ExportCauseOfLossRequest $request, SimpleTableExportResponder $exportResponder): Response|BinaryFileResponse
     {
-        $filters = CauseOfLossFilterData::from($request->query());
+        $validated = $request->validated();
+        $filters = CauseOfLossFilterData::from($validated);
         $rows = $this->buildExportQuery($filters)->get()->map(
             static fn (CauseOfLossEloquentModel $causeOfLoss): array => [
                 $causeOfLoss->cause_loss_name,

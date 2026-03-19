@@ -7,7 +7,6 @@ namespace Src\Modules\TypeDamages\Infrastructure\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use RuntimeException;
 use Shared\Infrastructure\Export\SimpleTableExportResponder;
@@ -23,6 +22,7 @@ use Src\Modules\TypeDamages\Application\DTOs\UpdateTypeDamageData;
 use Src\Modules\TypeDamages\Application\Queries\GetTypeDamageHandler;
 use Src\Modules\TypeDamages\Application\Queries\ListTypeDamagesHandler;
 use Src\Modules\TypeDamages\Infrastructure\Http\Requests\BulkDeleteTypeDamageRequest;
+use Src\Modules\TypeDamages\Infrastructure\Http\Requests\ExportTypeDamageRequest;
 use Src\Modules\TypeDamages\Infrastructure\Http\Requests\StoreTypeDamageRequest;
 use Src\Modules\TypeDamages\Infrastructure\Http\Requests\UpdateTypeDamageRequest;
 use Src\Modules\TypeDamages\Infrastructure\Persistence\Eloquent\Models\TypeDamageEloquentModel;
@@ -45,9 +45,10 @@ final class TypeDamageController extends Controller
         ]);
     }
 
-    public function export(Request $request, SimpleTableExportResponder $exportResponder): Response|BinaryFileResponse
+    public function export(ExportTypeDamageRequest $request, SimpleTableExportResponder $exportResponder): Response|BinaryFileResponse
     {
-        $filters = TypeDamageFilterData::from($request->query());
+        $validated = $request->validated();
+        $filters = TypeDamageFilterData::from($validated);
         $rows = $this->buildExportQuery($filters)->get()->map(
             static fn (TypeDamageEloquentModel $typeDamage): array => [
                 $typeDamage->type_damage_name,

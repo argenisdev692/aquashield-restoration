@@ -7,7 +7,6 @@ namespace Src\Modules\ContactSupports\Infrastructure\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use RuntimeException;
 use Shared\Infrastructure\Export\SimpleTableExportResponder;
@@ -23,6 +22,7 @@ use Src\Modules\ContactSupports\Application\DTOs\UpdateContactSupportData;
 use Src\Modules\ContactSupports\Application\Queries\GetContactSupportHandler;
 use Src\Modules\ContactSupports\Application\Queries\ListContactSupportsHandler;
 use Src\Modules\ContactSupports\Infrastructure\Http\Requests\BulkDeleteContactSupportRequest;
+use Src\Modules\ContactSupports\Infrastructure\Http\Requests\ExportContactSupportRequest;
 use Src\Modules\ContactSupports\Infrastructure\Http\Requests\StoreContactSupportRequest;
 use Src\Modules\ContactSupports\Infrastructure\Http\Requests\UpdateContactSupportRequest;
 use Src\Modules\ContactSupports\Infrastructure\Persistence\Eloquent\Models\ContactSupportEloquentModel;
@@ -45,9 +45,10 @@ final class ContactSupportController extends Controller
         ]);
     }
 
-    public function export(Request $request, SimpleTableExportResponder $exportResponder): Response|BinaryFileResponse
+    public function export(ExportContactSupportRequest $request, SimpleTableExportResponder $exportResponder): Response|BinaryFileResponse
     {
-        $filters = ContactSupportFilterData::from($request->query());
+        $validated = $request->validated();
+        $filters = ContactSupportFilterData::from($validated);
         $rows = $this->buildExportQuery($filters)->get()->map(
             static fn (ContactSupportEloquentModel $contactSupport): array => [
                 trim(implode(' ', array_filter([$contactSupport->first_name, $contactSupport->last_name]))),

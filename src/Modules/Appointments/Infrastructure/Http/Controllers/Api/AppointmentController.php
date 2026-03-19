@@ -7,7 +7,6 @@ namespace Src\Modules\Appointments\Infrastructure\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use RuntimeException;
 use Shared\Infrastructure\Export\SimpleTableExportResponder;
@@ -23,6 +22,7 @@ use Src\Modules\Appointments\Application\DTOs\UpdateAppointmentData;
 use Src\Modules\Appointments\Application\Queries\GetAppointmentHandler;
 use Src\Modules\Appointments\Application\Queries\ListAppointmentsHandler;
 use Src\Modules\Appointments\Infrastructure\Http\Requests\BulkDeleteAppointmentRequest;
+use Src\Modules\Appointments\Infrastructure\Http\Requests\ExportAppointmentRequest;
 use Src\Modules\Appointments\Infrastructure\Http\Requests\StoreAppointmentRequest;
 use Src\Modules\Appointments\Infrastructure\Http\Requests\UpdateAppointmentRequest;
 use Src\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\AppointmentEloquentModel;
@@ -45,9 +45,10 @@ final class AppointmentController extends Controller
         ]);
     }
 
-    public function export(Request $request, SimpleTableExportResponder $exportResponder): Response|BinaryFileResponse
+    public function export(ExportAppointmentRequest $request, SimpleTableExportResponder $exportResponder): Response|BinaryFileResponse
     {
-        $filters = AppointmentFilterData::from($request->query());
+        $validated = $request->validated();
+        $filters = AppointmentFilterData::from($validated);
         $rows = $this->buildExportQuery($filters)->get()->map(
             static fn (AppointmentEloquentModel $appointment): array => [
                 trim($appointment->first_name . ' ' . $appointment->last_name),

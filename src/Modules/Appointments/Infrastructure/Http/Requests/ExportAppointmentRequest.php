@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Src\Modules\Appointments\Infrastructure\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+final class ExportAppointmentRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'format' => ['sometimes', 'string', 'in:excel,pdf'],
+            'search' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', 'string', 'in:active,deleted'],
+            'inspection_status' => ['nullable', 'string', 'max:50'],
+            'status_lead' => ['nullable', 'string', 'max:50'],
+            'date_from' => ['nullable', 'date', 'before_or_equal:date_to'],
+            'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
+        ];
+    }
+}

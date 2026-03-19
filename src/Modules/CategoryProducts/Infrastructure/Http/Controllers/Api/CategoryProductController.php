@@ -7,7 +7,6 @@ namespace Src\Modules\CategoryProducts\Infrastructure\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use RuntimeException;
 use Shared\Infrastructure\Export\SimpleTableExportResponder;
@@ -23,6 +22,7 @@ use Src\Modules\CategoryProducts\Application\DTOs\UpdateCategoryProductData;
 use Src\Modules\CategoryProducts\Application\Queries\GetCategoryProductHandler;
 use Src\Modules\CategoryProducts\Application\Queries\ListCategoryProductsHandler;
 use Src\Modules\CategoryProducts\Infrastructure\Http\Requests\BulkDeleteCategoryProductRequest;
+use Src\Modules\CategoryProducts\Infrastructure\Http\Requests\ExportCategoryProductRequest;
 use Src\Modules\CategoryProducts\Infrastructure\Http\Requests\StoreCategoryProductRequest;
 use Src\Modules\CategoryProducts\Infrastructure\Http\Requests\UpdateCategoryProductRequest;
 use Src\Modules\CategoryProducts\Infrastructure\Persistence\Eloquent\Models\CategoryProductEloquentModel;
@@ -45,9 +45,10 @@ final class CategoryProductController extends Controller
         ]);
     }
 
-    public function export(Request $request, SimpleTableExportResponder $exportResponder): Response|BinaryFileResponse
+    public function export(ExportCategoryProductRequest $request, SimpleTableExportResponder $exportResponder): Response|BinaryFileResponse
     {
-        $filters = CategoryProductFilterData::from($request->query());
+        $validated = $request->validated();
+        $filters = CategoryProductFilterData::from($validated);
         $rows = $this->buildExportQuery($filters)->get()->map(
             static fn (CategoryProductEloquentModel $categoryProduct): array => [
                 $categoryProduct->category_product_name,
