@@ -54,7 +54,7 @@ final class EloquentAccessControlRepository implements AccessControlRepositoryPo
             ->withCount('permissions')
             ->with('permissions:id,name')
             ->orderBy('name')
-            ->get(['id', 'uuid', 'name', 'guard_name', 'deleted_at', 'created_at', 'updated_at'])
+            ->get(['id', 'uuid', 'name', 'guard_name', 'created_at', 'updated_at'])
             ->map(fn ($role): array => $this->mapper->mapRoleSummary($role))
             ->all();
     }

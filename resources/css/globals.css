@@ -262,17 +262,30 @@ select {
     display: flex;
     min-width: 0;
     align-items: center;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.dashboard-brand-shell--sidebar {
+    width: 100%;
+    overflow: hidden;
 }
 
 .dashboard-brand-logo {
     width: auto;
-    height: 34px;
+    height: 38px;
+    max-width: 100%;
     object-fit: contain;
     filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--bg-base) 48%, transparent));
 }
 
+.dashboard-brand-logo--sidebar {
+    height: 42px;
+}
+
 .dashboard-brand-logo--compact {
-    height: 28px;
+    height: 30px;
 }
 
 /* ── Wave & Gradient Mesh Animations ── */

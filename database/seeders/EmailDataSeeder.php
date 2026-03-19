@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\EmailData;
+use Modules\EmailData\Infrastructure\Persistence\Eloquent\Models\EmailDataEloquentModel;
 use Ramsey\Uuid\Uuid;
 
 class EmailDataSeeder extends Seeder
@@ -39,7 +41,7 @@ class EmailDataSeeder extends Seeder
 
         foreach ($emailsData as $emailData) {
             $emailData['uuid'] = Uuid::uuid4()->toString();
-            EmailData::create($emailData);
+            EmailDataEloquentModel::query()->create($emailData);
         }
     }
 }

@@ -74,10 +74,15 @@ export default function PermissionsIndexPage(): React.JSX.Element {
   const userAccessQuery = useUserAccess(selectedUser?.uuid ?? null, activeTab === 'users' && hasUserTabAccess);
   const { createPermission, syncRolePermissions, syncUserAccess } = useAccessControlMutations();
 
-  const permissions = permissionCatalogQuery.data?.data ?? [];
-  const roles = accessRolesQuery.data?.data ?? [];
-  const searchedUsers = userSearchQuery.data?.data ?? [];
+  const permissions = Array.isArray(permissionCatalogQuery.data?.data) ? permissionCatalogQuery.data.data : [];
+  const roles = Array.isArray(accessRolesQuery.data?.data) ? accessRolesQuery.data.data : [];
+  const searchedUsers = Array.isArray(userSearchQuery.data?.data) ? userSearchQuery.data.data : [];
   const userAccess = userAccessQuery.data?.data;
+  const accessControlErrorMessage = permissionCatalogQuery.error?.message
+    ?? accessRolesQuery.error?.message
+    ?? userSearchQuery.error?.message
+    ?? userAccessQuery.error?.message
+    ?? null;
   const visiblePermissions = React.useMemo<PermissionCatalogItem[]>(
     () => (isSuperAdmin ? permissions : permissions.filter((permission) => !PROTECTED_PERMISSION_NAMES.includes(permission.name as typeof PROTECTED_PERMISSION_NAMES[number]))),
     [isSuperAdmin, permissions],
@@ -214,7 +219,7 @@ export default function PermissionsIndexPage(): React.JSX.Element {
               <button
                 type="button"
                 onClick={() => setActiveTab('catalog')}
-                className={`${TAB_BUTTON_CLASS} ${activeTab === 'catalog' ? 'bg-(--accent-primary) text-(--color-white)' : 'bg-(--bg-card) text-(--text-secondary) hover:bg-(--bg-hover)'}`}
+                className={`${TAB_BUTTON_CLASS} ${activeTab === 'catalog' ? 'bg-(--accent-primary) text-(--text-primary)' : 'bg-(--bg-card) text-(--text-secondary) hover:bg-(--bg-hover)'}`}
               >
                 <KeyRound size={16} />
                 Catalog
@@ -224,7 +229,7 @@ export default function PermissionsIndexPage(): React.JSX.Element {
               <button
                 type="button"
                 onClick={() => setActiveTab('roles')}
-                className={`${TAB_BUTTON_CLASS} ${activeTab === 'roles' ? 'bg-(--accent-primary) text-(--color-white)' : 'bg-(--bg-card) text-(--text-secondary) hover:bg-(--bg-hover)'}`}
+                className={`${TAB_BUTTON_CLASS} ${activeTab === 'roles' ? 'bg-(--accent-primary) text-(--text-primary)' : 'bg-(--bg-card) text-(--text-secondary) hover:bg-(--bg-hover)'}`}
               >
                 <ShieldCheck size={16} />
                 Role Permissions
@@ -234,7 +239,7 @@ export default function PermissionsIndexPage(): React.JSX.Element {
               <button
                 type="button"
                 onClick={() => setActiveTab('users')}
-                className={`${TAB_BUTTON_CLASS} ${activeTab === 'users' ? 'bg-(--accent-primary) text-(--color-white)' : 'bg-(--bg-card) text-(--text-secondary) hover:bg-(--bg-hover)'}`}
+                className={`${TAB_BUTTON_CLASS} ${activeTab === 'users' ? 'bg-(--accent-primary) text-(--text-primary)' : 'bg-(--bg-card) text-(--text-secondary) hover:bg-(--bg-hover)'}`}
               >
                 <UserCog size={16} />
                 User Access
@@ -242,7 +247,19 @@ export default function PermissionsIndexPage(): React.JSX.Element {
             ) : null}
           </div>
 
-          {activeTab === 'catalog' && hasPermissionCatalogAccess && (
+          {accessControlErrorMessage ? (
+            <div className="rounded-3xl border border-(--accent-error) bg-(--bg-card) px-5 py-4 text-sm text-(--text-primary)">
+              Failed to load access control data. {accessControlErrorMessage}
+            </div>
+          ) : null}
+
+          {!hasPermissionCatalogAccess && !hasRoleTabAccess && !hasUserTabAccess ? (
+            <div className="rounded-3xl border border-(--border-default) bg-(--bg-card) px-5 py-4 text-sm text-(--text-muted)">
+              You do not have access to the permissions workspace.
+            </div>
+          ) : null}
+
+          {activeTab === 'catalog' && hasPermissionCatalogAccess && !accessControlErrorMessage && (
             <div className="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
               <div className="card-modern rounded-3xl border border-(--border-default) p-6 shadow-xl">
                 <div className="mb-4 flex items-center gap-3 rounded-2xl border border-(--border-default) bg-(--bg-card) px-4 py-3">

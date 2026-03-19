@@ -4,22 +4,17 @@ declare(strict_types=1);
 
 namespace Modules\AllianceCompanies\Infrastructure\Persistence\Eloquent\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
-/**
- * AllianceCompanyEloquentModel
- * 
- * @internal â€” Infrastructure only. Use AllianceCompanyRepositoryPort.
- */
-class AllianceCompanyEloquentModel extends Model
+final class AllianceCompanyEloquentModel extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use LogsActivity;
+    use SoftDeletes;
 
     protected $table = 'alliance_companies';
 
@@ -36,7 +31,15 @@ class AllianceCompanyEloquentModel extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logFillable()
+            ->useLogName('alliance_company')
+            ->logOnly([
+                'alliance_company_name',
+                'address',
+                'phone',
+                'email',
+                'website',
+                'user_id',
+            ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -44,11 +47,5 @@ class AllianceCompanyEloquentModel extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(UserEloquentModel::class, 'user_id');
-    }
-
-    public function scopeInDateRange($query, ?string $from, ?string $to): void
-    {
-        $query->when($from, fn($q) => $q->whereDate('created_at', '>=', $from))
-            ->when($to, fn($q) => $q->whereDate('created_at', '<=', $to));
     }
 }

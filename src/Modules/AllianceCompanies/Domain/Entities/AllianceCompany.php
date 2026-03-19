@@ -4,86 +4,175 @@ declare(strict_types=1);
 
 namespace Modules\AllianceCompanies\Domain\Entities;
 
-use Shared\Domain\Entities\AggregateRoot;
+use InvalidArgumentException;
 use Modules\AllianceCompanies\Domain\ValueObjects\AllianceCompanyId;
+use Shared\Domain\Entities\AggregateRoot;
 
 final class AllianceCompany extends AggregateRoot
 {
-    public function __construct(
-        private readonly AllianceCompanyId $id,
-        private string $AllianceCompanyName,
+    private function __construct(
+        private AllianceCompanyId $id,
+        private string $allianceCompanyName,
         private ?string $address,
         private ?string $phone,
         private ?string $email,
         private ?string $website,
-        private ?int $userId,
-        protected readonly ?string $createdAt = null,
-        protected readonly ?string $updatedAt = null,
-        protected readonly ?string $deletedAt = null,
+        private int $userId,
+        private string $createdAt,
+        private string $updatedAt,
+        private ?string $deletedAt = null,
     ) {
+        $this->allianceCompanyName = self::normalizeRequiredString($allianceCompanyName, 'Alliance company name is required.');
+        $this->address = self::normalizeNullableString($address);
+        $this->phone = self::normalizeNullableString($phone);
+        $this->email = self::normalizeNullableString($email);
+        $this->website = self::normalizeNullableString($website);
+        $this->userId = self::normalizeUserId($userId);
     }
 
-    public function getId(): AllianceCompanyId
+    public static function create(
+        AllianceCompanyId $id,
+        string $allianceCompanyName,
+        ?string $address,
+        ?string $phone,
+        ?string $email,
+        ?string $website,
+        int $userId,
+        string $createdAt,
+    ): self {
+        return new self(
+            id: $id,
+            allianceCompanyName: $allianceCompanyName,
+            address: $address,
+            phone: $phone,
+            email: $email,
+            website: $website,
+            userId: $userId,
+            createdAt: $createdAt,
+            updatedAt: $createdAt,
+        );
+    }
+
+    public static function reconstitute(
+        AllianceCompanyId $id,
+        string $allianceCompanyName,
+        ?string $address,
+        ?string $phone,
+        ?string $email,
+        ?string $website,
+        int $userId,
+        string $createdAt,
+        string $updatedAt,
+        ?string $deletedAt,
+    ): self {
+        return new self(
+            id: $id,
+            allianceCompanyName: $allianceCompanyName,
+            address: $address,
+            phone: $phone,
+            email: $email,
+            website: $website,
+            userId: $userId,
+            createdAt: $createdAt,
+            updatedAt: $updatedAt,
+            deletedAt: $deletedAt,
+        );
+    }
+
+    public function update(
+        string $allianceCompanyName,
+        ?string $address,
+        ?string $phone,
+        ?string $email,
+        ?string $website,
+        string $updatedAt,
+    ): void {
+        $this->allianceCompanyName = self::normalizeRequiredString($allianceCompanyName, 'Alliance company name is required.');
+        $this->address = self::normalizeNullableString($address);
+        $this->phone = self::normalizeNullableString($phone);
+        $this->email = self::normalizeNullableString($email);
+        $this->website = self::normalizeNullableString($website);
+        $this->updatedAt = $updatedAt;
+    }
+
+    public function id(): AllianceCompanyId
     {
         return $this->id;
     }
 
-    public function getAllianceCompanyName(): string
+    public function allianceCompanyName(): string
     {
-        return $this->AllianceCompanyName;
+        return $this->allianceCompanyName;
     }
 
-    public function getAddress(): ?string
+    public function address(): ?string
     {
         return $this->address;
     }
 
-    public function getPhone(): ?string
+    public function phone(): ?string
     {
         return $this->phone;
     }
 
-    public function getEmail(): ?string
+    public function email(): ?string
     {
         return $this->email;
     }
 
-    public function getWebsite(): ?string
+    public function website(): ?string
     {
         return $this->website;
     }
 
-    public function getUserId(): ?int
+    public function userId(): int
     {
         return $this->userId;
     }
 
-    public function getCreatedAt(): ?string
+    public function createdAt(): string
     {
         return $this->createdAt;
     }
 
-    public function getUpdatedAt(): ?string
+    public function updatedAt(): string
     {
         return $this->updatedAt;
     }
 
-    public function getDeletedAt(): ?string
+    public function deletedAt(): ?string
     {
         return $this->deletedAt;
     }
 
-    public function update(
-        string $AllianceCompanyName,
-        ?string $address,
-        ?string $phone,
-        ?string $email,
-        ?string $website
-    ): void {
-        $this->AllianceCompanyName = $AllianceCompanyName;
-        $this->address = $address;
-        $this->phone = $phone;
-        $this->email = $email;
-        $this->website = $website;
+    private static function normalizeRequiredString(string $value, string $message): string
+    {
+        $normalized = trim($value);
+
+        if ($normalized === '') {
+            throw new InvalidArgumentException($message);
+        }
+
+        return $normalized;
+    }
+
+    private static function normalizeNullableString(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = trim($value);
+
+        return $normalized === '' ? null : $normalized;
+    }
+
+    private static function normalizeUserId(int $userId): int
+    {
+        if ($userId < 1) {
+            throw new InvalidArgumentException('Alliance company owner is required.');
+        }
+
+        return $userId;
     }
 }

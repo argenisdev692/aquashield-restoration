@@ -56,6 +56,7 @@ import {
   AlertTriangle,
   CalendarRange,
   MessageSquareText,
+  Mail,
   Bot
 } from 'lucide-react';
 
@@ -86,7 +87,8 @@ const IconTypeDamage = () => <AlertTriangle size={icSize} />;
 const IconClientIntake = () => <CalendarRange size={icSize} />;
 const IconAppointment = () => <CalendarRange size={icSize} />;
 const IconContactSupport = () => <MessageSquareText size={icSize} />;
-const IconAI = () => <Bot size={16} />;
+const IconEmailData = () => <Mail size={icSize} />;
+const IconAI = () => <Bot size={18} />;
 
 interface TooltipRect {
   left: number;
@@ -139,6 +141,7 @@ const NAV_ITEMS: NavItem[] = [
     description: 'Reference data catalogs',
     children: [
       { label: 'Cause of Losses', href: '/cause-of-losses', icon: <IconTypeDamage />, description: 'Cause of loss catalog', permission: ['READ_CAUSE_OF_LOSS', 'CREATE_CAUSE_OF_LOSS', 'UPDATE_CAUSE_OF_LOSS', 'DELETE_CAUSE_OF_LOSS', 'RESTORE_CAUSE_OF_LOSS'] },
+      { label: 'Email Data', href: '/email-data', icon: <IconEmailData />, description: 'Operational inbox catalog', permission: ['READ_EMAIL_DATA', 'CREATE_EMAIL_DATA', 'UPDATE_EMAIL_DATA', 'DELETE_EMAIL_DATA', 'RESTORE_EMAIL_DATA'] },
       { label: 'Category Products', href: '/category-products', icon: <IconTags />, description: 'Product category catalog', permission: ['READ_CATEGORY_PRODUCT', 'CREATE_CATEGORY_PRODUCT', 'UPDATE_CATEGORY_PRODUCT', 'DELETE_CATEGORY_PRODUCT', 'RESTORE_CATEGORY_PRODUCT'] },
       { label: 'Type Damages', href: '/type-damages', icon: <IconTypeDamage />, description: 'Damage type catalog', permission: ['READ_TYPE_DAMAGE', 'CREATE_TYPE_DAMAGE', 'UPDATE_TYPE_DAMAGE', 'DELETE_TYPE_DAMAGE', 'RESTORE_TYPE_DAMAGE'] },
       { label: 'Products', href: '/products', icon: <IconPackage />, description: 'Product catalog', permission: ['READ_PRODUCT', 'CREATE_PRODUCT', 'UPDATE_PRODUCT', 'DELETE_PRODUCT', 'RESTORE_PRODUCT'] },
@@ -371,7 +374,7 @@ function AvatarDropdown(): React.JSX.Element {
   const hasPhoto = !!user?.profile_photo_path;
 
   return (
-    <div ref={ref} className="relative z-[70]">
+    <div ref={ref} className="relative z-[120]">
       <button
         onClick={() => setOpen((p) => !p)}
         className="flex cursor-pointer items-center gap-2 rounded-lg p-1 pr-2 transition-all duration-150"
@@ -413,11 +416,12 @@ function AvatarDropdown(): React.JSX.Element {
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-56 rounded-xl p-1"
+          className="absolute right-0 top-[calc(100%+0.5rem)] z-[140] w-64 rounded-xl p-1"
           style={{
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-default)',
-            boxShadow: '0 8px 32px color-mix(in srgb, var(--bg-base) 24%, transparent)',
+            boxShadow: '0 20px 48px -24px color-mix(in srgb, var(--bg-base) 72%, transparent)',
+            backdropFilter: 'blur(18px)',
           }}
         >
           {/* User info header */}
@@ -620,13 +624,15 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapsed }: { onC
       <div className={`flex h-[60px] items-center justify-between shrink-0 ${collapsed ? 'px-3' : 'px-5'}`}
         style={{ borderBottom: '1px solid var(--border-subtle)' }}>
         <div className={`flex min-w-0 flex-1 items-center ${collapsed ? 'justify-center' : 'justify-start'}`}>
-          <div className="dashboard-brand-shell">
-            {!collapsed ? (
-              <img
-                src="/img/Logo PNG-WHITE.png"
-                alt="AquaShield CRM"
-                className="dashboard-brand-logo"
-              />
+        <div className="dashboard-brand-shell dashboard-brand-shell--sidebar">
+        {!collapsed ? (
+        <Link href="/dashboard" prefetch className="dashboard-brand-shell dashboard-brand-shell--sidebar" aria-label="Go to dashboard">
+        <img
+          src="/img/Logo PNG-WHITE.png"
+          alt="AquaShield CRM"
+            className="dashboard-brand-logo dashboard-brand-logo--sidebar"
+            />
+            </Link>
             ) : null}
           </div>
         </div>
@@ -1002,7 +1008,7 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
 
         {/* ── Top Bar ── */}
         <header
-          className="sticky top-0 z-30 flex h-[60px] min-w-0 items-center justify-between gap-4 px-4 md:px-6"
+          className="sticky top-0 z-30 flex h-[60px] min-w-0 items-center justify-between gap-4 overflow-visible px-4 md:px-6"
           style={{
             background: 'var(--bg-surface)',
             borderBottom: '1px solid var(--border-subtle)',
@@ -1020,7 +1026,7 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
           </button>
 
           {/* Center: logo on mobile */}
-          <div className="flex items-center gap-2 lg:hidden">
+          <div className="flex min-w-0 items-center gap-2 lg:hidden">
             <span
               className="flex h-8 w-8 items-center justify-center rounded-lg"
               style={{
@@ -1047,7 +1053,7 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
                 CRM
               </span>
               <span
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                 style={{
                   background: 'color-mix(in srgb, var(--accent-primary) 14%, transparent)',
                   color: 'var(--accent-primary)',

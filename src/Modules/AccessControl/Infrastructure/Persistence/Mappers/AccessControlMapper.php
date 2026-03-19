@@ -34,7 +34,7 @@ final class AccessControlMapper
             'guard_name' => $role->guard_name,
             'permissions_count' => (int) ($role->permissions_count ?? 0),
             'permission_names' => $role->permissions->pluck('name')->values()->all(),
-            'deleted_at' => $role->deleted_at?->toIso8601String(),
+            'deleted_at' => $role->getAttribute('deleted_at')?->toIso8601String(),
             'created_at' => $role->created_at?->toIso8601String(),
             'updated_at' => $role->updated_at?->toIso8601String(),
         ];

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -12,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Cache;
+use Modules\EmailData\Infrastructure\Persistence\Eloquent\Models\EmailDataEloquentModel;
 
 class User extends Authenticatable
 {
@@ -91,7 +94,7 @@ class User extends Authenticatable
      */
     public function emailData(): HasMany
     {
-        return $this->hasMany(EmailData::class);
+        return $this->hasMany(EmailDataEloquentModel::class);
     }
 
     /**

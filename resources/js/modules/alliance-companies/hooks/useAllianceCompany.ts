@@ -1,15 +1,21 @@
-import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { AllianceCompany } from '../types';
+import { useQuery } from '@tanstack/react-query';
+import type { AllianceCompany } from '../types';
 
-export const useAllianceCompany = (uuid: string | null) => {
-    return useQuery({
-        queryKey: ['alliance-company', uuid],
+export function useAllianceCompany(uuid: string | null) {
+    return useQuery<AllianceCompany | null, Error>({
+        queryKey: ['alliance-companies', 'detail', uuid],
         queryFn: async () => {
-            if (!uuid) return null;
-            const { data } = await axios.get<{ data: AllianceCompany }>(`/alliance-companies/data/${uuid}`);
-            return data.data;
+            if (uuid === null) {
+                return null;
+            }
+
+            const { data } = await axios.get<AllianceCompany>(
+                `/alliance-companies/data/admin/${uuid}`,
+            );
+
+            return data;
         },
-        enabled: !!uuid,
+        enabled: uuid !== null,
     });
-};
+}

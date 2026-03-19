@@ -2,11 +2,10 @@ export interface AllianceCompany {
     uuid: string;
     alliance_company_name: string;
     address: string | null;
-    address_2?: string | null;
     phone: string | null;
     email: string | null;
     website: string | null;
-    user_id: number | null;
+    user_id: number;
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
@@ -14,12 +13,27 @@ export interface AllianceCompany {
 
 export interface AllianceCompanyFilters {
     search?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    onlyTrashed?: boolean;
-    sortBy?: string;
-    sortDir?: 'asc' | 'desc';
+    status?: 'active' | 'deleted';
+    date_from?: string;
+    date_to?: string;
     page?: number;
-    perPage?: number;
-    status?: string | undefined;
+    per_page?: number;
+}
+
+export interface AllianceCompanyFormData {
+    alliance_company_name: string;
+    address: string | null;
+    phone: string | null;
+    email: string | null;
+    website: string | null;
+}
+
+export interface PaginatedAllianceCompanyResponse {
+    data: AllianceCompany[];
+    meta: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+    };
 }

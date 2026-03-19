@@ -1,37 +1,43 @@
 import { Head, router } from '@inertiajs/react';
+import { Building2 } from 'lucide-react';
+import { useCreateAllianceCompany } from '@/modules/alliance-companies/hooks/useAllianceCompanyMutations';
+import type { AllianceCompanyFormData } from '@/modules/alliance-companies/types';
 import AppLayout from '@/pages/layouts/AppLayout';
-import { useAllianceCompanyMutations } from '@/modules/alliance-companies/hooks/useAllianceCompanyMutations';
-import { AllianceCompany } from '@/modules/alliance-companies/types';
 import AllianceCompanyForm from './components/AllianceCompanyForm';
-import { ShieldPlus } from 'lucide-react';
 
-export default function AllianceCompanyCreatePage() {
-    const { createAllianceCompany } = useAllianceCompanyMutations();
+export default function AllianceCompanyCreatePage(): React.JSX.Element {
+    const createAllianceCompany = useCreateAllianceCompany();
 
-    const handleSubmit = async (data: Partial<AllianceCompany>) => {
+    async function handleSubmit(data: AllianceCompanyFormData): Promise<void> {
         await createAllianceCompany.mutateAsync(data);
-    };
+    }
 
     return (
         <>
             <Head title="Create Alliance Company" />
             <AppLayout>
-                <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
-                    <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-2xl bg-(--accent-primary)/10 text-(--accent-primary) shadow-sm">
-                                <ShieldPlus size={24} />
-                            </div>
-                            <h1 className="text-3xl font-extrabold tracking-tight text-(--text-primary)">
-                                Create New Carrier
-                            </h1>
+                <div className="mx-auto flex max-w-4xl flex-col gap-6">
+                    <div className="flex items-start gap-4">
+                        <div
+                            className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                            style={{
+                                background: 'color-mix(in srgb, var(--accent-primary) 12%, transparent)',
+                                color: 'var(--accent-primary)',
+                            }}
+                        >
+                            <Building2 size={24} />
                         </div>
-                        <p className="text-sm text-(--text-muted) font-medium ml-14">
-                            Register a new Alliance company to manage claims and adjusters.
-                        </p>
+                        <div className="space-y-1">
+                            <h1 className="text-3xl font-extrabold" style={{ color: 'var(--text-primary)' }}>
+                                Create alliance company
+                            </h1>
+                            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                                Add a new alliance company record to your companies area.
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="rounded-3xl border border-(--border-default) bg-(--bg-card) shadow-2xl overflow-hidden hover:shadow-blue-500/5 transition-all">
+                    <div className="card overflow-hidden p-0">
                         <AllianceCompanyForm
                             onSubmit={handleSubmit}
                             isSubmitting={createAllianceCompany.isPending}

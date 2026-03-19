@@ -4,108 +4,107 @@ declare(strict_types=1);
 
 namespace Modules\AllianceCompanies\Infrastructure\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-use Modules\AllianceCompanies\Application\Commands\CreateAllianceCompany\CreateAllianceCompanyCommand;
-use Modules\AllianceCompanies\Application\Commands\CreateAllianceCompany\CreateAllianceCompanyHandler;
-use Modules\AllianceCompanies\Application\Commands\DeleteAllianceCompany\DeleteAllianceCompanyCommand;
-use Modules\AllianceCompanies\Application\Commands\DeleteAllianceCompany\DeleteAllianceCompanyHandler;
-use Modules\AllianceCompanies\Application\Commands\RestoreAllianceCompany\RestoreAllianceCompanyCommand;
-use Modules\AllianceCompanies\Application\Commands\RestoreAllianceCompany\RestoreAllianceCompanyHandler;
-use Modules\AllianceCompanies\Application\Commands\UpdateAllianceCompany\UpdateAllianceCompanyCommand;
-use Modules\AllianceCompanies\Application\Commands\UpdateAllianceCompany\UpdateAllianceCompanyHandler;
-use Modules\AllianceCompanies\Application\DTOs\AllianceCompanyDTO;
-use Modules\AllianceCompanies\Application\Queries\GetAllianceCompany\GetAllianceCompanyHandler;
-use Modules\AllianceCompanies\Application\Queries\GetAllianceCompany\GetAllianceCompanyQuery;
-use Modules\AllianceCompanies\Application\Queries\ListAllianceCompanies\ListAllianceCompaniesHandler;
-use Modules\AllianceCompanies\Application\Queries\ListAllianceCompanies\ListAllianceCompaniesQuery;
-use Modules\AllianceCompanies\Infrastructure\Http\Requests\CreateAllianceCompanyRequest;
+use RuntimeException;
+use Modules\AllianceCompanies\Application\Commands\BulkDeleteAllianceCompanyHandler;
+use Modules\AllianceCompanies\Application\Commands\CreateAllianceCompanyHandler;
+use Modules\AllianceCompanies\Application\Commands\DeleteAllianceCompanyHandler;
+use Modules\AllianceCompanies\Application\Commands\RestoreAllianceCompanyHandler;
+use Modules\AllianceCompanies\Application\Commands\UpdateAllianceCompanyHandler;
+use Modules\AllianceCompanies\Application\DTOs\AllianceCompanyFilterData;
+use Modules\AllianceCompanies\Application\DTOs\BulkDeleteAllianceCompanyData;
+use Modules\AllianceCompanies\Application\DTOs\StoreAllianceCompanyData;
+use Modules\AllianceCompanies\Application\DTOs\UpdateAllianceCompanyData;
+use Modules\AllianceCompanies\Application\Queries\GetAllianceCompanyHandler;
+use Modules\AllianceCompanies\Application\Queries\ListAllianceCompaniesHandler;
+use Modules\AllianceCompanies\Infrastructure\Http\Requests\BulkDeleteAllianceCompanyRequest;
+use Modules\AllianceCompanies\Infrastructure\Http\Requests\StoreAllianceCompanyRequest;
 use Modules\AllianceCompanies\Infrastructure\Http\Requests\UpdateAllianceCompanyRequest;
-use Modules\AllianceCompanies\Infrastructure\Http\Resources\AllianceCompanyResource;
-use Illuminate\Http\Request;
 
-final class AllianceCompanyController
+final class AllianceCompanyController extends Controller
 {
-    public function __construct(
-        private readonly CreateAllianceCompanyHandler $createHandler,
-        private readonly UpdateAllianceCompanyHandler $updateHandler,
-        private readonly DeleteAllianceCompanyHandler $deleteHandler,
-        private readonly RestoreAllianceCompanyHandler $restoreHandler,
-        private readonly ListAllianceCompaniesHandler $listHandler,
-        private readonly GetAllianceCompanyHandler $getHandler,
-    ) {
-    }
-
-    public function index(Request $request): JsonResponse
+    public function index(ListAllianceCompaniesHandler $handler): JsonResponse
     {
-        $filters = $request->all();
-        $result = $this->listHandler->handle(new ListAllianceCompaniesQuery($filters));
+        $allianceCompanies = $handler->handle(AllianceCompanyFilterData::from(request()->query()));
 
         return response()->json([
-            'data' => array_map(fn($item) => new AllianceCompanyResource($item), $result['data']),
+            'data' => array_map(
+                static fn ($allianceCompany): array => $allianceCompany->toArray(),
+                $allianceCompanies->items(),
+            ),
             'meta' => [
-                'total' => $result['total'],
-                'perPage' => $result['perPage'],
-                'currentPage' => $result['currentPage'],
-                'lastPage' => $result['lastPage'],
+                'current_page' => $allianceCompanies->currentPage(),
+                'last_page' => $allianceCompanies->lastPage(),
+                'per_page' => $allianceCompanies->perPage(),
+                'total' => $allianceCompanies->total(),
             ],
         ]);
     }
 
-    public function show(string $uuid): JsonResponse
+    public function show(string $uuid, GetAllianceCompanyHandler $handler): JsonResponse
     {
-        $AllianceCompany = $this->getHandler->handle(new GetAllianceCompanyQuery($uuid));
+        $allianceCompany = $handler->handle($uuid);
 
-        return response()->json([
-            'data' => new AllianceCompanyResource($AllianceCompany),
-        ]);
+        if ($allianceCompany === null) {
+            return response()->json(['message' => 'Alliance company not found.'], 404);
+        }
+
+        return response()->json($allianceCompany->toArray());
     }
 
-    public function store(CreateAllianceCompanyRequest $request): JsonResponse
+    public function store(StoreAllianceCompanyRequest $request, CreateAllianceCompanyHandler $handler): JsonResponse
     {
-        $dto = new AllianceCompanyDTO(
-            AllianceCompanyName: $request->alliance_company_name,
-            address: $request->address,
-            phone: $request->phone,
-            email: $request->email,
-            website: $request->website,
-            userId: $request->user_id ?? auth()->id(),
-        );
+        $payload = array_merge($request->validated(), [
+            'user_id' => (int) $request->user()->getAuthIdentifier(),
+        ]);
 
-        $AllianceCompany = $this->createHandler->handle(new CreateAllianceCompanyCommand($dto));
+        $uuid = $handler->handle(StoreAllianceCompanyData::from($payload));
 
         return response()->json([
-            'data' => new AllianceCompanyResource($AllianceCompany),
+            'uuid' => $uuid,
+            'message' => 'Alliance company created successfully.',
         ], 201);
     }
 
-    public function update(UpdateAllianceCompanyRequest $request, string $uuid): JsonResponse
+    public function update(string $uuid, UpdateAllianceCompanyRequest $request, UpdateAllianceCompanyHandler $handler): JsonResponse
     {
-        $dto = new AllianceCompanyDTO(
-            AllianceCompanyName: $request->alliance_company_name,
-            address: $request->address,
-            phone: $request->phone,
-            email: $request->email,
-            website: $request->website,
-        );
-
-        $AllianceCompany = $this->updateHandler->handle(new UpdateAllianceCompanyCommand($uuid, $dto));
+        try {
+            $handler->handle($uuid, UpdateAllianceCompanyData::from($request->validated()));
+        } catch (RuntimeException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 404);
+        }
 
         return response()->json([
-            'data' => new AllianceCompanyResource($AllianceCompany),
+            'message' => 'Alliance company updated successfully.',
         ]);
     }
 
-    public function destroy(string $uuid): JsonResponse
+    public function destroy(string $uuid, DeleteAllianceCompanyHandler $handler): JsonResponse
     {
-        $this->deleteHandler->handle(new DeleteAllianceCompanyCommand($uuid));
+        $handler->handle($uuid);
 
-        return response()->json(null, 204);
+        return response()->json([
+            'message' => 'Alliance company deleted successfully.',
+        ]);
     }
 
-    public function restore(string $uuid): JsonResponse
+    public function restore(string $uuid, RestoreAllianceCompanyHandler $handler): JsonResponse
     {
-        $this->restoreHandler->handle(new RestoreAllianceCompanyCommand($uuid));
+        $handler->handle($uuid);
 
-        return response()->json(['message' => 'Alliance company restored successfully.']);
+        return response()->json([
+            'message' => 'Alliance company restored successfully.',
+        ]);
+    }
+
+    public function bulkDelete(BulkDeleteAllianceCompanyRequest $request, BulkDeleteAllianceCompanyHandler $handler): JsonResponse
+    {
+        $deletedCount = $handler->handle(BulkDeleteAllianceCompanyData::from($request->validated()));
+
+        return response()->json([
+            'message' => "Successfully deleted {$deletedCount} alliance company record(s).",
+            'deleted_count' => $deletedCount,
+        ]);
     }
 }

@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shared\Infrastructure\Utils;
 
-use App\Models\EmailData;
 use Illuminate\Support\Facades\Log;
+use Modules\EmailData\Infrastructure\Persistence\Eloquent\Models\EmailDataEloquentModel;
 
 class EmailHelper
 {
@@ -12,17 +14,17 @@ class EmailHelper
      * 
      * @return array
      */
-    public static function verifyAdminEmail()
+    public static function verifyAdminEmail(): array
     {
         // Get all email data for logging purposes
-        $allEmails = EmailData::all(['id', 'type', 'email']);
+        $allEmails = EmailDataEloquentModel::query()->get(['id', 'type', 'email']);
         
         // Try exact match first
-        $adminEmail = EmailData::where('type', 'Admin')->first();
+        $adminEmail = EmailDataEloquentModel::query()->where('type', 'Admin')->first();
         
         // If not found, try case-insensitive search
         if (!$adminEmail) {
-            $adminEmail = EmailData::whereRaw('LOWER(type) = ?', [strtolower('Admin')])->first();
+            $adminEmail = EmailDataEloquentModel::query()->whereRaw('LOWER(type) = ?', [strtolower('Admin')])->first();
         }
         
         // Check if we found a valid email
@@ -49,17 +51,17 @@ class EmailHelper
      * 
      * @return array
      */
-    public static function verifyInfoEmail()
+    public static function verifyInfoEmail(): array
     {
         // Get all email data for logging purposes
-        $allEmails = EmailData::all(['id', 'type', 'email']);
+        $allEmails = EmailDataEloquentModel::query()->get(['id', 'type', 'email']);
         
         // Try exact match first
-        $infoEmail = EmailData::where('type', 'Info')->first();
+        $infoEmail = EmailDataEloquentModel::query()->where('type', 'Info')->first();
         
         // If not found, try case-insensitive search
         if (!$infoEmail) {
-            $infoEmail = EmailData::whereRaw('LOWER(type) = ?', [strtolower('Info')])->first();
+            $infoEmail = EmailDataEloquentModel::query()->whereRaw('LOWER(type) = ?', [strtolower('Info')])->first();
         }
         
         // Check if we found a valid email

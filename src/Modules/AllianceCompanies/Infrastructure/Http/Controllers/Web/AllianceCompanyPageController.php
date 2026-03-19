@@ -4,19 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\AllianceCompanies\Infrastructure\Http\Controllers\Web;
 
+use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
-use Modules\AllianceCompanies\Application\Queries\GetAllianceCompany\GetAllianceCompanyHandler;
-use Modules\AllianceCompanies\Application\Queries\GetAllianceCompany\GetAllianceCompanyQuery;
-use Modules\AllianceCompanies\Infrastructure\Http\Resources\AllianceCompanyResource;
+use Modules\AllianceCompanies\Application\Queries\GetAllianceCompanyHandler;
 
-final class AllianceCompanyPageController
+final class AllianceCompanyPageController extends Controller
 {
-    public function __construct(
-        private readonly GetAllianceCompanyHandler $getHandler,
-    ) {
-    }
-
     public function index(): Response
     {
         return Inertia::render('alliance-companies/AllianceCompaniesIndexPage');
@@ -27,21 +21,29 @@ final class AllianceCompanyPageController
         return Inertia::render('alliance-companies/AllianceCompanyCreatePage');
     }
 
-    public function show(string $uuid): Response
+    public function show(string $uuid, GetAllianceCompanyHandler $handler): Response
     {
-        $AllianceCompany = $this->getHandler->handle(new GetAllianceCompanyQuery($uuid));
+        $allianceCompany = $handler->handle($uuid);
+
+        if ($allianceCompany === null) {
+            abort(404);
+        }
 
         return Inertia::render('alliance-companies/AllianceCompanyShowPage', [
-            'AllianceCompany' => new AllianceCompanyResource($AllianceCompany),
+            'allianceCompany' => $allianceCompany->toArray(),
         ]);
     }
 
-    public function edit(string $uuid): Response
+    public function edit(string $uuid, GetAllianceCompanyHandler $handler): Response
     {
-        $AllianceCompany = $this->getHandler->handle(new GetAllianceCompanyQuery($uuid));
+        $allianceCompany = $handler->handle($uuid);
+
+        if ($allianceCompany === null) {
+            abort(404);
+        }
 
         return Inertia::render('alliance-companies/AllianceCompanyEditPage', [
-            'AllianceCompany' => new AllianceCompanyResource($AllianceCompany),
+            'allianceCompany' => $allianceCompany->toArray(),
         ]);
     }
 }

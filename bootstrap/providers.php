@@ -19,6 +19,7 @@ return [
     Modules\InsuranceCompanies\Providers\InsuranceCompaniesServiceProvider::class,
     Modules\MortgageCompanies\Providers\MortgageCompaniesServiceProvider::class,
     Modules\AllianceCompanies\Providers\AllianceCompaniesServiceProvider::class,
+    Modules\EmailData\Providers\EmailDataServiceProvider::class,
     Modules\PublicCompanies\Providers\PublicCompaniesServiceProvider::class,
     Src\Modules\Appointments\Providers\AppointmentsServiceProvider::class,
     Src\Modules\ContactSupports\Providers\ContactSupportsServiceProvider::class,

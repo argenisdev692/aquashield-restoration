@@ -1,47 +1,57 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import type { PageProps } from '@inertiajs/core';
+import { Building2 } from 'lucide-react';
+import { useUpdateAllianceCompany } from '@/modules/alliance-companies/hooks/useAllianceCompanyMutations';
+import type {
+    AllianceCompany,
+    AllianceCompanyFormData,
+} from '@/modules/alliance-companies/types';
 import AppLayout from '@/pages/layouts/AppLayout';
-import { useAllianceCompanyMutations } from '@/modules/alliance-companies/hooks/useAllianceCompanyMutations';
 import AllianceCompanyForm from './components/AllianceCompanyForm';
-import { AllianceCompany } from '@/modules/alliance-companies/types';
-import { ShieldEllipsis } from 'lucide-react';
 
-interface Props {
-    AllianceCompany: { data: AllianceCompany };
+interface AllianceCompanyEditPageProps extends PageProps {
+    allianceCompany: AllianceCompany;
 }
 
-export default function AllianceCompanyEditPage({ AllianceCompany }: Props) {
-    const { updateAllianceCompany } = useAllianceCompanyMutations();
-    const company = AllianceCompany.data;
+export default function AllianceCompanyEditPage(): React.JSX.Element {
+    const { allianceCompany } = usePage<AllianceCompanyEditPageProps>().props;
+    const updateAllianceCompany = useUpdateAllianceCompany();
 
-    const handleSubmit = async (data: Partial<AllianceCompany>) => {
-        await updateAllianceCompany.mutateAsync({ 
-            uuid: company.uuid, 
-            data 
+    async function handleSubmit(data: AllianceCompanyFormData): Promise<void> {
+        await updateAllianceCompany.mutateAsync({
+            uuid: allianceCompany.uuid,
+            data,
         });
-    };
+    }
 
     return (
         <>
-            <Head title={`Edit ${company.alliance_company_name}`} />
+            <Head title={`Edit ${allianceCompany.alliance_company_name}`} />
             <AppLayout>
-                <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
-                    <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-2xl bg-(--accent-primary)/10 text-(--accent-primary) shadow-sm">
-                                <ShieldEllipsis size={24} />
-                            </div>
-                            <h1 className="text-3xl font-extrabold tracking-tight text-(--text-primary)">
-                                Edit Carrier Information
-                            </h1>
+                <div className="mx-auto flex max-w-4xl flex-col gap-6">
+                    <div className="flex items-start gap-4">
+                        <div
+                            className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                            style={{
+                                background: 'color-mix(in srgb, var(--accent-primary) 12%, transparent)',
+                                color: 'var(--accent-primary)',
+                            }}
+                        >
+                            <Building2 size={24} />
                         </div>
-                        <p className="text-sm text-(--text-muted) font-medium ml-14">
-                            Update the details for <span className="text-(--accent-primary)">{company.alliance_company_name}</span>.
-                        </p>
+                        <div className="space-y-1">
+                            <h1 className="text-3xl font-extrabold" style={{ color: 'var(--text-primary)' }}>
+                                Edit alliance company
+                            </h1>
+                            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                                Update the current alliance company information.
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="rounded-3xl border border-(--border-default) bg-(--bg-card) shadow-2xl overflow-hidden hover:shadow-blue-500/5 transition-all">
+                    <div className="card overflow-hidden p-0">
                         <AllianceCompanyForm
-                            initialData={company}
+                            initialData={allianceCompany}
                             onSubmit={handleSubmit}
                             isSubmitting={updateAllianceCompany.isPending}
                             onCancel={() => router.visit('/alliance-companies')}

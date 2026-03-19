@@ -1,73 +1,136 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import { router } from '@inertiajs/react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { sileo } from 'sileo';
-import { AllianceCompany } from '../types';
+import type { AllianceCompanyFormData } from '../types';
 
-export const useAllianceCompanyMutations = () => {
+interface MutationMessageResponse {
+    message: string;
+    uuid?: string;
+    deleted_count?: number;
+}
+
+function getErrorMessage(error: unknown, fallbackMessage: string): string {
+    if (isAxiosError<{ message?: string }>(error)) {
+        return error.response?.data?.message ?? error.message ?? fallbackMessage;
+    }
+
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    return fallbackMessage;
+}
+
+export function useCreateAllianceCompany() {
     const queryClient = useQueryClient();
 
-    const createMutation = useMutation({
-        mutationFn: async (data: Partial<AllianceCompany>) => {
-            const response = await axios.post('/alliance-companies/data', data);
-            return response.data.data;
+    return useMutation<MutationMessageResponse, Error, AllianceCompanyFormData>({
+        mutationFn: async (payload) => {
+            const { data } = await axios.post<MutationMessageResponse>(
+                '/alliance-companies/data/admin',
+                payload,
+            );
+
+            return data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['alliance-companies'] });
-            sileo.success({ title: 'Alliance company created successfully' });
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['alliance-companies'] });
+            sileo.success({ title: 'Alliance company created successfully.' });
             router.visit('/alliance-companies');
         },
-        onError: () => {
-            sileo.error({ title: 'Failed to create Alliance company' });
+        onError: (error) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to create alliance company.') });
         },
     });
+}
 
-    const updateMutation = useMutation({
-        mutationFn: async ({ uuid, data }: { uuid: string; data: Partial<AllianceCompany> }) => {
-            const response = await axios.put(`/alliance-companies/data/${uuid}`, data);
-            return response.data.data;
+export function useUpdateAllianceCompany() {
+    const queryClient = useQueryClient();
+
+    return useMutation<MutationMessageResponse, Error, { uuid: string; data: AllianceCompanyFormData }>({
+        mutationFn: async ({ uuid, data: payload }) => {
+            const { data } = await axios.put<MutationMessageResponse>(
+                `/alliance-companies/data/admin/${uuid}`,
+                payload,
+            );
+
+            return data;
         },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['alliance-companies'] });
-            queryClient.invalidateQueries({ queryKey: ['alliance-company', data.uuid] });
-            sileo.success({ title: 'Alliance company updated successfully' });
+        onSuccess: async (_response, variables) => {
+            await queryClient.invalidateQueries({ queryKey: ['alliance-companies'] });
+            await queryClient.invalidateQueries({
+                queryKey: ['alliance-companies', 'detail', variables.uuid],
+            });
+            sileo.success({ title: 'Alliance company updated successfully.' });
             router.visit('/alliance-companies');
         },
-        onError: () => {
-            sileo.error({ title: 'Failed to update Alliance company' });
+        onError: (error) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to update alliance company.') });
         },
     });
+}
 
-    const deleteMutation = useMutation({
-        mutationFn: async (uuid: string) => {
-            await axios.delete(`/alliance-companies/data/${uuid}`);
+export function useDeleteAllianceCompany() {
+    const queryClient = useQueryClient();
+
+    return useMutation<MutationMessageResponse, Error, string>({
+        mutationFn: async (uuid) => {
+            const { data } = await axios.delete<MutationMessageResponse>(
+                `/alliance-companies/data/admin/${uuid}`,
+            );
+
+            return data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['alliance-companies'] });
-            sileo.success({ title: 'Alliance company deleted successfully' });
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['alliance-companies'] });
+            sileo.success({ title: 'Alliance company deleted successfully.' });
         },
-        onError: () => {
-            sileo.error({ title: 'Failed to delete Alliance company' });
+        onError: (error) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to delete alliance company.') });
         },
     });
+}
 
-    const restoreMutation = useMutation({
-        mutationFn: async (uuid: string) => {
-            await axios.patch(`/alliance-companies/data/${uuid}/restore`);
+export function useRestoreAllianceCompany() {
+    const queryClient = useQueryClient();
+
+    return useMutation<MutationMessageResponse, Error, string>({
+        mutationFn: async (uuid) => {
+            const { data } = await axios.patch<MutationMessageResponse>(
+                `/alliance-companies/data/admin/${uuid}/restore`,
+            );
+
+            return data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['alliance-companies'] });
-            sileo.success({ title: 'Alliance company restored successfully' });
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['alliance-companies'] });
+            sileo.success({ title: 'Alliance company restored successfully.' });
         },
-        onError: () => {
-            sileo.error({ title: 'Failed to restore Alliance company' });
+        onError: (error) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to restore alliance company.') });
         },
     });
+}
 
-    return {
-        createAllianceCompany: createMutation,
-        updateAllianceCompany: updateMutation,
-        deleteAllianceCompany: deleteMutation,
-        restoreAllianceCompany: restoreMutation,
-    };
-};
+export function useBulkDeleteAllianceCompanies() {
+    const queryClient = useQueryClient();
+
+    return useMutation<MutationMessageResponse, Error, string[]>({
+        mutationFn: async (uuids) => {
+            const { data } = await axios.post<MutationMessageResponse>(
+                '/alliance-companies/data/admin/bulk-delete',
+                { uuids },
+            );
+
+            return data;
+        },
+        onSuccess: async (response) => {
+            await queryClient.invalidateQueries({ queryKey: ['alliance-companies'] });
+            sileo.success({ title: response.message });
+        },
+        onError: (error) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to bulk delete alliance companies.') });
+        },
+    });
+}
