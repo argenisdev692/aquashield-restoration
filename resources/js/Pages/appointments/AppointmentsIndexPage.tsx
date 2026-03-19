@@ -6,6 +6,7 @@ import { DataTableBulkActions } from "@/shadcn/DataTableBulkActions";
 import { DeleteConfirmModal } from "@/shadcn/DeleteConfirmModal";
 import { RestoreConfirmModal } from "@/shadcn/RestoreConfirmModal";
 import { DataTableDateRangeFilter } from "@/common/data-table/DataTableDateRangeFilter";
+import { ExportButton } from "@/common/export/ExportButton";
 import {
     useBulkDeleteAppointments,
     useDeleteAppointment,
@@ -29,6 +30,7 @@ export default function AppointmentsIndexPage(): React.JSX.Element {
     const [pendingDelete, setPendingDelete] = React.useState<{ uuid: string; name: string } | null>(null);
     const [pendingRestore, setPendingRestore] = React.useState<{ uuid: string; name: string } | null>(null);
     const [, startTransition] = React.useTransition();
+    const [isPendingExport, startExportTransition] = React.useTransition();
 
     const { data, isPending } = useAppointments(filters);
     const deleteAppointment = useDeleteAppointment();
@@ -81,6 +83,20 @@ export default function AppointmentsIndexPage(): React.JSX.Element {
 
         await bulkDeleteAppointments.mutateAsync(selectedUuids);
         setRowSelection({});
+    }
+
+    function handleExport(format: 'excel' | 'pdf'): void {
+        startExportTransition(() => {
+            const params = new URLSearchParams();
+            if (filters.search) params.append('search', filters.search);
+            if (filters.status) params.append('status', filters.status);
+            if (filters.inspection_status) params.append('inspection_status', filters.inspection_status);
+            if (filters.status_lead) params.append('status_lead', filters.status_lead);
+            if (filters.date_from) params.append('date_from', filters.date_from);
+            if (filters.date_to) params.append('date_to', filters.date_to);
+            params.append('format', format);
+            window.open(`/appointments/data/admin/export?${params.toString()}`, '_blank');
+        });
     }
 
     function goToPage(page: number): void {
@@ -136,6 +152,10 @@ export default function AppointmentsIndexPage(): React.JSX.Element {
                                 </select>
 
                                 <DataTableDateRangeFilter dateFrom={filters.date_from} dateTo={filters.date_to} onChange={(range) => setFilters((current) => ({ ...current, date_from: range.dateFrom, date_to: range.dateTo, page: 1 }))} />
+
+                                <div className="hidden h-8 w-px sm:block" style={{ background: "var(--border-subtle)" }} />
+
+                                <ExportButton onExport={handleExport} isExporting={isPendingExport} />
                             </div>
                         </div>
                     </div>

@@ -6,6 +6,7 @@ import { DataTableBulkActions } from "@/shadcn/DataTableBulkActions";
 import { DeleteConfirmModal } from "@/shadcn/DeleteConfirmModal";
 import { RestoreConfirmModal } from "@/shadcn/RestoreConfirmModal";
 import { DataTableDateRangeFilter } from "@/common/data-table/DataTableDateRangeFilter";
+import { ExportButton } from "@/common/export/ExportButton";
 import {
     useBulkDeleteContactSupports,
     useDeleteContactSupport,
@@ -26,6 +27,7 @@ export default function ContactSupportsIndexPage(): React.JSX.Element {
     const [pendingDelete, setPendingDelete] = React.useState<{ uuid: string; name: string } | null>(null);
     const [pendingRestore, setPendingRestore] = React.useState<{ uuid: string; name: string } | null>(null);
     const [, startTransition] = React.useTransition();
+    const [isPendingExport, startExportTransition] = React.useTransition();
 
     const { data, isPending } = useContactSupports(filters);
     const deleteContactSupport = useDeleteContactSupport();
@@ -78,6 +80,19 @@ export default function ContactSupportsIndexPage(): React.JSX.Element {
 
         await bulkDeleteContactSupports.mutateAsync(selectedUuids);
         setRowSelection({});
+    }
+
+    function handleExport(format: 'excel' | 'pdf'): void {
+        startExportTransition(() => {
+            const params = new URLSearchParams();
+            if (filters.search) params.append('search', filters.search);
+            if (filters.status) params.append('status', filters.status);
+            if (filters.read_state) params.append('read_state', filters.read_state);
+            if (filters.date_from) params.append('date_from', filters.date_from);
+            if (filters.date_to) params.append('date_to', filters.date_to);
+            params.append('format', format);
+            window.open(`/contact-supports/data/admin/export?${params.toString()}`, '_blank');
+        });
     }
 
     function goToPage(page: number): void {
@@ -133,6 +148,10 @@ export default function ContactSupportsIndexPage(): React.JSX.Element {
                                     dateTo={filters.date_to}
                                     onChange={(range) => setFilters((current) => ({ ...current, date_from: range.dateFrom, date_to: range.dateTo, page: 1 }))}
                                 />
+
+                                <div className="hidden h-8 w-px sm:block" style={{ background: "var(--border-subtle)" }} />
+
+                                <ExportButton onExport={handleExport} isExporting={isPendingExport} />
                             </div>
                         </div>
                     </div>

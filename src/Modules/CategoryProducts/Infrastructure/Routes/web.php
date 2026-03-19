@@ -22,6 +22,7 @@ Route::middleware(['permission:UPDATE_CATEGORY_PRODUCT'])->group(function (): vo
 Route::prefix('/category-products/data/admin')->group(function (): void {
     Route::middleware(['permission:READ_CATEGORY_PRODUCT'])->group(function (): void {
         Route::get('/', [CategoryProductController::class, 'index']);
+        Route::get('/export', [CategoryProductController::class, 'export']);
         Route::get('/{uuid}', [CategoryProductController::class, 'show'])->whereUuid('uuid');
     });
 

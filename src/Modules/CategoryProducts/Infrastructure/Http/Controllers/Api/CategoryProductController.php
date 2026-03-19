@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace Src\Modules\CategoryProducts\Infrastructure\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use RuntimeException;
+use Shared\Infrastructure\Export\SimpleTableExportResponder;
 use Src\Modules\CategoryProducts\Application\Commands\BulkDeleteCategoryProductHandler;
 use Src\Modules\CategoryProducts\Application\Commands\CreateCategoryProductHandler;
 use Src\Modules\CategoryProducts\Application\Commands\DeleteCategoryProductHandler;
@@ -21,6 +25,8 @@ use Src\Modules\CategoryProducts\Application\Queries\ListCategoryProductsHandler
 use Src\Modules\CategoryProducts\Infrastructure\Http\Requests\BulkDeleteCategoryProductRequest;
 use Src\Modules\CategoryProducts\Infrastructure\Http\Requests\StoreCategoryProductRequest;
 use Src\Modules\CategoryProducts\Infrastructure\Http\Requests\UpdateCategoryProductRequest;
+use Src\Modules\CategoryProducts\Infrastructure\Persistence\Eloquent\Models\CategoryProductEloquentModel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final class CategoryProductController extends Controller
 {
@@ -37,6 +43,26 @@ final class CategoryProductController extends Controller
                 'total' => $categoryProducts->total(),
             ],
         ]);
+    }
+
+    public function export(Request $request, SimpleTableExportResponder $exportResponder): Response|BinaryFileResponse
+    {
+        $filters = CategoryProductFilterData::from($request->query());
+        $rows = $this->buildExportQuery($filters)->get()->map(
+            static fn (CategoryProductEloquentModel $categoryProduct): array => [
+                $categoryProduct->category_product_name,
+                $categoryProduct->created_at?->format('Y-m-d H:i:s') ?? '-',
+                $categoryProduct->deleted_at?->format('Y-m-d H:i:s') ?? '-',
+            ],
+        )->all();
+
+        return $exportResponder->download(
+            $request,
+            'Category Products Report',
+            'category-products-' . now()->format('Y-m-d'),
+            ['Category Product', 'Created At', 'Deleted At'],
+            $rows,
+        );
     }
 
     public function show(string $uuid, GetCategoryProductHandler $handler): JsonResponse
@@ -93,5 +119,23 @@ final class CategoryProductController extends Controller
             'message' => "Successfully deleted {$deletedCount} category product record(s).",
             'deleted_count' => $deletedCount,
         ]);
+    }
+
+    private function buildExportQuery(CategoryProductFilterData $filters): Builder
+    {
+        return CategoryProductEloquentModel::query()
+            ->withTrashed()
+            ->select([
+                'category_product_name',
+                'created_at',
+                'deleted_at',
+            ])
+            ->when($filters->search, static fn (Builder $builder, string $search): Builder => $builder->where('category_product_name', 'like', "%{$search}%"))
+            ->when($filters->status === 'active', static fn (Builder $builder): Builder => $builder->whereNull('deleted_at'))
+            ->when($filters->status === 'deleted', static fn (Builder $builder): Builder => $builder->onlyTrashed())
+            ->when($filters->dateFrom, static fn (Builder $builder, string $dateFrom): Builder => $builder->whereDate('created_at', '>=', $dateFrom))
+            ->when($filters->dateTo, static fn (Builder $builder, string $dateTo): Builder => $builder->whereDate('created_at', '<=', $dateTo))
+            ->orderBy('category_product_name')
+            ->orderByDesc('created_at');
     }
 }

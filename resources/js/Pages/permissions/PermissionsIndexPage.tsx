@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
-import { useAuthContext } from '@/modules/auth/context/AuthContext';
 import { useAccessRoles, usePermissionCatalog, useUserAccess, useUserSearch } from '@/modules/access-control/hooks/useAccessControl';
 import { useAccessControlMutations } from '@/modules/access-control/hooks/useAccessControlMutations';
 import type { AccessRoleItem, PermissionCatalogItem, UserSearchResult } from '@/modules/access-control/types';
+import type { AuthPageProps } from '@/types/auth';
 import { Search, ShieldCheck, UserCog, KeyRound } from 'lucide-react';
 import axios from 'axios';
 
@@ -46,7 +46,9 @@ function toggleValue(values: string[], value: string): string[] {
 }
 
 export default function PermissionsIndexPage(): React.JSX.Element {
-  const { permissions: currentPermissions, isSuperAdmin } = useAuthContext();
+  const { auth } = usePage<AuthPageProps>().props;
+  const currentPermissions = auth.user?.permissions ?? [];
+  const isSuperAdmin = (auth.user?.roles ?? []).includes('SUPER_ADMIN');
   const [activeTab, setActiveTab] = React.useState<AccessTab>('catalog');
   const [permissionSearch, setPermissionSearch] = React.useState<string>('');
   const [newPermissionName, setNewPermissionName] = React.useState<string>('');
@@ -257,10 +259,10 @@ export default function PermissionsIndexPage(): React.JSX.Element {
                 <div className="grid gap-3">
                   {permissionCatalogQuery.isPending ? (
                     <div className="rounded-2xl border border-(--border-default) px-4 py-8 text-sm text-(--text-muted)">Loading permissions...</div>
-                  ) : permissions.length === 0 ? (
+                  ) : visiblePermissions.length === 0 ? (
                     <div className="rounded-2xl border border-(--border-default) px-4 py-8 text-sm text-(--text-muted)">No permissions found.</div>
                   ) : (
-                    permissions.map((permission: PermissionCatalogItem) => (
+                    visiblePermissions.map((permission: PermissionCatalogItem) => (
                       <div
                         key={permission.uuid}
                         className="flex flex-col gap-2 rounded-2xl border border-(--border-default) bg-(--bg-card) px-4 py-4 sm:flex-row sm:items-center sm:justify-between"

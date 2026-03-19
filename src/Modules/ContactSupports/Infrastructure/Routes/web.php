@@ -22,6 +22,7 @@ Route::middleware(['permission:UPDATE_CONTACT_SUPPORT'])->group(function (): voi
 Route::prefix('/contact-supports/data/admin')->group(function (): void {
     Route::middleware(['permission:READ_CONTACT_SUPPORT'])->group(function (): void {
         Route::get('/', [ContactSupportController::class, 'index']);
+        Route::get('/export', [ContactSupportController::class, 'export']);
         Route::get('/{uuid}', [ContactSupportController::class, 'show'])->whereUuid('uuid');
     });
 

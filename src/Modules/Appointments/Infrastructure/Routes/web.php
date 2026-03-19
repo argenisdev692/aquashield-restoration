@@ -22,6 +22,7 @@ Route::middleware(['permission:UPDATE_APPOINTMENT'])->group(function (): void {
 Route::prefix('/appointments/data/admin')->group(function (): void {
     Route::middleware(['permission:READ_APPOINTMENT'])->group(function (): void {
         Route::get('/', [AppointmentController::class, 'index']);
+        Route::get('/export', [AppointmentController::class, 'export']);
         Route::get('/{uuid}', [AppointmentController::class, 'show'])->whereUuid('uuid');
     });
 

@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace Src\Modules\Appointments\Infrastructure\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use RuntimeException;
+use Shared\Infrastructure\Export\SimpleTableExportResponder;
 use Src\Modules\Appointments\Application\Commands\BulkDeleteAppointmentHandler;
 use Src\Modules\Appointments\Application\Commands\CreateAppointmentHandler;
 use Src\Modules\Appointments\Application\Commands\DeleteAppointmentHandler;
@@ -21,6 +25,8 @@ use Src\Modules\Appointments\Application\Queries\ListAppointmentsHandler;
 use Src\Modules\Appointments\Infrastructure\Http\Requests\BulkDeleteAppointmentRequest;
 use Src\Modules\Appointments\Infrastructure\Http\Requests\StoreAppointmentRequest;
 use Src\Modules\Appointments\Infrastructure\Http\Requests\UpdateAppointmentRequest;
+use Src\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\AppointmentEloquentModel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final class AppointmentController extends Controller
 {
@@ -37,6 +43,31 @@ final class AppointmentController extends Controller
                 'total' => $appointments->total(),
             ],
         ]);
+    }
+
+    public function export(Request $request, SimpleTableExportResponder $exportResponder): Response|BinaryFileResponse
+    {
+        $filters = AppointmentFilterData::from($request->query());
+        $rows = $this->buildExportQuery($filters)->get()->map(
+            static fn (AppointmentEloquentModel $appointment): array => [
+                trim($appointment->first_name . ' ' . $appointment->last_name),
+                $appointment->phone,
+                $appointment->email,
+                $appointment->inspection_status,
+                $appointment->status_lead,
+                $appointment->inspection_date?->format('Y-m-d') ?? '-',
+                $appointment->created_at?->format('Y-m-d H:i:s') ?? '-',
+                $appointment->deleted_at?->format('Y-m-d H:i:s') ?? '-',
+            ],
+        )->all();
+
+        return $exportResponder->download(
+            $request,
+            'Appointments Report',
+            'appointments-' . now()->format('Y-m-d'),
+            ['Full Name', 'Phone', 'Email', 'Inspection Status', 'Lead Status', 'Inspection Date', 'Created At', 'Deleted At'],
+            $rows,
+        );
     }
 
     public function show(string $uuid, GetAppointmentHandler $handler): JsonResponse
@@ -93,5 +124,38 @@ final class AppointmentController extends Controller
             'message' => "Successfully deleted {$deletedCount} appointment record(s).",
             'deleted_count' => $deletedCount,
         ]);
+    }
+
+    private function buildExportQuery(AppointmentFilterData $filters): Builder
+    {
+        return AppointmentEloquentModel::query()
+            ->withTrashed()
+            ->select([
+                'first_name',
+                'last_name',
+                'phone',
+                'email',
+                'inspection_status',
+                'status_lead',
+                'inspection_date',
+                'created_at',
+                'deleted_at',
+            ])
+            ->when($filters->search, static function (Builder $builder, string $search): void {
+                $builder->where(static function (Builder $nested) use ($search): void {
+                    $nested->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) like ?", ["%{$search}%"]);
+                });
+            })
+            ->when($filters->inspectionStatus, static fn (Builder $builder, string $inspectionStatus): Builder => $builder->where('inspection_status', $inspectionStatus))
+            ->when($filters->statusLead, static fn (Builder $builder, string $statusLead): Builder => $builder->where('status_lead', $statusLead))
+            ->when($filters->status === 'active', static fn (Builder $builder): Builder => $builder->whereNull('deleted_at'))
+            ->when($filters->status === 'deleted', static fn (Builder $builder): Builder => $builder->onlyTrashed())
+            ->when($filters->dateFrom, static fn (Builder $builder, string $dateFrom): Builder => $builder->whereDate('created_at', '>=', $dateFrom))
+            ->when($filters->dateTo, static fn (Builder $builder, string $dateTo): Builder => $builder->whereDate('created_at', '<=', $dateTo))
+            ->orderByDesc('created_at');
     }
 }

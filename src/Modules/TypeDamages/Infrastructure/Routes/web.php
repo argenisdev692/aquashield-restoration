@@ -22,6 +22,7 @@ Route::middleware(['permission:UPDATE_TYPE_DAMAGE'])->group(function (): void {
 Route::prefix('/type-damages/data/admin')->group(function (): void {
     Route::middleware(['permission:READ_TYPE_DAMAGE'])->group(function (): void {
         Route::get('/', [TypeDamageController::class, 'index']);
+        Route::get('/export', [TypeDamageController::class, 'export']);
         Route::get('/{uuid}', [TypeDamageController::class, 'show'])->whereUuid('uuid');
     });
 

@@ -55,7 +55,8 @@ import {
   FolderTree,
   AlertTriangle,
   CalendarRange,
-  MessageSquareText
+  MessageSquareText,
+  Bot
 } from 'lucide-react';
 
 const icSize = 18;
@@ -85,6 +86,7 @@ const IconTypeDamage = () => <AlertTriangle size={icSize} />;
 const IconClientIntake = () => <CalendarRange size={icSize} />;
 const IconAppointment = () => <CalendarRange size={icSize} />;
 const IconContactSupport = () => <MessageSquareText size={icSize} />;
+const IconAI = () => <Bot size={16} />;
 
 interface TooltipRect {
   left: number;
@@ -136,10 +138,10 @@ const NAV_ITEMS: NavItem[] = [
     icon: <IconCatalogs />,
     description: 'Reference data catalogs',
     children: [
-      { label: 'Cause of Losses', href: '/cause-of-losses', icon: <IconTypeDamage />, description: 'Cause of loss catalog', permission: 'READ_CAUSE_OF_LOSS' },
-      { label: 'Category Products', href: '/category-products', icon: <IconTags />, description: 'Product category catalog', permission: 'READ_CATEGORY_PRODUCT' },
-      { label: 'Type Damages', href: '/type-damages', icon: <IconTypeDamage />, description: 'Damage type catalog', permission: 'READ_TYPE_DAMAGE' },
-      { label: 'Products', href: '/products', icon: <IconPackage />, description: 'Product catalog', permission: 'READ_PRODUCT' },
+      { label: 'Cause of Losses', href: '/cause-of-losses', icon: <IconTypeDamage />, description: 'Cause of loss catalog', permission: ['READ_CAUSE_OF_LOSS', 'CREATE_CAUSE_OF_LOSS', 'UPDATE_CAUSE_OF_LOSS', 'DELETE_CAUSE_OF_LOSS', 'RESTORE_CAUSE_OF_LOSS'] },
+      { label: 'Category Products', href: '/category-products', icon: <IconTags />, description: 'Product category catalog', permission: ['READ_CATEGORY_PRODUCT', 'CREATE_CATEGORY_PRODUCT', 'UPDATE_CATEGORY_PRODUCT', 'DELETE_CATEGORY_PRODUCT', 'RESTORE_CATEGORY_PRODUCT'] },
+      { label: 'Type Damages', href: '/type-damages', icon: <IconTypeDamage />, description: 'Damage type catalog', permission: ['READ_TYPE_DAMAGE', 'CREATE_TYPE_DAMAGE', 'UPDATE_TYPE_DAMAGE', 'DELETE_TYPE_DAMAGE', 'RESTORE_TYPE_DAMAGE'] },
+      { label: 'Products', href: '/products', icon: <IconPackage />, description: 'Product catalog', permission: ['READ_PRODUCT', 'CREATE_PRODUCT', 'UPDATE_PRODUCT', 'DELETE_PRODUCT', 'RESTORE_PRODUCT'] },
     ]
   },
   {
@@ -147,8 +149,8 @@ const NAV_ITEMS: NavItem[] = [
     icon: <IconClientIntake />,
     description: 'Inbound leads and support requests',
     children: [
-      { label: 'Appointments', href: '/appointments', icon: <IconAppointment />, description: 'Manage appointment leads', permission: 'READ_APPOINTMENT' },
-      { label: 'Contact Supports', href: '/contact-supports', icon: <IconContactSupport />, description: 'Manage support contact requests', permission: 'READ_CONTACT_SUPPORT' },
+      { label: 'Appointments', href: '/appointments', icon: <IconAppointment />, description: 'Manage appointment leads', permission: ['READ_APPOINTMENT', 'CREATE_APPOINTMENT', 'UPDATE_APPOINTMENT', 'DELETE_APPOINTMENT', 'RESTORE_APPOINTMENT'] },
+      { label: 'Contact Supports', href: '/contact-supports', icon: <IconContactSupport />, description: 'Manage support contact requests', permission: ['READ_CONTACT_SUPPORT', 'CREATE_CONTACT_SUPPORT', 'UPDATE_CONTACT_SUPPORT', 'DELETE_CONTACT_SUPPORT', 'RESTORE_CONTACT_SUPPORT'] },
     ]
   },
   {
@@ -369,7 +371,7 @@ function AvatarDropdown(): React.JSX.Element {
   const hasPhoto = !!user?.profile_photo_path;
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative z-[70]">
       <button
         onClick={() => setOpen((p) => !p)}
         className="flex cursor-pointer items-center gap-2 rounded-lg p-1 pr-2 transition-all duration-150"
@@ -411,7 +413,7 @@ function AvatarDropdown(): React.JSX.Element {
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 top-full z-50 mt-2 w-48 rounded-xl p-1"
+          className="absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-56 rounded-xl p-1"
           style={{
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-default)',
@@ -456,7 +458,7 @@ function AvatarDropdown(): React.JSX.Element {
             onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'; }}
           >
             <IconSettings />
-            Settings
+            Profile Settings
           </Link>
 
           {/* Divider */}
@@ -617,20 +619,15 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapsed }: { onC
       {/* Logo + close arrow (arrow only visible on mobile) */}
       <div className={`flex h-[60px] items-center justify-between shrink-0 ${collapsed ? 'px-3' : 'px-5'}`}
         style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-        <div className="flex min-w-0 flex-1 items-center justify-center">
-          <div
-            className={`flex items-center justify-center rounded-xl ${collapsed ? 'h-10 w-10' : 'h-11 w-11'}`}
-            style={{
-              background: 'color-mix(in srgb, var(--bg-card) 84%, transparent)',
-              border: '1px solid var(--border-default)',
-              boxShadow: '0 14px 28px -22px color-mix(in srgb, var(--bg-base) 80%, transparent)',
-            }}
-          >
-            <img
-              src="/img/Logo PNG-WHITE.png"
-              alt="AquaShield CRM"
-              className={collapsed ? 'h-6 w-auto object-contain' : 'h-7 w-auto object-contain'}
-            />
+        <div className={`flex min-w-0 flex-1 items-center ${collapsed ? 'justify-center' : 'justify-start'}`}>
+          <div className="dashboard-brand-shell">
+            {!collapsed ? (
+              <img
+                src="/img/Logo PNG-WHITE.png"
+                alt="AquaShield CRM"
+                className="dashboard-brand-logo"
+              />
+            ) : null}
           </div>
         </div>
 
@@ -1005,7 +1002,7 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
 
         {/* ── Top Bar ── */}
         <header
-          className="sticky top-0 z-30 flex h-[60px] min-w-0 items-center justify-between gap-4 overflow-x-hidden px-4 md:px-6"
+          className="sticky top-0 z-30 flex h-[60px] min-w-0 items-center justify-between gap-4 px-4 md:px-6"
           style={{
             background: 'var(--bg-surface)',
             borderBottom: '1px solid var(--border-subtle)',
@@ -1024,18 +1021,42 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
 
           {/* Center: logo on mobile */}
           <div className="flex items-center gap-2 lg:hidden">
-            <span className="text-[13px] font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
-              AquaShield
+            <span
+              className="flex h-8 w-8 items-center justify-center rounded-lg"
+              style={{
+                background: 'color-mix(in srgb, var(--accent-primary) 14%, transparent)',
+                color: 'var(--accent-primary)',
+                border: '1px solid var(--border-default)',
+              }}
+            >
+              <IconAI />
             </span>
+            <img
+              src="/img/Logo PNG-WHITE.png"
+              alt="AquaShield CRM"
+              className="dashboard-brand-logo dashboard-brand-logo--compact"
+            />
           </div>
 
           <div className="hidden min-w-0 items-center lg:flex">
-            <div className="flex min-w-0 items-center gap-2">
+            <div className="flex min-w-0 items-center gap-3">
               <span
                 className="text-[12px] font-bold uppercase tracking-[0.28em]"
                 style={{ color: 'var(--accent-primary)', fontFamily: 'var(--font-sans)' }}
               >
                 CRM
+              </span>
+              <span
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                style={{
+                  background: 'color-mix(in srgb, var(--accent-primary) 14%, transparent)',
+                  color: 'var(--accent-primary)',
+                  border: '1px solid var(--border-default)',
+                }}
+                aria-label="AI"
+                title="AI"
+              >
+                <IconAI />
               </span>
               <span
                 className="truncate text-[13px] font-semibold uppercase tracking-[0.18em]"
@@ -1047,7 +1068,7 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
           </div>
 
           {/* Right side: search + avatar */}
-          <div className="ml-auto flex min-w-0 items-center gap-3">
+          <div className="ml-auto flex min-w-0 items-center gap-3 overflow-visible">
             <ExpandableSearch />
             <AvatarDropdown />
           </div>

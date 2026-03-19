@@ -6,6 +6,7 @@ import { DataTableBulkActions } from "@/shadcn/DataTableBulkActions";
 import { DeleteConfirmModal } from "@/shadcn/DeleteConfirmModal";
 import { RestoreConfirmModal } from "@/shadcn/RestoreConfirmModal";
 import { DataTableDateRangeFilter } from "@/common/data-table/DataTableDateRangeFilter";
+import { ExportButton } from "@/common/export/ExportButton";
 import {
     useBulkDeleteCategoryProducts,
     useDeleteCategoryProduct,
@@ -35,6 +36,7 @@ export default function CategoryProductsIndexPage(): React.JSX.Element {
         name: string;
     } | null>(null);
     const [, startTransition] = React.useTransition();
+    const [isPendingExport, startExportTransition] = React.useTransition();
 
     const { data, isPending } = useCategoryProducts(filters);
     const deleteCategoryProduct = useDeleteCategoryProduct();
@@ -92,6 +94,18 @@ export default function CategoryProductsIndexPage(): React.JSX.Element {
 
         await bulkDeleteCategoryProducts.mutateAsync(selectedUuids);
         setRowSelection({});
+    }
+
+    function handleExport(format: 'excel' | 'pdf'): void {
+        startExportTransition(() => {
+            const params = new URLSearchParams();
+            if (filters.search) params.append('search', filters.search);
+            if (filters.status) params.append('status', filters.status);
+            if (filters.date_from) params.append('date_from', filters.date_from);
+            if (filters.date_to) params.append('date_to', filters.date_to);
+            params.append('format', format);
+            window.open(`/category-products/data/admin/export?${params.toString()}`, '_blank');
+        });
     }
 
     function goToPage(page: number): void {
@@ -192,6 +206,10 @@ export default function CategoryProductsIndexPage(): React.JSX.Element {
                                         }))
                                     }
                                 />
+
+                                <div className="hidden h-8 w-px sm:block" style={{ background: "var(--border-subtle)" }} />
+
+                                <ExportButton onExport={handleExport} isExporting={isPendingExport} />
                             </div>
                         </div>
                     </div>

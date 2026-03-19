@@ -258,6 +258,23 @@ select {
     color: var(--accent-secondary);
 }
 
+.dashboard-brand-shell {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+}
+
+.dashboard-brand-logo {
+    width: auto;
+    height: 34px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--bg-base) 48%, transparent));
+}
+
+.dashboard-brand-logo--compact {
+    height: 28px;
+}
+
 /* ── Wave & Gradient Mesh Animations ── */
 @keyframes wave-slide {
     from { transform: translateX(0); }

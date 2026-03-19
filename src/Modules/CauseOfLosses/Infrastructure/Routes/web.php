@@ -22,6 +22,7 @@ Route::middleware(['permission:UPDATE_CAUSE_OF_LOSS'])->group(function (): void 
 Route::prefix('/cause-of-losses/data/admin')->group(function (): void {
     Route::middleware(['permission:READ_CAUSE_OF_LOSS'])->group(function (): void {
         Route::get('/', [CauseOfLossController::class, 'index']);
+        Route::get('/export', [CauseOfLossController::class, 'export']);
         Route::get('/{uuid}', [CauseOfLossController::class, 'show'])->whereUuid('uuid');
     });
 
