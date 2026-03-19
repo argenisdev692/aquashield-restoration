@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Modules\Users\Infrastructure\Persistence\Eloquent\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Str;
+use Modules\AccessControl\Infrastructure\Persistence\Eloquent\Models\PermissionEloquentModel;
+use Modules\AccessControl\Infrastructure\Persistence\Eloquent\Models\RoleEloquentModel;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * UsersPermissionsSeeder — Creates roles + permissions for the Users module.
@@ -19,7 +21,7 @@ final class UsersPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // ── Permissions ──
         $permissions = [
@@ -30,15 +32,24 @@ final class UsersPermissionsSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+            PermissionEloquentModel::firstOrCreate(
+                ['name' => $permission, 'guard_name' => 'web'],
+                ['uuid' => (string) Str::uuid()],
+            );
         }
 
         // ── Role ──
-        $role = Role::firstOrCreate(['name' => 'Users', 'guard_name' => 'web']);
+        $role = RoleEloquentModel::firstOrCreate(
+            ['name' => 'Users', 'guard_name' => 'web'],
+            ['uuid' => (string) Str::uuid()],
+        );
         $role->syncPermissions($permissions);
 
         // ── Also give Super Admin all permissions ──
-        $superAdmin = Role::firstOrCreate(['name' => 'SUPER_ADMIN', 'guard_name' => 'web']);
+        $superAdmin = RoleEloquentModel::firstOrCreate(
+            ['name' => 'SUPER_ADMIN', 'guard_name' => 'web'],
+            ['uuid' => (string) Str::uuid()],
+        );
         $superAdmin->givePermissionTo($permissions);
     }
 }
