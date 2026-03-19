@@ -68,7 +68,8 @@ src/
             │   │       └── Admin{YourEntity}Controller.php
             │   ├── Requests/
             │   │   ├── Store{YourEntity}Request.php
-            │   │   └── Update{YourEntity}Request.php
+            │   │   ├── Update{YourEntity}Request.php
+            │   │   └── Export{YourEntity}Request.php
             │   └── Resources/
             │       └── {YourEntity}Resource.php
             ├── Export/
@@ -114,6 +115,7 @@ src/
 - One page controller plus one admin data controller is enough for most modules.
 - One service provider that binds the repository and loads routes is enough.
 - One export controller plus one Excel export and one PDF export are enough when the module explicitly requires exports.
+- One dedicated `Export{YourEntity}Request` is enough to validate export query params when the module exposes export endpoints.
 - One `bulk delete` handler is enough when mass selection exists in the UI.
 - Keep the folder depth low so the create/list/update flow is traceable in under a minute.
 
@@ -147,6 +149,7 @@ Add these only when the module genuinely requires them:
 - `Infrastructure/Queue/`
 - `Infrastructure/WebSocket/`
 - `Infrastructure/Export/` with `ExcelExport`, `PdfExport`, `ExportController`, and Blade PDF view
+- `Infrastructure/Http/Requests/Export{YourEntity}Request.php` when export query params need validation
 - `Infrastructure/ExternalServices/`
 - `Application/Policies/`
 - `Application/Listeners/`
@@ -177,6 +180,8 @@ Canonical responsibility set:
 
 - Exports are optional in simple CRUD, not mandatory by default.
 - If exports are requested, keep them minimal and reuse the same `{YourEntity}FilterData` / filter DTO used by the list flow.
+- Add one dedicated `Export{YourEntity}Request` to validate export query params such as `format`, `date_from`, `date_to`, and any module-specific filters.
+- The export controller/action should consume `validated()` from `Export{YourEntity}Request`, not raw query input.
 - Support both Excel and PDF only when the request/module scope explicitly includes exports.
 - The export route must be declared before `/{uuid}` in the routes file.
 - Do not introduce extra adapters or abstractions for exports unless the module has a real second export use-case.
@@ -211,7 +216,7 @@ Canonical responsibility set:
   - Add feature coverage for `bulk delete` when the module exposes that endpoint.
   - Unit tests only for custom Value Objects or domain invariants.
   - Integration tests only when mapper logic, casts, scopes, or persistence rules are non-trivial.
-  - If exports exist, add feature coverage for Excel/PDF export flow and keep the same `FilterDTO` contract.
+  - If exports exist, add feature coverage for Excel/PDF export flow, validate the `Export{YourEntity}Request` contract, and keep the same `FilterDTO` contract.
 
 ---
 
@@ -240,7 +245,7 @@ If a reviewer cannot identify all of these quickly, the module is too complex fo
 - where the repository is bound,
 - where the mapper converts domain ↔ persistence,
 - where the `ServiceProvider` binds the port to the repository,
-- and, if applicable, where export entry points and Blade PDF views are registered,
+- and, if applicable, where export entry points, `Export{YourEntity}Request`, and Blade PDF views are registered,
 - and where the routes are registered.
 
 For language, PHP 8.5 syntax, route conventions, security rules, exports, and observability rules, always defer to `BACKEND-PHP.md`.
