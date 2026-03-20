@@ -3,6 +3,11 @@
 # Script de inicio para Railway
 set -e
 
+if [ -n "$RAILWAY_PUBLIC_DOMAIN" ]; then
+  export APP_URL="https://${RAILWAY_PUBLIC_DOMAIN}"
+  export ASSET_URL="${APP_URL}"
+fi
+
 # Esperar a que la base de datos esté disponible
 echo "Esperando a la base de datos..."
 while ! nc -z $DB_HOST $DB_PORT; do
