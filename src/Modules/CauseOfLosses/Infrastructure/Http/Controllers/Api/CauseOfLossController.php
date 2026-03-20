@@ -65,6 +65,7 @@ final class CauseOfLossController extends Controller
             'cause-of-losses-' . now()->format('Y-m-d'),
             ['Cause of Loss', 'Description', 'Severity', 'Created At', 'Deleted At'],
             $rows,
+            'exports.pdf.cause_of_losses',
         );
     }
 

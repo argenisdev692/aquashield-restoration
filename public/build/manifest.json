@@ -1,6 +1,14 @@
 {
+  "_inertia-Brn7VwNO.js": {
+    "file": "assets/inertia-Brn7VwNO.js",
+    "name": "inertia"
+  },
+  "_vendor-l0sNRNKZ.js": {
+    "file": "assets/vendor-l0sNRNKZ.js",
+    "name": "vendor"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-DSPkiBY6.css",
+    "file": "assets/app-Zrgiw5RA.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -9,13 +17,16 @@
     ]
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-CPcI7dKd.js",
+    "file": "assets/app-BxhITt0c.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
+    "imports": [
+      "_inertia-Brn7VwNO.js"
+    ],
     "css": [
       "assets/app-Dd-8fP5R.css",
-      "assets/app-DSPkiBY6.css"
+      "assets/app-Zrgiw5RA.css"
     ]
   }
 }

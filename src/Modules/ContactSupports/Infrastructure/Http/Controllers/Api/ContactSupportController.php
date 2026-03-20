@@ -67,6 +67,7 @@ final class ContactSupportController extends Controller
             'contact-supports-' . now()->format('Y-m-d'),
             ['Full Name', 'Email', 'Phone', 'SMS Consent', 'Read Status', 'Created At', 'Deleted At'],
             $rows,
+            'exports.pdf.contact_supports',
         );
     }
 

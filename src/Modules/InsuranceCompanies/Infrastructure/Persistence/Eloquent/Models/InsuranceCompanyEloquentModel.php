@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\InsuranceCompanies\Infrastructure\Persistence\Eloquent\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,8 +13,14 @@ use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * InsuranceCompanyEloquentModel
+ *
+ * @internal — Infrastructure only. Use InsuranceCompanyRepositoryPort.
+ */
 final class InsuranceCompanyEloquentModel extends Model
 {
+    use HasFactory;
     use SoftDeletes;
     use LogsActivity;
 
@@ -30,27 +37,13 @@ final class InsuranceCompanyEloquentModel extends Model
         'user_id',
     ];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
-    ];
-
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly([
-                'insurance_company_name',
-                'address',
-                'address_2',
-                'phone',
-                'email',
-                'website',
-                'user_id',
-            ])
+            ->logOnly(['insurance_company_name', 'address', 'address_2', 'phone', 'email', 'website', 'user_id'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->useLogName('insurance_companies.insurance_company');
+            ->useLogName('crm.insurance_companies');
     }
 
     public function user(): BelongsTo
@@ -65,10 +58,16 @@ final class InsuranceCompanyEloquentModel extends Model
                 $nested->where('insurance_company_name', 'like', "%{$term}%")
                     ->orWhere('email', 'like', "%{$term}%")
                     ->orWhere('phone', 'like', "%{$term}%")
-                    ->orWhere('website', 'like', "%{$term}%")
                     ->orWhere('address', 'like', "%{$term}%")
-                    ->orWhere('address_2', 'like', "%{$term}%");
+                    ->orWhere('address_2', 'like', "%{$term}%")
+                    ->orWhere('website', 'like', "%{$term}%");
             });
         });
+    }
+
+    public function scopeInDateRange(Builder $query, ?string $from, ?string $to): Builder
+    {
+        return $query->when($from, fn (Builder $builder): Builder => $builder->whereDate('created_at', '>=', $from))
+            ->when($to, fn (Builder $builder): Builder => $builder->whereDate('created_at', '<=', $to));
     }
 }

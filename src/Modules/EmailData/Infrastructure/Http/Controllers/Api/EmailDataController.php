@@ -67,6 +67,7 @@ final class EmailDataController extends Controller
             'email-data-' . now()->format('Y-m-d'),
             ['Email', 'Type', 'Phone', 'Description', 'User ID', 'Created At', 'Deleted At'],
             $rows,
+            'exports.pdf.email_data',
         );
     }
 

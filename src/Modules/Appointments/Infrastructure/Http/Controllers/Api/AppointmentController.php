@@ -68,6 +68,7 @@ final class AppointmentController extends Controller
             'appointments-' . now()->format('Y-m-d'),
             ['Full Name', 'Phone', 'Email', 'Inspection Status', 'Lead Status', 'Inspection Date', 'Created At', 'Deleted At'],
             $rows,
+            'exports.pdf.appointments',
         );
     }
 

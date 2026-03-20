@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Modules\InsuranceCompanies\Infrastructure\Http\Controllers\Api\InsuranceCompanyController;
+use Modules\InsuranceCompanies\Infrastructure\Http\Controllers\Api\InsuranceCompanyExportController;
 use Modules\InsuranceCompanies\Infrastructure\Http\Controllers\Web\InsuranceCompanyPageController;
 
 Route::middleware(['permission:READ_INSURANCE_COMPANY'])->group(function (): void {
@@ -21,6 +22,7 @@ Route::middleware(['permission:UPDATE_INSURANCE_COMPANY'])->group(function (): v
 
 Route::prefix('/insurance-companies/data/admin')->group(function (): void {
     Route::middleware(['permission:READ_INSURANCE_COMPANY'])->group(function (): void {
+        Route::get('/export', InsuranceCompanyExportController::class);
         Route::get('/', [InsuranceCompanyController::class, 'index']);
         Route::get('/{uuid}', [InsuranceCompanyController::class, 'show'])->whereUuid('uuid');
     });

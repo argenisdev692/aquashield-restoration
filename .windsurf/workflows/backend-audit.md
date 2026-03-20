@@ -140,6 +140,9 @@ For each item mark ✅ PASS, ❌ FAIL (with file:line and brief description), �
 **Exports (§8) — if the module scope includes exports**
 
 - [ ] `ExcelExport` implements `FromQuery, WithHeadings, WithMapping, ShouldAutoSize`
+- [ ] Every CRUD PDF export has its own Blade under `resources/views/exports/pdf/`
+- [ ] Soft-deletable CRUD PDF exports show a `Status` column derived only from `deleted_at`
+- [ ] Soft-deletable CRUD PDF exports use only `Active` / `Suspended` labels, never `Inactive`
 - [ ] Export route registered BEFORE `/{uuid}` in routes file
 - [ ] Same `FilterDTO` reused for both Excel and PDF
 

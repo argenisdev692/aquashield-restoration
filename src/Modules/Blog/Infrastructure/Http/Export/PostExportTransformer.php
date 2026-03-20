@@ -34,7 +34,7 @@ final class PostExportTransformer
             'slug' => $post->post_title_slug,
             'category' => $post->category?->blog_category_name,
             'publication_status' => $post->post_status,
-            'status' => $post->deleted_at !== null ? 'Inactive' : 'Active',
+            'status' => $post->deleted_at !== null ? 'Suspended' : 'Active',
             'published_at' => $post->published_at?->toIso8601String(),
             'created_at' => $post->created_at?->toIso8601String(),
         ];
@@ -48,9 +48,10 @@ final class PostExportTransformer
             'slug' => $post->post_title_slug,
             'category' => $post->category?->blog_category_name,
             'publication_status' => $post->post_status,
-            'status' => $post->deleted_at !== null ? 'Inactive' : 'Active',
+            'status' => $post->deleted_at !== null ? 'Suspended' : 'Active',
             'published_at' => $post->published_at?->toIso8601String(),
             'created_at' => $post->created_at?->toIso8601String(),
+            'deleted_at' => $post->deleted_at?->toIso8601String(),
         ];
     }
 

@@ -12,12 +12,12 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final class SimpleTableExportResponder
 {
-    public function download(Request $request, string $title, string $filename, array $headings, array $rows): Response|BinaryFileResponse
+    public function download(Request $request, string $title, string $filename, array $headings, array $rows, ?string $pdfView = null): Response|BinaryFileResponse
     {
         $format = (string) $request->query('format', 'excel');
 
         if ($format === 'pdf') {
-            return Pdf::loadView('shared.exports.simple-table', [
+            return Pdf::loadView($pdfView ?? 'shared.exports.simple-table', [
                 'title' => $title,
                 'headings' => $headings,
                 'rows' => $rows,

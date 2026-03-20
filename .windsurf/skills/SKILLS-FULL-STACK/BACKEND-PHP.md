@@ -669,6 +669,10 @@ Route::middleware(['auth:sanctum', 'role:super-admin'])->prefix('/api/{module}/a
 
 - [ ] `{YourEntity}ExcelExport.php` — `FromQuery`, `WithHeadings`, `WithMapping`, `ShouldAutoSize`
 - [ ] `{YourEntity}PdfExport.php` — DomPDF + Blade template
+- [ ] Every CRUD that includes PDF export MUST have its own dedicated Blade view under `resources/views/exports/pdf/`
+- [ ] PDF export Blade files MUST expose a `Status` column when the aggregate uses `SoftDeletes`
+- [ ] In PDF exports for soft-deletable CRUDs, status MUST be derived from `deleted_at` only: `Active` when `deleted_at === null`, `Suspended` when `deleted_at !== null`
+- [ ] Do NOT label soft-deleted rows as `Inactive` in CRUD exports
 - [ ] Both reuse same `FilterDTO`
 - [ ] `ExportController` + Blade view namespace registered
 
@@ -694,7 +698,7 @@ Route::middleware(['auth:sanctum', 'role:super-admin'])->prefix('/api/{module}/a
 **MANDATORY**: Every CRUD export (Excel and PDF) MUST include a human-readable `Status` column/cell for soft-delete state.
 
 - If `deleted_at` is `null`, export status MUST be `Active`.
-- If `deleted_at` is not `null`, export status MUST be `Inactive`.
+- If `deleted_at` is not `null`, export status MUST be `Suspended`.
 - If the module also has a business/editorial lifecycle state, it MUST remain in a separate column such as `Publication Status`.
 
 **MANDATORY**: Every phone value shown in exports (Excel and PDF) MUST be formatted as `(XXX) XXX-XXXX`.

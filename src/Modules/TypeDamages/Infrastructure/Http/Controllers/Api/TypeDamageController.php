@@ -65,6 +65,7 @@ final class TypeDamageController extends Controller
             'type-damages-' . now()->format('Y-m-d'),
             ['Type Damage', 'Description', 'Severity', 'Created At', 'Deleted At'],
             $rows,
+            'exports.pdf.type_damages',
         );
     }
 

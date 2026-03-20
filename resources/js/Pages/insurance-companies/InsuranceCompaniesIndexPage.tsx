@@ -12,6 +12,7 @@ import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
 import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
+import { ExportButton } from '@/common/export/ExportButton';
 
 type OptimisticInsuranceCompaniesAction =
     | { type: 'delete'; uuid: string; removeFromList: boolean }
@@ -29,6 +30,7 @@ export default function InsuranceCompaniesIndexPage(): React.JSX.Element {
     const [pendingDelete, setPendingDelete] = React.useState<{ uuid: string; name: string } | null>(null);
     const [pendingRestore, setPendingRestore] = React.useState<{ uuid: string; name: string } | null>(null);
     const [, startSearchTransition] = React.useTransition();
+    const [isPendingExport, startExportTransition] = React.useTransition();
 
     const { data, isPending, isError } = useInsuranceCompanies(filters);
     const companies = data?.data ?? [];
@@ -94,6 +96,31 @@ export default function InsuranceCompaniesIndexPage(): React.JSX.Element {
 
     function handleDeleteClick(uuid: string, name: string): void {
         setPendingDelete({ uuid, name });
+    }
+
+    function handleExport(format: 'excel' | 'pdf'): void {
+        startExportTransition(() => {
+            const params = new URLSearchParams();
+
+            if (filters.search) {
+                params.append('search', filters.search);
+            }
+
+            if (filters.status) {
+                params.append('status', filters.status);
+            }
+
+            if (filters.date_from) {
+                params.append('date_from', filters.date_from);
+            }
+
+            if (filters.date_to) {
+                params.append('date_to', filters.date_to);
+            }
+
+            params.append('format', format);
+            window.open(`/insurance-companies/data/admin/export?${params.toString()}`, '_blank');
+        });
     }
 
     function handleRestoreClick(uuid: string, name: string): void {
@@ -270,6 +297,10 @@ export default function InsuranceCompaniesIndexPage(): React.JSX.Element {
                                 <option value="active">Active</option>
                                 <option value="deleted">Deleted</option>
                             </select>
+
+                            <div className="hidden h-6 w-px sm:block" style={{ background: 'var(--border-subtle)' }} />
+
+                            <ExportButton onExport={handleExport} isExporting={isPendingExport} />
                         </div>
                     </div>
 

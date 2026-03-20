@@ -41,7 +41,7 @@ final class CompanyDataExportTransformer
             'phone' => PhoneHelper::format($company->phone),
             'address' => $company->address,
             'website' => $company->website,
-            'status' => $company->deleted_at !== null ? 'Inactive' : 'Active',
+            'status' => $company->deleted_at !== null ? 'Suspended' : 'Active',
             'created_at' => $company->created_at?->toIso8601String(),
             'deleted_at' => $company->deleted_at?->toIso8601String(),
         ];

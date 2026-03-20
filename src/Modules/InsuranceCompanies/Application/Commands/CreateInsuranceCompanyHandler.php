@@ -15,6 +15,7 @@ final class CreateInsuranceCompanyHandler
         private readonly InsuranceCompanyRepositoryPort $repository,
     ) {}
 
+    #[\NoDiscard]
     public function handle(StoreInsuranceCompanyData $data): string
     {
         $insuranceCompany = InsuranceCompany::create(

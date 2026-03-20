@@ -50,7 +50,7 @@ final class ProductPdfExport
 
         $products = $query->get();
 
-        return Pdf::loadView('exports.products', [
+        return Pdf::loadView('exports.pdf.products', [
             'products' => $products,
             'generatedAt' => now()->format('Y-m-d H:i:s'),
         ])->setPaper('a4', 'landscape');

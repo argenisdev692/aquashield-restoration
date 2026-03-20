@@ -89,6 +89,9 @@ Before generating files, produce a checklist and mark each item as:
 **Conditional Sections — only if explicitly requested**
 
 - [ ] Exports
+- [ ] If PDF export is requested for a CRUD, create a dedicated Blade under `resources/views/exports/pdf/`
+- [ ] If the CRUD uses `SoftDeletes`, PDF exports must show `Status` derived only from `deleted_at`: `Active` when `deleted_at === null`, `Suspended` when `deleted_at !== null`
+- [ ] `Inactive` is forbidden as the soft-delete label in CRUD PDF exports
 - [ ] File storage / uploads
 - [ ] API + OpenAPI annotations
 - [ ] Queue / events / listeners
@@ -108,6 +111,8 @@ Rules:
 - Keep controllers thin and business rules out of controllers.
 - Keep the domain model clean, but do not invent fake complexity.
 - If `bulk delete` is requested, keep it as one simple batch command over UUIDs, not as a separate sub-architecture.
+- If PDF export is requested, create a dedicated CRUD Blade under `resources/views/exports/pdf/`.
+- In soft-deletable CRUD PDF exports, derive `Status` only from `deleted_at` using `Active` / `Suspended` labels.
 - Use context7 to confirm package APIs before writing framework-specific files.
 - Use tavily when a security-sensitive or package-version-sensitive decision is involved.
 

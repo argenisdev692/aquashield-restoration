@@ -76,6 +76,9 @@ For each generated item mark ✅ DONE, ❌ SKIPPED (with reason) or ⚠️ WARN.
 **Exports (§8)**
 
 - [ ] `ExcelExport` implements `FromQuery, WithHeadings, WithMapping, ShouldAutoSize`
+- [ ] Every CRUD PDF export has its own Blade under `resources/views/exports/pdf/`
+- [ ] Soft-deletable CRUD PDF exports show a `Status` column derived only from `deleted_at`
+- [ ] Soft-deletable CRUD PDF exports use only `Active` / `Suspended` labels, never `Inactive`
 - [ ] Export route registered BEFORE `/{uuid}` in routes file
 - [ ] Same `FilterDTO` reused for both Excel and PDF
 

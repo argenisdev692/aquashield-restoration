@@ -63,6 +63,7 @@ final class CategoryProductController extends Controller
             'category-products-' . now()->format('Y-m-d'),
             ['Category Product', 'Created At', 'Deleted At'],
             $rows,
+            'exports.pdf.category_products',
         );
     }
 

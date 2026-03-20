@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { Link, usePage, router } from '@inertiajs/react';
 import type { AuthPageProps } from '@/types/auth';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
@@ -355,16 +356,58 @@ function AvatarDropdown(): React.JSX.Element {
   const { auth } = usePage<AuthPageProps>().props;
   const user = auth.user;
   const [open, setOpen] = React.useState<boolean>(false);
-  const ref = React.useRef<HTMLDivElement>(null);
+  const [dropdownPosition, setDropdownPosition] = React.useState<{ top: number; left: number } | null>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
 
-  // Close on outside click
-  React.useEffect(() => {
-    function handler(e: MouseEvent): void {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+  const updateDropdownPosition = React.useCallback((): void => {
+    if (buttonRef.current === null || typeof window === 'undefined') {
+      return;
     }
+
+    const rect = buttonRef.current.getBoundingClientRect();
+    const dropdownWidth = 256;
+    const maxLeft = Math.max(16, window.innerWidth - dropdownWidth - 16);
+    const left = Math.min(Math.max(16, rect.right - dropdownWidth), maxLeft);
+
+    setDropdownPosition({
+      top: rect.bottom + 8,
+      left,
+    });
+  }, []);
+
+  React.useEffect(() => {
+    function handler(event: MouseEvent): void {
+      const target = event.target as Node;
+
+      if (containerRef.current?.contains(target) || dropdownRef.current?.contains(target)) {
+        return;
+      }
+
+      setOpen(false);
+    }
+
     document.addEventListener('mousedown', handler);
+
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  React.useEffect(() => {
+    if (!open || typeof window === 'undefined') {
+      setDropdownPosition(null);
+      return;
+    }
+
+    updateDropdownPosition();
+    window.addEventListener('resize', updateDropdownPosition);
+    window.addEventListener('scroll', updateDropdownPosition, true);
+
+    return () => {
+      window.removeEventListener('resize', updateDropdownPosition);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+    };
+  }, [open, updateDropdownPosition]);
 
   const initials = [
     (user?.name?.[0] ?? 'U').toUpperCase(),
@@ -372,11 +415,85 @@ function AvatarDropdown(): React.JSX.Element {
   ].join('');
 
   const hasPhoto = !!user?.profile_photo_path;
+  const dropdownContent = open && dropdownPosition !== null && typeof document !== 'undefined'
+    ? createPortal(
+      <div
+        ref={dropdownRef}
+        className="fixed z-[160] w-64 rounded-xl p-1"
+        style={{
+          top: dropdownPosition.top,
+          left: dropdownPosition.left,
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-default)',
+          boxShadow: '0 20px 48px -24px color-mix(in srgb, var(--bg-base) 72%, transparent)',
+          backdropFilter: 'blur(18px)',
+        }}
+      >
+        <div
+          className="mb-1 rounded-lg px-3 py-2.5"
+          style={{ background: 'var(--bg-card)' }}
+        >
+          <p className="truncate text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>
+            {user?.name} {user?.last_name ?? ''}
+          </p>
+          <p className="truncate text-[11px]" style={{ color: 'var(--text-disabled)' }}>
+            {user?.email}
+          </p>
+        </div>
+
+        <Link
+          href="/profile"
+          prefetch
+          onClick={() => setOpen(false)}
+          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
+          style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}
+          onMouseEnter={(event) => { event.currentTarget.style.background = 'var(--bg-hover)'; }}
+          onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
+        >
+          <IconBuilding />
+          My Company
+        </Link>
+
+        <Link
+          href="/profile"
+          prefetch
+          onClick={() => setOpen(false)}
+          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
+          style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}
+          onMouseEnter={(event) => { event.currentTarget.style.background = 'var(--bg-hover)'; }}
+          onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
+        >
+          <IconSettings />
+          Profile Settings
+        </Link>
+
+        <div className="my-1 h-px" style={{ background: 'var(--border-subtle)' }} />
+
+        <button
+          onClick={() => router.post('/logout', {}, {
+            onSuccess: () => {
+              queryClient.clear();
+              router.visit('/login');
+            },
+          })}
+          className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
+          style={{ color: 'var(--accent-error)', fontFamily: 'var(--font-sans)' }}
+          onMouseEnter={(event) => { event.currentTarget.style.background = 'color-mix(in srgb, var(--accent-error) 10%, transparent)'; }}
+          onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
+        >
+          <IconLogout />
+          Sign out
+        </button>
+      </div>,
+      document.body,
+    )
+    : null;
 
   return (
-    <div ref={ref} className="relative z-[120]">
+    <div ref={containerRef} className="relative z-[120]">
       <button
-        onClick={() => setOpen((p) => !p)}
+        ref={buttonRef}
+        onClick={() => setOpen((previous) => !previous)}
         className="flex cursor-pointer items-center gap-2 rounded-lg p-1 pr-2 transition-all duration-150"
         style={{
           background: open ? 'var(--bg-hover)' : 'transparent',
@@ -385,7 +502,6 @@ function AvatarDropdown(): React.JSX.Element {
         }}
         aria-label="Account menu"
       >
-        {/* Avatar */}
         {hasPhoto ? (
           <img
             src={user!.profile_photo_path!}
@@ -403,7 +519,6 @@ function AvatarDropdown(): React.JSX.Element {
             {initials}
           </div>
         )}
-        {/* Name */}
         <span
           className="hidden text-[12px] font-semibold sm:block"
           style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}
@@ -413,79 +528,7 @@ function AvatarDropdown(): React.JSX.Element {
         <span style={{ color: 'var(--text-disabled)' }}><IconCaret /></span>
       </button>
 
-      {/* Dropdown */}
-      {open && (
-        <div
-          className="absolute right-0 top-[calc(100%+0.5rem)] z-[140] w-64 rounded-xl p-1"
-          style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-default)',
-            boxShadow: '0 20px 48px -24px color-mix(in srgb, var(--bg-base) 72%, transparent)',
-            backdropFilter: 'blur(18px)',
-          }}
-        >
-          {/* User info header */}
-          <div
-            className="mb-1 rounded-lg px-3 py-2.5"
-            style={{ background: 'var(--bg-card)' }}
-          >
-            <p className="text-[13px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
-              {user?.name} {user?.last_name ?? ''}
-            </p>
-            <p className="text-[11px] truncate" style={{ color: 'var(--text-disabled)' }}>
-              {user?.email}
-            </p>
-          </div>
-
-          {/* Company Identity → /profile (includes company data) */}
-          <Link
-            href="/profile"
-            prefetch
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
-            style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--bg-hover)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'; }}
-          >
-            <IconBuilding />
-            My Company
-          </Link>
-
-          {/* Settings → /profile */}
-          <Link
-            href="/profile"
-            prefetch
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
-            style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--bg-hover)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'; }}
-          >
-            <IconSettings />
-            Profile Settings
-          </Link>
-
-          {/* Divider */}
-          <div className="my-1 h-px" style={{ background: 'var(--border-subtle)' }} />
-
-          {/* Logout */}
-          <button
-            onClick={() => router.post('/logout', {}, {
-              onSuccess: () => {
-                queryClient.clear();
-                router.visit('/login');
-              },
-            })}
-            className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
-            style={{ color: 'var(--accent-error)', fontFamily: 'var(--font-sans)' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, var(--accent-error) 10%, transparent)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-          >
-            <IconLogout />
-            Sign out
-          </button>
-        </div>
-      )}
+      {dropdownContent}
     </div>
   );
 }
