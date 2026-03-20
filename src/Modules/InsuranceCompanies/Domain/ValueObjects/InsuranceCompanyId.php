@@ -4,12 +4,32 @@ declare(strict_types=1);
 
 namespace Modules\InsuranceCompanies\Domain\ValueObjects;
 
-use Shared\Domain\ValueObjects\Uuid as BaseUuid;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 
-final readonly class InsuranceCompanyId extends BaseUuid
+readonly class InsuranceCompanyId
 {
-    public function value(): string
+    private function __construct(
+        public UuidInterface $value,
+    ) {}
+
+    public static function generate(): self
     {
-        return $this->value;
+        return new self(Uuid::uuid4());
+    }
+
+    public static function fromString(string $uuid): self
+    {
+        return new self(Uuid::fromString($uuid));
+    }
+
+    public function toString(): string
+    {
+        return $this->value->toString();
+    }
+
+    public function equals(self $other): bool
+    {
+        return $this->value->equals($other->value);
     }
 }

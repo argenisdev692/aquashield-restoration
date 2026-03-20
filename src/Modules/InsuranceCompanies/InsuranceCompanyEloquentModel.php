@@ -28,6 +28,7 @@ final class InsuranceCompanyEloquentModel extends Model
         'uuid',
         'insurance_company_name',
         'address',
+        'address_2',
         'phone',
         'email',
         'website',
@@ -37,7 +38,7 @@ final class InsuranceCompanyEloquentModel extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['insurance_company_name', 'address', 'phone', 'email', 'website', 'user_id'])
+            ->logOnly(['insurance_company_name', 'address', 'address_2', 'phone', 'email', 'website', 'user_id'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('crm.insurance_companies');

@@ -4,19 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\InsuranceCompanies\Infrastructure\Http\Controllers\Web;
 
+use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
-use Modules\InsuranceCompanies\Application\Queries\GetInsuranceCompany\GetInsuranceCompanyHandler;
-use Modules\InsuranceCompanies\Application\Queries\GetInsuranceCompany\GetInsuranceCompanyQuery;
-use Modules\InsuranceCompanies\Infrastructure\Http\Resources\InsuranceCompanyResource;
+use Modules\InsuranceCompanies\Application\Queries\GetInsuranceCompanyHandler;
 
-final class InsuranceCompanyPageController
+final class InsuranceCompanyPageController extends Controller
 {
-    public function __construct(
-        private readonly GetInsuranceCompanyHandler $getHandler,
-    ) {
-    }
-
     public function index(): Response
     {
         return Inertia::render('insurance-companies/InsuranceCompaniesIndexPage');
@@ -27,21 +21,33 @@ final class InsuranceCompanyPageController
         return Inertia::render('insurance-companies/InsuranceCompanyCreatePage');
     }
 
-    public function show(string $uuid): Response
+    public function show(string $uuid, GetInsuranceCompanyHandler $handler): Response
     {
-        $insuranceCompany = $this->getHandler->handle(new GetInsuranceCompanyQuery($uuid));
+        $insuranceCompany = $handler->handle($uuid);
+
+        if ($insuranceCompany === null) {
+            abort(404);
+        }
 
         return Inertia::render('insurance-companies/InsuranceCompanyShowPage', [
-            'insuranceCompany' => new InsuranceCompanyResource($insuranceCompany),
+            'insuranceCompany' => [
+                'data' => $insuranceCompany,
+            ],
         ]);
     }
 
-    public function edit(string $uuid): Response
+    public function edit(string $uuid, GetInsuranceCompanyHandler $handler): Response
     {
-        $insuranceCompany = $this->getHandler->handle(new GetInsuranceCompanyQuery($uuid));
+        $insuranceCompany = $handler->handle($uuid);
+
+        if ($insuranceCompany === null) {
+            abort(404);
+        }
 
         return Inertia::render('insurance-companies/InsuranceCompanyEditPage', [
-            'insuranceCompany' => new InsuranceCompanyResource($insuranceCompany),
+            'insuranceCompany' => [
+                'data' => $insuranceCompany,
+            ],
         ]);
     }
 }

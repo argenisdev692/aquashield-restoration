@@ -10,19 +10,38 @@ use Modules\InsuranceCompanies\Infrastructure\Persistence\Eloquent\Models\Insura
 
 final class InsuranceCompanyMapper
 {
-    public static function toDomain(InsuranceCompanyEloquentModel $model): InsuranceCompany
+    public function toDomain(InsuranceCompanyEloquentModel $model): InsuranceCompany
     {
-        return new InsuranceCompany(
-            id: new InsuranceCompanyId($model->uuid),
+        return InsuranceCompany::reconstitute(
+            id: InsuranceCompanyId::fromString($model->uuid),
             insuranceCompanyName: $model->insurance_company_name,
             address: $model->address,
+            address2: $model->address_2,
             phone: $model->phone,
             email: $model->email,
             website: $model->website,
-            userId: $model->user_id,
-            createdAt: $model->created_at?->toIso8601String(),
-            updatedAt: $model->updated_at?->toIso8601String(),
+            userId: (int) $model->user_id,
+            createdAt: $model->created_at?->toIso8601String() ?? '',
+            updatedAt: $model->updated_at?->toIso8601String() ?? '',
             deletedAt: $model->deleted_at?->toIso8601String(),
         );
+    }
+
+    public function toEloquent(InsuranceCompany $insuranceCompany): InsuranceCompanyEloquentModel
+    {
+        $model = InsuranceCompanyEloquentModel::withTrashed()->firstOrNew([
+            'uuid' => $insuranceCompany->id()->toString(),
+        ]);
+
+        $model->uuid = $insuranceCompany->id()->toString();
+        $model->insurance_company_name = $insuranceCompany->insuranceCompanyName();
+        $model->address = $insuranceCompany->address();
+        $model->address_2 = $insuranceCompany->address2();
+        $model->phone = $insuranceCompany->phone();
+        $model->email = $insuranceCompany->email();
+        $model->website = $insuranceCompany->website();
+        $model->user_id = $insuranceCompany->userId();
+
+        return $model;
     }
 }

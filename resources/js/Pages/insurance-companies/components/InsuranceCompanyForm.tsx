@@ -1,15 +1,20 @@
 import * as React from 'react';
-import { useForm } from '@inertiajs/react';
-import { InsuranceCompany } from '@/modules/insurance-companies/types';
 import { type UserAddressAutocompleteValue, useGoogleMapsAddressAutocomplete } from '@/modules/users/hooks/useGoogleMapsAddressAutocomplete';
 import { PremiumField } from '@/shadcn/PremiumField';
 import { Plus, Save, X } from 'lucide-react';
+import type {
+    InsuranceCompanyFormData,
+    InsuranceCompanyFormErrors,
+} from '@/modules/insurance-companies/types';
 
 interface InsuranceCompanyFormProps {
-    initialData?: InsuranceCompany;
-    onSubmit: (data: Partial<InsuranceCompany>) => void;
+    data: InsuranceCompanyFormData;
+    errors: InsuranceCompanyFormErrors;
+    onChange: <K extends keyof InsuranceCompanyFormData>(field: K, value: InsuranceCompanyFormData[K]) => void;
+    onSubmit: () => void;
     isSubmitting: boolean;
     onCancel: () => void;
+    submitLabel: string;
 }
 
 function buildFullUsAddress(value: UserAddressAutocompleteValue): string {
@@ -20,57 +25,43 @@ function buildFullUsAddress(value: UserAddressAutocompleteValue): string {
 }
 
 export default function InsuranceCompanyForm({
-    initialData,
+    data,
+    errors,
+    onChange,
     onSubmit,
     isSubmitting,
     onCancel,
-}: InsuranceCompanyFormProps) {
-    const { data, setData, errors } = useForm({
-        insurance_company_name: initialData?.insurance_company_name || '',
-        address: initialData?.address || '',
-        phone: initialData?.phone || '',
-        email: initialData?.email || '',
-        website: initialData?.website || '',
-    });
-    const [address2, setAddress2] = React.useState<string>('');
+    submitLabel,
+}: InsuranceCompanyFormProps): React.JSX.Element {
     const addressInputRef = React.useRef<HTMLInputElement | null>(null);
     const address2InputRef = React.useRef<HTMLInputElement | null>(null);
 
     const handleAddressSelected = React.useCallback((value: UserAddressAutocompleteValue): void => {
-        setData('address', buildFullUsAddress(value));
-        setAddress2('');
+        onChange('address', buildFullUsAddress(value));
         window.setTimeout(() => {
             address2InputRef.current?.focus();
         }, 0);
-    }, [setData]);
+    }, [onChange]);
 
     const { isLoading, isReady, errorMessage } = useGoogleMapsAddressAutocomplete({
         inputRef: addressInputRef,
         onAddressSelected: handleAddressSelected,
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const address = [data.address ?? '', address2]
-            .map((segment) => segment.trim())
-            .filter((segment) => segment.length > 0)
-            .join(', ');
-
-        onSubmit({
-            ...data,
-            address: address.length > 0 ? address : data.address,
-        });
-    };
+    function handleFormSubmit(event: React.FormEvent<HTMLFormElement>): void {
+        event.preventDefault();
+        onSubmit();
+    }
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-8 p-8 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <form onSubmit={handleFormSubmit} className="flex flex-col gap-8 p-8">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                 <PremiumField
                     label="Insurance Company Name"
                     error={errors.insurance_company_name}
                     required
                     value={data.insurance_company_name}
-                    onChange={(e) => setData('insurance_company_name', e.target.value)}
+                    onChange={(event) => onChange('insurance_company_name', event.target.value)}
                     placeholder="e.g. State Farm"
                 />
 
@@ -78,16 +69,16 @@ export default function InsuranceCompanyForm({
                     label="Email Address"
                     error={errors.email}
                     type="email"
-                    value={data.email || ''}
-                    onChange={(e) => setData('email', e.target.value)}
+                    value={data.email}
+                    onChange={(event) => onChange('email', event.target.value)}
                     placeholder="e.g. claims@statefarm.com"
                 />
 
                 <PremiumField
                     label="Phone Number"
                     error={errors.phone}
-                    value={data.phone || ''}
-                    onChange={(e) => setData('phone', e.target.value)}
+                    value={data.phone}
+                    onChange={(event) => onChange('phone', event.target.value)}
                     placeholder="(555) 123-4567"
                 />
 
@@ -95,8 +86,8 @@ export default function InsuranceCompanyForm({
                     label="Website URL"
                     error={errors.website}
                     type="url"
-                    value={data.website || ''}
-                    onChange={(e) => setData('website', e.target.value)}
+                    value={data.website}
+                    onChange={(event) => onChange('website', event.target.value)}
                     placeholder="https://www.statefarm.com"
                 />
 
@@ -104,8 +95,8 @@ export default function InsuranceCompanyForm({
                     <PremiumField
                         label="Physical Address"
                         error={errors.address}
-                        value={data.address || ''}
-                        onChange={(e) => setData('address', e.target.value)}
+                        value={data.address}
+                        onChange={(event) => onChange('address', event.target.value)}
                         inputRef={addressInputRef}
                         autoComplete="street-address"
                         placeholder="Start typing a USA address"
@@ -115,8 +106,9 @@ export default function InsuranceCompanyForm({
                 <div className="md:col-span-2">
                     <PremiumField
                         label="Address 2"
-                        value={address2}
-                        onChange={(e) => setAddress2(e.target.value)}
+                        error={errors.address_2}
+                        value={data.address_2}
+                        onChange={(event) => onChange('address_2', event.target.value)}
                         inputRef={address2InputRef}
                         autoComplete="address-line2"
                         placeholder="Apartment, suite, unit, building, floor"
@@ -124,17 +116,17 @@ export default function InsuranceCompanyForm({
                 </div>
 
                 <div className="md:col-span-2">
-                    <p className="text-xs text-(--text-muted)">
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                         {errorMessage ?? (isReady ? 'Autocomplete limited to USA addresses. Address 2 remains manual.' : isLoading ? 'Loading Google Maps autocomplete...' : 'Google Maps autocomplete is preparing...')}
                     </p>
                 </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-6 border-t border-(--border-subtle)">
+            <div className="flex items-center justify-end gap-3 border-t pt-6" style={{ borderColor: 'var(--border-subtle)' }}>
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-6 py-2.5 rounded-xl text-sm font-bold text-(--text-muted) hover:bg-(--bg-hover) transition-all flex items-center gap-2"
+                    className="btn-ghost flex items-center gap-2 px-6 py-2.5 text-sm font-bold"
                 >
                     <X size={18} />
                     Cancel
@@ -142,14 +134,19 @@ export default function InsuranceCompanyForm({
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="bg-(--accent-primary) text-white font-bold py-2.5 px-8 rounded-xl hover:scale-[1.03] active:scale-[0.97] disabled:opacity-50 transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                    className="btn-primary flex items-center gap-2 px-8 py-2.5 text-sm font-bold disabled:opacity-50"
                 >
                     {isSubmitting ? (
-                        <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white" />
+                        <div
+                            className="h-5 w-5 animate-spin rounded-full border-b-2"
+                            style={{ borderColor: 'var(--text-primary)' }}
+                        />
+                    ) : submitLabel.startsWith('Update') ? (
+                        <Save size={18} />
                     ) : (
-                        initialData ? <Save size={18} /> : <Plus size={18} />
+                        <Plus size={18} />
                     )}
-                    <span>{initialData ? 'Update Company' : 'Create Company'}</span>
+                    <span>{submitLabel}</span>
                 </button>
             </div>
         </form>

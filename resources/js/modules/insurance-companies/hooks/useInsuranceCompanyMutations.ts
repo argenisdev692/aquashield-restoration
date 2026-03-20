@@ -1,73 +1,94 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { router } from '@inertiajs/react';
+import type { AxiosError } from 'axios';
 import { sileo } from 'sileo';
-import { InsuranceCompany } from '../types';
+import type {
+    CreateInsuranceCompanyPayload,
+    UpdateInsuranceCompanyPayload,
+} from '../types';
+
+function getErrorMessage(error: AxiosError | Error | unknown, fallback: string): string {
+    if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data as { message?: string } | undefined;
+
+        if (typeof responseData?.message === 'string' && responseData.message.length > 0) {
+            return responseData.message;
+        }
+    }
+
+    if (error instanceof Error && error.message.length > 0) {
+        return error.message;
+    }
+
+    return fallback;
+}
 
 export const useInsuranceCompanyMutations = () => {
     const queryClient = useQueryClient();
 
-    const createMutation = useMutation({
-        mutationFn: async (data: Partial<InsuranceCompany>) => {
-            const response = await axios.post('/insurance-companies/data/admin', data);
-            return response.data.data;
-        },
+    const createInsuranceCompany = useMutation({
+        mutationFn: (payload: CreateInsuranceCompanyPayload) => axios.post('/insurance-companies/data/admin', payload),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['insurance-companies'] });
             sileo.success({ title: 'Insurance company created successfully' });
-            router.visit('/insurance-companies');
+            queryClient.invalidateQueries({ queryKey: ['insurance-companies'] });
         },
-        onError: () => {
-            sileo.error({ title: 'Failed to create insurance company' });
+        onError: (error: AxiosError | Error | unknown) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to create insurance company') });
         },
     });
 
-    const updateMutation = useMutation({
-        mutationFn: async ({ uuid, data }: { uuid: string; data: Partial<InsuranceCompany> }) => {
-            const response = await axios.put(`/insurance-companies/data/admin/${uuid}`, data);
-            return response.data.data;
-        },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['insurance-companies'] });
-            queryClient.invalidateQueries({ queryKey: ['insurance-company', data.uuid] });
+    const updateInsuranceCompany = useMutation({
+        mutationFn: ({ uuid, payload }: { uuid: string; payload: UpdateInsuranceCompanyPayload }) =>
+            axios.put(`/insurance-companies/data/admin/${uuid}`, payload),
+        onSuccess: (_, variables) => {
             sileo.success({ title: 'Insurance company updated successfully' });
-            router.visit('/insurance-companies');
+            queryClient.invalidateQueries({ queryKey: ['insurance-companies'] });
+            queryClient.invalidateQueries({ queryKey: ['insurance-company', variables.uuid] });
         },
-        onError: () => {
-            sileo.error({ title: 'Failed to update insurance company' });
+        onError: (error: AxiosError | Error | unknown) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to update insurance company') });
         },
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: async (uuid: string) => {
-            await axios.delete(`/insurance-companies/data/admin/${uuid}`);
-        },
+    const deleteInsuranceCompany = useMutation({
+        mutationFn: (uuid: string) => axios.delete(`/insurance-companies/data/admin/${uuid}`),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['insurance-companies'] });
             sileo.success({ title: 'Insurance company deleted successfully' });
+            queryClient.invalidateQueries({ queryKey: ['insurance-companies'] });
         },
-        onError: () => {
-            sileo.error({ title: 'Failed to delete insurance company' });
+        onError: (error: AxiosError | Error | unknown) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to delete insurance company') });
         },
     });
 
-    const restoreMutation = useMutation({
-        mutationFn: async (uuid: string) => {
-            await axios.patch(`/insurance-companies/data/admin/${uuid}/restore`);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['insurance-companies'] });
+    const restoreInsuranceCompany = useMutation({
+        mutationFn: (uuid: string) => axios.patch(`/insurance-companies/data/admin/${uuid}/restore`),
+        onSuccess: (_, uuid) => {
             sileo.success({ title: 'Insurance company restored successfully' });
+            queryClient.invalidateQueries({ queryKey: ['insurance-companies'] });
+            queryClient.invalidateQueries({ queryKey: ['insurance-company', uuid] });
         },
-        onError: () => {
-            sileo.error({ title: 'Failed to restore insurance company' });
+        onError: (error: AxiosError | Error | unknown) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to restore insurance company') });
+        },
+    });
+
+    const bulkDeleteInsuranceCompanies = useMutation({
+        mutationFn: (uuids: string[]) => axios.post('/insurance-companies/data/admin/bulk-delete', { uuids }),
+        onSuccess: () => {
+            sileo.success({ title: 'Selected insurance companies deleted successfully' });
+            queryClient.invalidateQueries({ queryKey: ['insurance-companies'] });
+        },
+        onError: (error: AxiosError | Error | unknown) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to delete selected insurance companies') });
         },
     });
 
     return {
-        createInsuranceCompany: createMutation,
-        updateInsuranceCompany: updateMutation,
-        deleteInsuranceCompany: deleteMutation,
-        restoreInsuranceCompany: restoreMutation,
+        createInsuranceCompany,
+        updateInsuranceCompany,
+        deleteInsuranceCompany,
+        restoreInsuranceCompany,
+        bulkDeleteInsuranceCompanies,
     };
 };

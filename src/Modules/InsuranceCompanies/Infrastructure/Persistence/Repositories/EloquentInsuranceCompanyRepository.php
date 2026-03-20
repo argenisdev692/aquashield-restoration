@@ -12,93 +12,43 @@ use Modules\InsuranceCompanies\Infrastructure\Persistence\Mappers\InsuranceCompa
 
 final class EloquentInsuranceCompanyRepository implements InsuranceCompanyRepositoryPort
 {
-    private const SELECT_COLUMNS = [
-        'id',
-        'uuid',
-        'insurance_company_name',
-        'address',
-        'phone',
-        'email',
-        'website',
-        'user_id',
-        'created_at',
-        'updated_at',
-        'deleted_at',
-    ];
+    public function __construct(
+        private readonly InsuranceCompanyMapper $mapper,
+    ) {}
 
     public function find(InsuranceCompanyId $id): ?InsuranceCompany
     {
-        return $this->findByUuid($id->value());
-    }
-
-    public function findByUuid(string $uuid): ?InsuranceCompany
-    {
-        $model = InsuranceCompanyEloquentModel::query()
-            ->select(self::SELECT_COLUMNS)
-            ->where('uuid', $uuid)
+        $model = InsuranceCompanyEloquentModel::withTrashed()
+            ->where('uuid', $id->toString())
             ->first();
 
-        return $model ? InsuranceCompanyMapper::toDomain($model) : null;
+        return $model === null ? null : $this->mapper->toDomain($model);
     }
 
     public function save(InsuranceCompany $insuranceCompany): void
     {
-        InsuranceCompanyEloquentModel::query()->updateOrCreate(
-            ['uuid' => $insuranceCompany->getId()->value()],
-            [
-                'insurance_company_name' => $insuranceCompany->getInsuranceCompanyName(),
-                'address' => $insuranceCompany->getAddress(),
-                'phone' => $insuranceCompany->getPhone(),
-                'email' => $insuranceCompany->getEmail(),
-                'website' => $insuranceCompany->getWebsite(),
-                'user_id' => $insuranceCompany->getUserId(),
-            ]
-        );
+        $this->mapper->toEloquent($insuranceCompany)->save();
     }
 
-    public function delete(InsuranceCompanyId $id): void
+    public function softDelete(InsuranceCompanyId $id): void
     {
-        InsuranceCompanyEloquentModel::query()->where('uuid', $id->value())->delete();
+        InsuranceCompanyEloquentModel::where('uuid', $id->toString())->delete();
     }
 
     public function restore(InsuranceCompanyId $id): void
     {
-        InsuranceCompanyEloquentModel::query()->withTrashed()->where('uuid', $id->value())->restore();
+        InsuranceCompanyEloquentModel::withTrashed()
+            ->where('uuid', $id->toString())
+            ->restore();
     }
 
-    public function list(array $filters = []): array
+    public function bulkSoftDelete(array $ids): int
     {
-        $perPage = (int) ($filters['perPage'] ?? 15);
-        $page = (int) ($filters['page'] ?? 1);
+        $uuids = array_map(
+            static fn (InsuranceCompanyId $id): string => $id->toString(),
+            $ids,
+        );
 
-        $query = InsuranceCompanyEloquentModel::query()
-            ->select(self::SELECT_COLUMNS)
-            ->when(
-                $filters['search'] ?? null,
-                fn($q, $search) => $q->where('insurance_company_name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-            )
-            ->when(
-                ($filters['dateFrom'] ?? null) || ($filters['dateTo'] ?? null),
-                fn($q) => $q->inDateRange($filters['dateFrom'] ?? null, $filters['dateTo'] ?? null),
-            )
-            ->when(
-                isset($filters['onlyTrashed']) && $filters['onlyTrashed'] === 'true',
-                fn($q) => $q->onlyTrashed()
-            )
-            ->orderBy($filters['sortBy'] ?? 'created_at', $filters['sortDir'] ?? 'desc');
-
-        $paginator = $query->paginate(perPage: $perPage, page: $page);
-
-        return [
-            'data' => array_map(
-                fn(InsuranceCompanyEloquentModel $model) => InsuranceCompanyMapper::toDomain($model),
-                $paginator->items()
-            ),
-            'total' => $paginator->total(),
-            'perPage' => $paginator->perPage(),
-            'currentPage' => $paginator->currentPage(),
-            'lastPage' => $paginator->lastPage(),
-        ];
+        return InsuranceCompanyEloquentModel::whereIn('uuid', $uuids)->delete();
     }
 }

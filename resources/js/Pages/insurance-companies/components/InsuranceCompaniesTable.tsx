@@ -1,33 +1,38 @@
 import * as React from 'react';
-import { createColumnHelper, type ColumnDef, type RowSelectionState, type OnChangeFn } from '@tanstack/react-table';
 import { Link } from '@inertiajs/react';
+import {
+    createColumnHelper,
+    type ColumnDef,
+    type OnChangeFn,
+    type RowSelectionState,
+} from '@tanstack/react-table';
+import { CheckCircle, Eye, Pencil, Trash2 } from 'lucide-react';
 import { DataTable } from '@/shadcn/data-table';
-import { InsuranceCompany } from '@/modules/insurance-companies/types';
-import { useInsuranceCompanyMutations } from '@/modules/insurance-companies/hooks/useInsuranceCompanyMutations';
 import { formatDateShort } from '@/utils/dateFormatter';
-import { Eye, Pencil, Trash2, RotateCcw } from 'lucide-react';
+import type { InsuranceCompany } from '@/modules/insurance-companies/types';
 
 interface InsuranceCompaniesTableProps {
     data: InsuranceCompany[];
     isLoading: boolean;
     isError: boolean;
     onDelete: (uuid: string, name: string) => void;
-    rowSelection?: RowSelectionState;
-    onRowSelectionChange?: OnChangeFn<RowSelectionState>;
+    onRestore: (uuid: string, name: string) => void;
+    rowSelection: RowSelectionState;
+    onRowSelectionChange: OnChangeFn<RowSelectionState>;
 }
+
+const columnHelper = createColumnHelper<InsuranceCompany>();
 
 export default function InsuranceCompaniesTable({
     data,
     isLoading,
     isError,
     onDelete,
+    onRestore,
     rowSelection,
     onRowSelectionChange,
-}: InsuranceCompaniesTableProps) {
-    const columnHelper = createColumnHelper<InsuranceCompany>();
-    const { restoreInsuranceCompany } = useInsuranceCompanyMutations();
-
-    const columns = React.useMemo<ColumnDef<InsuranceCompany, any>[]>(() => [
+}: InsuranceCompaniesTableProps): React.JSX.Element {
+    const columns = React.useMemo<ColumnDef<InsuranceCompany, unknown>[]>(() => [
         columnHelper.display({
             id: 'select',
             header: ({ table }) => (
@@ -35,8 +40,8 @@ export default function InsuranceCompaniesTable({
                     type="checkbox"
                     checked={table.getIsAllPageRowsSelected()}
                     onChange={table.getToggleAllPageRowsSelectedHandler()}
-                    aria-label="Select all"
-                    className="h-4 w-4 rounded border-gray-300 accent-(--accent-primary) cursor-pointer"
+                    aria-label="Select all insurance companies"
+                    style={{ accentColor: 'var(--accent-primary)' }}
                 />
             ),
             cell: ({ row }) => (
@@ -44,34 +49,44 @@ export default function InsuranceCompaniesTable({
                     type="checkbox"
                     checked={row.getIsSelected()}
                     onChange={row.getToggleSelectedHandler()}
-                    aria-label="Select row"
-                    className="h-4 w-4 rounded border-gray-300 accent-(--accent-primary) cursor-pointer"
+                    aria-label={`Select ${row.original.insurance_company_name}`}
+                    disabled={row.original.deleted_at !== null}
+                    style={{ accentColor: 'var(--accent-primary)' }}
                 />
             ),
         }),
         columnHelper.accessor('insurance_company_name', {
             header: 'Company Name',
-            cell: (info) => <span className="font-semibold text-(--text-primary)">{info.getValue()}</span>,
+            cell: (info) => (
+                <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    {info.getValue()}
+                </span>
+            ),
         }),
         columnHelper.accessor('email', {
             header: 'Email',
-            cell: (info) => info.getValue() || '—',
+            cell: (info) => info.getValue() ?? '—',
         }),
         columnHelper.accessor('phone', {
             header: 'Phone',
-            cell: (info) => info.getValue() || '—',
+            cell: (info) => info.getValue() ?? '—',
         }),
         columnHelper.accessor('website', {
             header: 'Website',
             cell: (info) => {
                 const url = info.getValue();
-                if (!url) return '—';
+
+                if (!url) {
+                    return '—';
+                }
+
                 return (
-                    <a 
-                        href={url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-(--accent-primary) hover:underline font-medium"
+                    <a
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: 'var(--accent-primary)' }}
+                        className="font-medium hover:underline"
                     >
                         Visit
                     </a>
@@ -81,7 +96,7 @@ export default function InsuranceCompaniesTable({
         columnHelper.accessor('created_at', {
             header: 'Created',
             cell: (info) => (
-                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>
                     {formatDateShort(info.getValue())}
                 </span>
             ),
@@ -89,52 +104,61 @@ export default function InsuranceCompaniesTable({
         columnHelper.display({
             id: 'actions',
             header: 'Actions',
-            cell: (info) => {
-                const company = info.row.original;
-                const isDeleted = !!company.deleted_at;
+            cell: ({ row }) => {
+                const company = row.original;
+                const isDeleted = company.deleted_at !== null;
 
                 return (
-                    <div className="flex items-center justify-center gap-1.5">
-                        <Link 
+                    <div className="flex items-center justify-center gap-2">
+                        <Link
                             href={`/insurance-companies/${company.uuid}`}
-                            className="btn-action btn-action-view"
-                            title="View Carrier"
+                            prefetch
+                            aria-label={`View ${company.insurance_company_name}`}
+                            title="View"
+                            className="btn-ghost flex h-9 w-9 items-center justify-center rounded-lg"
                         >
-                            <Eye size={14} />
+                            <Eye size={16} />
                         </Link>
-                        
-                        {!isDeleted ? (
+
+                        {isDeleted ? (
+                            <button
+                                type="button"
+                                onClick={() => onRestore(company.uuid, company.insurance_company_name)}
+                                aria-label={`Restore ${company.insurance_company_name}`}
+                                title="Restore"
+                                className="btn-ghost flex h-9 w-9 items-center justify-center rounded-lg"
+                                style={{ color: 'var(--accent-success)' }}
+                            >
+                                <CheckCircle size={16} />
+                            </button>
+                        ) : (
                             <>
-                                <Link 
+                                <Link
                                     href={`/insurance-companies/${company.uuid}/edit`}
-                                    className="btn-action btn-action-edit"
-                                    title="Edit Carrier"
+                                    prefetch
+                                    aria-label={`Edit ${company.insurance_company_name}`}
+                                    title="Edit"
+                                    className="btn-ghost flex h-9 w-9 items-center justify-center rounded-lg"
                                 >
-                                    <Pencil size={14} />
+                                    <Pencil size={16} />
                                 </Link>
-                                <button 
+                                <button
+                                    type="button"
                                     onClick={() => onDelete(company.uuid, company.insurance_company_name)}
-                                    className="btn-action btn-action-delete"
-                                    title="Delete Carrier"
+                                    aria-label={`Delete ${company.insurance_company_name}`}
+                                    title="Delete"
+                                    className="btn-ghost flex h-9 w-9 items-center justify-center rounded-lg"
+                                    style={{ color: 'var(--accent-error)' }}
                                 >
-                                    <Trash2 size={14} />
+                                    <Trash2 size={16} />
                                 </button>
                             </>
-                        ) : (
-                            <button 
-                                onClick={() => restoreInsuranceCompany.mutate(company.uuid)}
-                                className="btn-action btn-action-restore"
-                                title="Restore Carrier"
-                                disabled={restoreInsuranceCompany.isPending}
-                            >
-                                <RotateCcw size={14} />
-                            </button>
                         )}
                     </div>
                 );
             },
         }),
-    ], [columnHelper, onDelete, restoreInsuranceCompany]);
+    ], [onDelete, onRestore]);
 
     return (
         <DataTable
@@ -143,6 +167,7 @@ export default function InsuranceCompaniesTable({
             isLoading={isLoading}
             isError={isError}
             noDataMessage="No insurance companies found"
+            getRowId={(row) => row.uuid}
             rowSelection={rowSelection}
             onRowSelectionChange={onRowSelectionChange}
         />

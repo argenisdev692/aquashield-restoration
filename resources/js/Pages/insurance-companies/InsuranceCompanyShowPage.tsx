@@ -1,124 +1,152 @@
 import { Head, Link } from '@inertiajs/react';
+import { Calendar, ChevronLeft, Globe, Mail, MapPin, Pencil, Phone, ShieldEllipsis } from 'lucide-react';
 import AppLayout from '@/pages/layouts/AppLayout';
-import { InsuranceCompany } from '@/modules/insurance-companies/types';
-import { Pencil, ChevronLeft, Calendar, Phone, Mail, Globe, MapPin, ShieldEllipsis } from 'lucide-react';
+import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
+import type { InsuranceCompany } from '@/modules/insurance-companies/types';
+import { formatDate, formatDateShort } from '@/utils/dateFormatter';
 
 interface Props {
     insuranceCompany: { data: InsuranceCompany };
 }
 
-export default function InsuranceCompanyShowPage({ insuranceCompany }: Props) {
+export default function InsuranceCompanyShowPage({ insuranceCompany }: Props): React.JSX.Element {
     const company = insuranceCompany.data;
+    const fullAddress = [company.address, company.address_2]
+        .filter((segment): segment is string => typeof segment === 'string' && segment.length > 0)
+        .join(', ');
 
     return (
         <>
             <Head title={company.insurance_company_name} />
             <AppLayout>
-                <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="mx-auto max-w-5xl space-y-8">
                     <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                         <Link
                             href="/insurance-companies"
-                            className="flex items-center gap-2 text-sm font-bold text-(--text-muted) hover:text-(--accent-primary) transition-colors"
+                            prefetch
+                            className="flex items-center gap-2 text-sm font-bold"
+                            style={{ color: 'var(--text-muted)' }}
                         >
                             <ChevronLeft size={18} />
-                            Back to Carriers
+                            Back to Companies
                         </Link>
-                        <Link
-                            href={`/insurance-companies/${company.uuid}/edit`}
-                            className="bg-(--bg-card) border border-(--border-default) text-(--text-primary) font-bold py-2.5 px-6 rounded-xl hover:bg-(--bg-hover) hover:border-(--border-hover) transition-all flex items-center gap-2 shadow-sm"
-                        >
-                            <Pencil size={18} />
-                            Edit Carrier
-                        </Link>
+
+                        <PermissionGuard permissions={['UPDATE_INSURANCE_COMPANY']}>
+                            <Link
+                                href={`/insurance-companies/${company.uuid}/edit`}
+                                prefetch
+                                className="btn-ghost flex items-center gap-2 px-6 py-2.5 font-bold"
+                            >
+                                <Pencil size={18} />
+                                Edit Company
+                            </Link>
+                        </PermissionGuard>
                     </div>
 
-                    <div className="rounded-3xl border border-(--border-default) bg-(--bg-card) shadow-2xl overflow-hidden">
-                        <div className="bg-linear-to-r from-(--accent-primary)/20 to-transparent p-10 border-b border-(--border-subtle)">
-                            <h1 className="text-4xl font-black tracking-tight text-(--text-primary)">
-                                {company.insurance_company_name}
-                            </h1>
-                            <p className="mt-2 text-(--text-muted) font-medium flex items-center gap-2">
-                                <Calendar size={16} />
-                                Tracking since {new Date(company.created_at).toLocaleDateString()}
-                            </p>
+                    <div className="overflow-hidden rounded-3xl border shadow-xl" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}>
+                        <div
+                            className="border-b p-10"
+                            style={{
+                                borderColor: 'var(--border-subtle)',
+                                background: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)',
+                            }}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="flex h-12 w-12 items-center justify-center rounded-2xl"
+                                    style={{
+                                        background: 'color-mix(in srgb, var(--accent-primary) 12%, transparent)',
+                                        color: 'var(--accent-primary)',
+                                    }}
+                                >
+                                    <ShieldEllipsis size={24} />
+                                </div>
+                                <div>
+                                    <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                                        {company.insurance_company_name}
+                                    </h1>
+                                    <p className="mt-2 flex items-center gap-2 font-medium" style={{ color: 'var(--text-muted)' }}>
+                                        <Calendar size={16} />
+                                        Tracking since {formatDateShort(company.created_at)}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-12">
-                            <div className="space-y-8">
-                                <section className="space-y-4">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-(--text-disabled)">
-                                        Contact Information
-                                    </h3>
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-4 group">
-                                            <div className="p-3 rounded-2xl bg-(--bg-app) border border-(--border-default) text-(--text-muted) group-hover:text-(--accent-primary) transition-colors">
-                                                <Phone size={20} />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-(--text-primary)">{company.phone || 'N/A'}</p>
-                                                <p className="text-xs text-(--text-disabled)">Primary Phone</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-4 group">
-                                            <div className="p-3 rounded-2xl bg-(--bg-app) border border-(--border-default) text-(--text-muted) group-hover:text-(--accent-primary) transition-colors">
-                                                <Mail size={20} />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-(--text-primary)">{company.email || 'N/A'}</p>
-                                                <p className="text-xs text-(--text-disabled)">Claims Email</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-4 group">
-                                            <div className="p-3 rounded-2xl bg-(--bg-app) border border-(--border-default) text-(--text-muted) group-hover:text-(--accent-primary) transition-colors">
-                                                <Globe size={20} />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-(--text-primary)">
-                                                    {company.website ? (
-                                                        <a href={company.website} target="_blank" className="hover:underline text-(--accent-primary)">
-                                                            {company.website.replace(/^https?:\/\//, '')}
-                                                        </a>
-                                                    ) : 'N/A'}
-                                                </p>
-                                                <p className="text-xs text-(--text-disabled)">Carrier Portal</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
-                            </div>
+                        <div className="grid grid-cols-1 gap-12 p-10 md:grid-cols-2">
+                            <section className="space-y-4">
+                                <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-disabled)' }}>
+                                    Contact Information
+                                </h2>
 
-                            <div className="space-y-8">
-                                <section className="space-y-4">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-(--text-disabled)">
-                                        Headquarters
-                                    </h3>
-                                    <div className="flex items-start gap-4">
-                                        <div className="p-3 rounded-2xl bg-(--bg-app) border border-(--border-default) text-(--text-muted)">
-                                            <MapPin size={20} />
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border" style={{ borderColor: 'var(--border-default)', color: 'var(--text-muted)' }}>
+                                            <Phone size={20} />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-(--text-primary) leading-relaxed">
-                                                {company.address || 'No address provided'}
-                                            </p>
+                                            <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{company.phone ?? 'N/A'}</p>
+                                            <p className="text-xs" style={{ color: 'var(--text-disabled)' }}>Primary Phone</p>
                                         </div>
                                     </div>
-                                </section>
 
-                                {company.deleted_at && (
-                                    <div className="p-6 rounded-2xl bg-(--accent-error)/5 border border-(--accent-error)/20 text-(--accent-error) flex items-center gap-4">
-                                        <div 
-                                            className="p-2 rounded-lg" 
-                                            style={{ background: 'color-mix(in srgb, var(--accent-error) 10%, transparent)' }}
-                                        >
-                                            <ShieldEllipsis size={20} />
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border" style={{ borderColor: 'var(--border-default)', color: 'var(--text-muted)' }}>
+                                            <Mail size={20} />
                                         </div>
-                                        <div className="text-xs font-bold leading-tight">
-                                            This carrier is currently ARCHIVED.
-                                            Restore it to resume active management.
+                                        <div>
+                                            <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{company.email ?? 'N/A'}</p>
+                                            <p className="text-xs" style={{ color: 'var(--text-disabled)' }}>Claims Email</p>
                                         </div>
                                     </div>
-                                )}
-                            </div>
+
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border" style={{ borderColor: 'var(--border-default)', color: 'var(--text-muted)' }}>
+                                            <Globe size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                                                {company.website ? (
+                                                    <a href={company.website} target="_blank" rel="noreferrer" className="hover:underline" style={{ color: 'var(--accent-primary)' }}>
+                                                        {company.website.replace(/^https?:\/\//, '')}
+                                                    </a>
+                                                ) : 'N/A'}
+                                            </p>
+                                            <p className="text-xs" style={{ color: 'var(--text-disabled)' }}>Website</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="space-y-4">
+                                <h2 className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-disabled)' }}>
+                                    Address and Status
+                                </h2>
+
+                                <div className="flex items-start gap-4">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border" style={{ borderColor: 'var(--border-default)', color: 'var(--text-muted)' }}>
+                                        <MapPin size={20} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+                                            {fullAddress || 'No address provided'}
+                                        </p>
+                                        <p className="text-xs" style={{ color: 'var(--text-disabled)' }}>Registered Address</p>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-2xl border p-5" style={{ borderColor: company.deleted_at ? 'var(--deleted-row-border)' : 'var(--border-default)', background: company.deleted_at ? 'var(--deleted-row-bg)' : 'transparent' }}>
+                                    <p className="text-sm font-semibold" style={{ color: company.deleted_at ? 'var(--accent-error)' : 'var(--accent-success)' }}>
+                                        {company.deleted_at ? 'Archived' : 'Active'}
+                                    </p>
+                                    <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+                                        Created {formatDate(company.created_at)}
+                                    </p>
+                                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                                        Updated {formatDate(company.updated_at)}
+                                    </p>
+                                </div>
+                            </section>
                         </div>
                     </div>
                 </div>

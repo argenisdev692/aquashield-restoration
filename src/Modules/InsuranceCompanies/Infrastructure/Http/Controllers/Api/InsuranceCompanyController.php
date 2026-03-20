@@ -4,201 +4,101 @@ declare(strict_types=1);
 
 namespace Modules\InsuranceCompanies\Infrastructure\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Modules\InsuranceCompanies\Application\Commands\CreateInsuranceCompany\CreateInsuranceCompanyCommand;
-use Modules\InsuranceCompanies\Application\Commands\CreateInsuranceCompany\CreateInsuranceCompanyHandler;
-use Modules\InsuranceCompanies\Application\Commands\DeleteInsuranceCompany\DeleteInsuranceCompanyCommand;
-use Modules\InsuranceCompanies\Application\Commands\DeleteInsuranceCompany\DeleteInsuranceCompanyHandler;
-use Modules\InsuranceCompanies\Application\Commands\RestoreInsuranceCompany\RestoreInsuranceCompanyCommand;
-use Modules\InsuranceCompanies\Application\Commands\RestoreInsuranceCompany\RestoreInsuranceCompanyHandler;
-use Modules\InsuranceCompanies\Application\Commands\UpdateInsuranceCompany\UpdateInsuranceCompanyCommand;
-use Modules\InsuranceCompanies\Application\Commands\UpdateInsuranceCompany\UpdateInsuranceCompanyHandler;
-use Modules\InsuranceCompanies\Application\DTOs\CreateInsuranceCompanyDTO;
-use Modules\InsuranceCompanies\Application\DTOs\InsuranceCompanyFilterDTO;
-use Modules\InsuranceCompanies\Application\DTOs\UpdateInsuranceCompanyDTO;
-use Modules\InsuranceCompanies\Application\Queries\GetInsuranceCompany\GetInsuranceCompanyHandler;
-use Modules\InsuranceCompanies\Application\Queries\GetInsuranceCompany\GetInsuranceCompanyQuery;
-use Modules\InsuranceCompanies\Application\Queries\ListInsuranceCompanies\ListInsuranceCompaniesHandler;
-use Modules\InsuranceCompanies\Application\Queries\ListInsuranceCompanies\ListInsuranceCompaniesQuery;
-use Modules\InsuranceCompanies\Infrastructure\Http\Requests\CreateInsuranceCompanyRequest;
+use RuntimeException;
+use Modules\InsuranceCompanies\Application\Commands\BulkDeleteInsuranceCompanyHandler;
+use Modules\InsuranceCompanies\Application\Commands\CreateInsuranceCompanyHandler;
+use Modules\InsuranceCompanies\Application\Commands\DeleteInsuranceCompanyHandler;
+use Modules\InsuranceCompanies\Application\Commands\RestoreInsuranceCompanyHandler;
+use Modules\InsuranceCompanies\Application\Commands\UpdateInsuranceCompanyHandler;
+use Modules\InsuranceCompanies\Application\DTOs\BulkDeleteInsuranceCompanyData;
+use Modules\InsuranceCompanies\Application\DTOs\InsuranceCompanyFilterData;
+use Modules\InsuranceCompanies\Application\DTOs\StoreInsuranceCompanyData;
+use Modules\InsuranceCompanies\Application\DTOs\UpdateInsuranceCompanyData;
+use Modules\InsuranceCompanies\Application\Queries\GetInsuranceCompanyHandler;
+use Modules\InsuranceCompanies\Application\Queries\ListInsuranceCompaniesHandler;
+use Modules\InsuranceCompanies\Infrastructure\Http\Requests\BulkDeleteInsuranceCompanyRequest;
+use Modules\InsuranceCompanies\Infrastructure\Http\Requests\StoreInsuranceCompanyRequest;
 use Modules\InsuranceCompanies\Infrastructure\Http\Requests\UpdateInsuranceCompanyRequest;
-use Modules\InsuranceCompanies\Infrastructure\Http\Resources\InsuranceCompanyResource;
 
-/**
- * @OA\Tag(name="Insurance Companies", description="Insurance Companies CRUD operations")
- */
-final class InsuranceCompanyController
+final class InsuranceCompanyController extends Controller
 {
-    public function __construct(
-        private readonly CreateInsuranceCompanyHandler $createHandler,
-        private readonly UpdateInsuranceCompanyHandler $updateHandler,
-        private readonly DeleteInsuranceCompanyHandler $deleteHandler,
-        private readonly RestoreInsuranceCompanyHandler $restoreHandler,
-        private readonly ListInsuranceCompaniesHandler $listHandler,
-        private readonly GetInsuranceCompanyHandler $getHandler,
-    ) {
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/insurance-companies",
-     *     tags={"Insurance Companies"},
-     *     summary="List insurance companies",
-     *     @OA\Parameter(name="search", in="query", required=false, @OA\Schema(type="string")),
-     *     @OA\Parameter(name="page", in="query", required=false, @OA\Schema(type="integer", default=1)),
-     *     @OA\Parameter(name="perPage", in="query", required=false, @OA\Schema(type="integer", default=15)),
-     *     @OA\Response(response=200, description="Paginated list of insurance companies"),
-     *     security={{"sanctum": {}}}
-     * )
-     */
-    public function index(Request $request): JsonResponse
+    public function index(ListInsuranceCompaniesHandler $handler): JsonResponse
     {
-        $filters = InsuranceCompanyFilterDTO::from($request->all());
-        $result = $this->listHandler->handle(new ListInsuranceCompaniesQuery($filters));
+        $companies = $handler->handle(InsuranceCompanyFilterData::from(request()->query()));
 
         return response()->json([
-            'data' => array_map(fn($item) => new InsuranceCompanyResource($item), $result['data']),
+            'data' => $companies->items(),
             'meta' => [
-                'total' => $result['total'],
-                'perPage' => $result['perPage'],
-                'currentPage' => $result['currentPage'],
-                'lastPage' => $result['lastPage'],
+                'currentPage' => $companies->currentPage(),
+                'lastPage' => $companies->lastPage(),
+                'perPage' => $companies->perPage(),
+                'total' => $companies->total(),
             ],
         ]);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/insurance-companies/{uuid}",
-     *     tags={"Insurance Companies"},
-     *     summary="Get a single insurance company",
-     *     @OA\Parameter(name="uuid", in="path", required=true, @OA\Schema(type="string", format="uuid")),
-     *     @OA\Response(response=200, description="Insurance company details"),
-     *     @OA\Response(response=404, description="Not found"),
-     *     security={{"sanctum": {}}}
-     * )
-     */
-    public function show(string $uuid): JsonResponse
+    public function show(string $uuid, GetInsuranceCompanyHandler $handler): JsonResponse
     {
-        $insuranceCompany = $this->getHandler->handle(new GetInsuranceCompanyQuery($uuid));
+        $insuranceCompany = $handler->handle($uuid);
+
+        if ($insuranceCompany === null) {
+            return response()->json(['message' => 'Insurance company not found.'], 404);
+        }
 
         return response()->json([
-            'data' => new InsuranceCompanyResource($insuranceCompany),
+            'data' => $insuranceCompany,
         ]);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/insurance-companies",
-     *     tags={"Insurance Companies"},
-     *     summary="Create a new insurance company",
-     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/CreateInsuranceCompanyDTO")),
-     *     @OA\Response(response=201, description="Insurance company created"),
-     *     security={{"sanctum": {}}}
-     * )
-     */
-    public function store(CreateInsuranceCompanyRequest $request): JsonResponse
+    public function store(StoreInsuranceCompanyRequest $request, CreateInsuranceCompanyHandler $handler): JsonResponse
     {
-        $dto = new CreateInsuranceCompanyDTO(
-            insuranceCompanyName: $request->insurance_company_name,
-            address: $request->address,
-            phone: $request->phone,
-            email: $request->email,
-            website: $request->website,
-            userId: $request->user_id ?? auth()->id(),
-        );
+        $payload = StoreInsuranceCompanyData::from([
+            ...$request->validated(),
+            'user_id' => (int) $request->user()->id,
+        ]);
 
-        $insuranceCompany = $this->createHandler->handle(new CreateInsuranceCompanyCommand($dto));
+        $uuid = $handler->handle($payload);
 
         return response()->json([
-            'data' => new InsuranceCompanyResource($insuranceCompany),
+            'uuid' => $uuid,
+            'message' => 'Insurance company created successfully.',
         ], 201);
     }
 
-    /**
-     * @OA\Put(
-     *     path="/api/insurance-companies/{uuid}",
-     *     tags={"Insurance Companies"},
-     *     summary="Update an insurance company",
-     *     @OA\Parameter(name="uuid", in="path", required=true, @OA\Schema(type="string", format="uuid")),
-     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/UpdateInsuranceCompanyDTO")),
-     *     @OA\Response(response=200, description="Insurance company updated"),
-     *     @OA\Response(response=404, description="Not found"),
-     *     security={{"sanctum": {}}}
-     * )
-     */
-    public function update(UpdateInsuranceCompanyRequest $request, string $uuid): JsonResponse
+    public function update(string $uuid, UpdateInsuranceCompanyRequest $request, UpdateInsuranceCompanyHandler $handler): JsonResponse
     {
-        $dto = new UpdateInsuranceCompanyDTO(
-            insuranceCompanyName: $request->insurance_company_name,
-            address: $request->address,
-            phone: $request->phone,
-            email: $request->email,
-            website: $request->website,
-        );
+        try {
+            $handler->handle($uuid, UpdateInsuranceCompanyData::from($request->validated()));
+        } catch (RuntimeException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 404);
+        }
 
-        $insuranceCompany = $this->updateHandler->handle(new UpdateInsuranceCompanyCommand($uuid, $dto));
-
-        return response()->json([
-            'data' => new InsuranceCompanyResource($insuranceCompany),
-        ]);
+        return response()->json(['message' => 'Insurance company updated successfully.']);
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/api/insurance-companies/{uuid}",
-     *     tags={"Insurance Companies"},
-     *     summary="Soft-delete an insurance company",
-     *     @OA\Parameter(name="uuid", in="path", required=true, @OA\Schema(type="string", format="uuid")),
-     *     @OA\Response(response=204, description="Insurance company deleted"),
-     *     security={{"sanctum": {}}}
-     * )
-     */
-    public function destroy(string $uuid): JsonResponse
+    public function destroy(string $uuid, DeleteInsuranceCompanyHandler $handler): JsonResponse
     {
-        $this->deleteHandler->handle(new DeleteInsuranceCompanyCommand($uuid));
+        $handler->handle($uuid);
 
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Insurance company deleted successfully.']);
     }
 
-    /**
-     * @OA\Patch(
-     *     path="/api/insurance-companies/{uuid}/restore",
-     *     tags={"Insurance Companies"},
-     *     summary="Restore a soft-deleted insurance company",
-     *     @OA\Parameter(name="uuid", in="path", required=true, @OA\Schema(type="string", format="uuid")),
-     *     @OA\Response(response=200, description="Insurance company restored"),
-     *     security={{"sanctum": {}}}
-     * )
-     */
-    public function restore(string $uuid): JsonResponse
+    public function restore(string $uuid, RestoreInsuranceCompanyHandler $handler): JsonResponse
     {
-        $this->restoreHandler->handle(new RestoreInsuranceCompanyCommand($uuid));
+        $handler->handle($uuid);
 
         return response()->json(['message' => 'Insurance company restored successfully.']);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/insurance-companies/bulk-delete",
-     *     tags={"Insurance Companies"},
-     *     summary="Bulk soft-delete insurance companies",
-     *     @OA\RequestBody(required=true, @OA\JsonContent(
-     *         @OA\Property(property="uuids", type="array", @OA\Items(type="string", format="uuid"))
-     *     )),
-     *     @OA\Response(response=200, description="Insurance companies deleted"),
-     *     security={{"sanctum": {}}}
-     * )
-     */
-    public function bulkDelete(Request $request): JsonResponse
+    public function bulkDelete(BulkDeleteInsuranceCompanyRequest $request, BulkDeleteInsuranceCompanyHandler $handler): JsonResponse
     {
-        $uuids = $request->input('uuids', []);
+        $deletedCount = $handler->handle(BulkDeleteInsuranceCompanyData::from($request->validated()));
 
-        foreach ($uuids as $uuid) {
-            $this->deleteHandler->handle(new DeleteInsuranceCompanyCommand($uuid));
-        }
-
-        return response()->json(['message' => count($uuids) . ' insurance companies deleted successfully.']);
+        return response()->json([
+            'message' => "Successfully deleted {$deletedCount} insurance company record(s).",
+            'deleted_count' => $deletedCount,
+        ]);
     }
 }

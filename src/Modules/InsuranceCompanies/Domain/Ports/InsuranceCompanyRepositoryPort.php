@@ -11,13 +11,11 @@ interface InsuranceCompanyRepositoryPort
 {
     public function find(InsuranceCompanyId $id): ?InsuranceCompany;
 
-    public function findByUuid(string $uuid): ?InsuranceCompany;
-
     public function save(InsuranceCompany $insuranceCompany): void;
 
-    public function delete(InsuranceCompanyId $id): void;
+    public function softDelete(InsuranceCompanyId $id): void;
 
     public function restore(InsuranceCompanyId $id): void;
 
-    public function list(array $filters = []): array;
+    public function bulkSoftDelete(array $ids): int;
 }
