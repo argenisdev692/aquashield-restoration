@@ -10,56 +10,51 @@ use Modules\MortgageCompanies\Domain\ValueObjects\MortgageCompanyId;
 use Modules\MortgageCompanies\Infrastructure\Persistence\Eloquent\Models\MortgageCompanyEloquentModel;
 use Modules\MortgageCompanies\Infrastructure\Persistence\Mappers\MortgageCompanyMapper;
 
-final readonly class EloquentMortgageCompanyRepository implements MortgageCompanyRepositoryPort
+final class EloquentMortgageCompanyRepository implements MortgageCompanyRepositoryPort
 {
+    public function __construct(
+        private readonly MortgageCompanyMapper $mapper,
+    ) {}
+
     public function find(MortgageCompanyId $id): ?MortgageCompany
     {
-        $model = MortgageCompanyEloquentModel::withTrashed()
+        $model = MortgageCompanyEloquentModel::query()
+            ->withTrashed()
             ->where('uuid', $id->toString())
             ->first();
 
-        return $model ? MortgageCompanyMapper::toDomain($model) : null;
+        return $model === null ? null : $this->mapper->toDomain($model);
     }
 
     public function save(MortgageCompany $mortgageCompany): void
     {
-        $model = MortgageCompanyEloquentModel::withTrashed()
-            ->where('uuid', $mortgageCompany->id->toString())
-            ->first();
-
-        if ($model) {
-            MortgageCompanyMapper::updateEloquent($mortgageCompany, $model);
-            $model->save();
-        } else {
-            $model = MortgageCompanyMapper::toEloquent($mortgageCompany);
-            $model->save();
-        }
+        $this->mapper->toEloquent($mortgageCompany)->save();
     }
 
     public function softDelete(MortgageCompanyId $id): void
     {
-        MortgageCompanyEloquentModel::where('uuid', $id->toString())->delete();
+        MortgageCompanyEloquentModel::query()
+            ->where('uuid', $id->toString())
+            ->delete();
     }
 
     public function restore(MortgageCompanyId $id): void
     {
-        MortgageCompanyEloquentModel::withTrashed()
+        MortgageCompanyEloquentModel::query()
+            ->withTrashed()
             ->where('uuid', $id->toString())
             ->restore();
     }
 
-    public function list(array $filters, int $page, int $perPage): array
+    public function bulkSoftDelete(array $ids): int
     {
-        $query = MortgageCompanyEloquentModel::query();
+        $uuids = array_map(
+            static fn (MortgageCompanyId $id): string => $id->toString(),
+            $ids,
+        );
 
-        if (isset($filters['search'])) {
-            $query->where('mortgage_company_name', 'like', "%{$filters['search']}%");
-        }
-
-        if (isset($filters['status']) && $filters['status'] === 'deleted') {
-            $query->onlyTrashed();
-        }
-
-        return $query->paginate($perPage, ['*'], 'page', $page)->toArray();
+        return MortgageCompanyEloquentModel::query()
+            ->whereIn('uuid', $uuids)
+            ->delete();
     }
 }

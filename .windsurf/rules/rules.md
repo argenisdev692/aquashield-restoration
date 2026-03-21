@@ -9,6 +9,7 @@ trigger: always_on
 - **PHP 8.5:** Follow `.windsurf/skills/SKILLS-FULL-STACK/BACKEND-PHP.md` §0–§3 — SINGLE SOURCE OF TRUTH for PHP 8.5 syntax.
 - **TypeScript:** Strict mode enforced on ALL `.tsx` / `.ts` files.
 - **Context7 (MCP):** Always resolve live docs — never rely on cached training knowledge.
+- **Sequential Thinking (MCP):** Use `mcp3_sequentialthinking` for ALL non-trivial tasks — architecture decisions, debugging, multi-step implementations, and any task with unclear scope. No exceptions.
 - **Investigate / Investigar:** Run Tavily search immediately before responding.
 
 # [MUST] Before writing any code — read the relevant skill

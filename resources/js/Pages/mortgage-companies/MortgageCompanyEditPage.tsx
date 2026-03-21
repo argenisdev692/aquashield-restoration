@@ -1,65 +1,55 @@
-import { Head, router } from '@inertiajs/react';
-import AppLayout from '@/pages/layouts/AppLayout';
-import { useMortgageCompanyMutations } from '@/modules/mortgage-companies/hooks/useMortgageCompanyMutations';
-import MortgageCompanyForm from './components/MortgageCompanyForm';
-import type { MortgageCompanyDetail } from '@/types/api';
+import * as React from 'react';
+import { Head, router, usePage } from '@inertiajs/react';
+import type { PageProps } from '@inertiajs/core';
 import { Building2 } from 'lucide-react';
+import { useUpdateMortgageCompany } from '@/modules/mortgage-companies/hooks/useMortgageCompanyMutations';
+import type { MortgageCompany, MortgageCompanyFormData } from '@/modules/mortgage-companies/types';
+import AppLayout from '@/pages/layouts/AppLayout';
+import MortgageCompanyForm from './components/MortgageCompanyForm';
 
-interface Props {
-    mortgageCompany: { data: MortgageCompanyDetail };
+interface MortgageCompanyEditPageProps extends PageProps {
+    mortgageCompany: MortgageCompany;
 }
 
-export default function MortgageCompanyEditPage({ mortgageCompany }: Props) {
-    const { updateMortgageCompany } = useMortgageCompanyMutations();
-    const company = mortgageCompany.data;
+export default function MortgageCompanyEditPage(): React.JSX.Element {
+    const { mortgageCompany } = usePage<MortgageCompanyEditPageProps>().props;
+    const updateMortgageCompany = useUpdateMortgageCompany();
 
-    const handleSubmit = async (data: any) => {
-        await updateMortgageCompany.mutateAsync({ 
-            uuid: company.uuid, 
-            data 
+    async function handleSubmit(data: MortgageCompanyFormData): Promise<void> {
+        await updateMortgageCompany.mutateAsync({
+            uuid: mortgageCompany.uuid,
+            data,
         });
-    };
+    }
 
     return (
         <>
-            <Head title={`Edit ${company.mortgageCompanyName}`} />
+            <Head title={`Edit ${mortgageCompany.mortgage_company_name}`} />
             <AppLayout>
-                <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
-                    <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-3">
-                            <div 
-                                className="p-3 rounded-2xl shadow-sm"
-                                style={{
-                                    background: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)',
-                                    color: 'var(--accent-primary)',
-                                }}
-                            >
-                                <Building2 size={24} />
-                            </div>
-                            <h1 
-                                className="text-3xl font-extrabold tracking-tight"
-                                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}
-                            >
-                                Edit Mortgage Company
-                            </h1>
-                        </div>
-                        <p 
-                            className="text-sm font-medium ml-14"
-                            style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}
+                <div className="mx-auto flex max-w-4xl flex-col gap-6">
+                    <div className="flex items-start gap-4">
+                        <div
+                            className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                            style={{
+                                background: 'color-mix(in srgb, var(--accent-primary) 12%, transparent)',
+                                color: 'var(--accent-primary)',
+                            }}
                         >
-                            Update the details for <span style={{ color: 'var(--accent-primary)' }}>{company.mortgageCompanyName}</span>.
-                        </p>
+                            <Building2 size={24} />
+                        </div>
+                        <div className="space-y-1">
+                            <h1 className="text-3xl font-extrabold" style={{ color: 'var(--text-primary)' }}>
+                                Edit mortgage company
+                            </h1>
+                            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                                Update the current mortgage company information.
+                            </p>
+                        </div>
                     </div>
 
-                    <div 
-                        className="rounded-3xl overflow-hidden shadow-2xl transition-all"
-                        style={{
-                            border: '1px solid var(--border-default)',
-                            background: 'var(--bg-card)',
-                        }}
-                    >
+                    <div className="card overflow-hidden p-0">
                         <MortgageCompanyForm
-                            initialData={company}
+                            initialData={mortgageCompany}
                             onSubmit={handleSubmit}
                             isSubmitting={updateMortgageCompany.isPending}
                             onCancel={() => router.visit('/mortgage-companies')}

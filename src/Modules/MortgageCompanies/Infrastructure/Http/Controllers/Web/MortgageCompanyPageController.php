@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\MortgageCompanies\Infrastructure\Http\Controllers\Web;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
-use Modules\MortgageCompanies\Application\Queries\GetMortgageCompany\GetMortgageCompanyHandler;
+use Modules\MortgageCompanies\Application\Queries\GetMortgageCompanyHandler;
 
 final class MortgageCompanyPageController extends Controller
 {
@@ -25,8 +25,12 @@ final class MortgageCompanyPageController extends Controller
     {
         $mortgageCompany = $handler->handle($uuid);
 
+        if ($mortgageCompany === null) {
+            abort(404);
+        }
+
         return Inertia::render('mortgage-companies/MortgageCompanyShowPage', [
-            'mortgageCompany' => $mortgageCompany,
+            'mortgageCompany' => $mortgageCompany->toArray(),
         ]);
     }
 
@@ -34,8 +38,12 @@ final class MortgageCompanyPageController extends Controller
     {
         $mortgageCompany = $handler->handle($uuid);
 
+        if ($mortgageCompany === null) {
+            abort(404);
+        }
+
         return Inertia::render('mortgage-companies/MortgageCompanyEditPage', [
-            'mortgageCompany' => $mortgageCompany,
+            'mortgageCompany' => $mortgageCompany->toArray(),
         ]);
     }
 }

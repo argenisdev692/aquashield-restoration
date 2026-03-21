@@ -17,5 +17,5 @@ interface MortgageCompanyRepositoryPort
 
     public function restore(MortgageCompanyId $id): void;
 
-    public function list(array $filters, int $page, int $perPage): array;
+    public function bulkSoftDelete(array $ids): int;
 }

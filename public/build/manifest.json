@@ -1,6 +1,6 @@
 {
-  "_inertia-Brn7VwNO.js": {
-    "file": "assets/inertia-Brn7VwNO.js",
+  "_inertia-CuwrjkiK.js": {
+    "file": "assets/inertia-CuwrjkiK.js",
     "name": "inertia"
   },
   "_vendor-l0sNRNKZ.js": {
@@ -17,12 +17,12 @@
     ]
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-CCC0p3Pm.js",
+    "file": "assets/app-DCqI5Lu8.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
     "imports": [
-      "_inertia-Brn7VwNO.js"
+      "_inertia-CuwrjkiK.js"
     ],
     "css": [
       "assets/app-Dd-8fP5R.css",

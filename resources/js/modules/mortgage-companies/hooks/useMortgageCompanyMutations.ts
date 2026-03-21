@@ -1,82 +1,136 @@
+import axios, { isAxiosError } from 'axios';
+import { router } from '@inertiajs/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { sileo } from 'sileo';
+import type { MortgageCompanyFormData } from '../types';
 
-interface CreateMortgageCompanyData {
-  mortgageCompanyName: string;
-  address?: string;
-  phone?: string;
-  email?: string;
-  website?: string;
+interface MutationMessageResponse {
+    message: string;
+    uuid?: string;
+    deleted_count?: number;
 }
 
-interface UpdateMortgageCompanyData {
-  mortgageCompanyName: string;
-  address?: string;
-  phone?: string;
-  email?: string;
-  website?: string;
+function getErrorMessage(error: unknown, fallback: string): string {
+    if (isAxiosError<{ message?: string }>(error)) {
+        return error.response?.data?.message ?? error.message ?? fallback;
+    }
+
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    return fallback;
 }
 
-export function useMortgageCompanyMutations() {
-  const queryClient = useQueryClient();
+export function useCreateMortgageCompany() {
+    const queryClient = useQueryClient();
 
-  const createMortgageCompany = useMutation<{ uuid: string }, Error, CreateMortgageCompanyData>({
-    mutationFn: async (data) => {
-      const response = await fetch('/mortgage-companies/data/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error('Failed to create mortgage company');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mortgage-companies'] });
-    },
-  });
+    return useMutation<MutationMessageResponse, Error, MortgageCompanyFormData>({
+        mutationFn: async (payload) => {
+            const { data } = await axios.post<MutationMessageResponse>(
+                '/mortgage-companies/data/admin',
+                payload,
+            );
 
-  const updateMortgageCompany = useMutation<void, Error, { uuid: string; data: UpdateMortgageCompanyData }>({
-    mutationFn: async ({ uuid, data }) => {
-      const response = await fetch(`/mortgage-companies/data/admin/${uuid}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error('Failed to update mortgage company');
-    },
-    onSuccess: (_, { uuid }) => {
-      queryClient.invalidateQueries({ queryKey: ['mortgage-companies'] });
-      queryClient.invalidateQueries({ queryKey: ['mortgage-companies', uuid] });
-    },
-  });
+            return data;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['mortgage-companies'] });
+            sileo.success({ title: 'Mortgage company created successfully.' });
+            router.visit('/mortgage-companies');
+        },
+        onError: (error) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to create mortgage company.') });
+        },
+    });
+}
 
-  const deleteMortgageCompany = useMutation<void, Error, string>({
-    mutationFn: async (uuid) => {
-      const response = await fetch(`/mortgage-companies/data/admin/${uuid}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to delete mortgage company');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mortgage-companies'] });
-    },
-  });
+export function useUpdateMortgageCompany() {
+    const queryClient = useQueryClient();
 
-  const restoreMortgageCompany = useMutation<void, Error, string>({
-    mutationFn: async (uuid) => {
-      const response = await fetch(`/mortgage-companies/data/admin/${uuid}/restore`, {
-        method: 'PATCH',
-      });
-      if (!response.ok) throw new Error('Failed to restore mortgage company');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mortgage-companies'] });
-    },
-  });
+    return useMutation<MutationMessageResponse, Error, { uuid: string; data: MortgageCompanyFormData }>({
+        mutationFn: async ({ uuid, data: payload }) => {
+            const { data } = await axios.put<MutationMessageResponse>(
+                `/mortgage-companies/data/admin/${uuid}`,
+                payload,
+            );
 
-  return {
-    createMortgageCompany,
-    updateMortgageCompany,
-    deleteMortgageCompany,
-    restoreMortgageCompany,
-  };
+            return data;
+        },
+        onSuccess: async (_response, variables) => {
+            await queryClient.invalidateQueries({ queryKey: ['mortgage-companies'] });
+            await queryClient.invalidateQueries({
+                queryKey: ['mortgage-companies', 'detail', variables.uuid],
+            });
+            sileo.success({ title: 'Mortgage company updated successfully.' });
+            router.visit('/mortgage-companies');
+        },
+        onError: (error) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to update mortgage company.') });
+        },
+    });
+}
+
+export function useDeleteMortgageCompany() {
+    const queryClient = useQueryClient();
+
+    return useMutation<MutationMessageResponse, Error, string>({
+        mutationFn: async (uuid) => {
+            const { data } = await axios.delete<MutationMessageResponse>(
+                `/mortgage-companies/data/admin/${uuid}`,
+            );
+
+            return data;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['mortgage-companies'] });
+            sileo.success({ title: 'Mortgage company deleted successfully.' });
+        },
+        onError: (error) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to delete mortgage company.') });
+        },
+    });
+}
+
+export function useRestoreMortgageCompany() {
+    const queryClient = useQueryClient();
+
+    return useMutation<MutationMessageResponse, Error, string>({
+        mutationFn: async (uuid) => {
+            const { data } = await axios.patch<MutationMessageResponse>(
+                `/mortgage-companies/data/admin/${uuid}/restore`,
+            );
+
+            return data;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['mortgage-companies'] });
+            sileo.success({ title: 'Mortgage company restored successfully.' });
+        },
+        onError: (error) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to restore mortgage company.') });
+        },
+    });
+}
+
+export function useBulkDeleteMortgageCompanies() {
+    const queryClient = useQueryClient();
+
+    return useMutation<MutationMessageResponse, Error, string[]>({
+        mutationFn: async (uuids) => {
+            const { data } = await axios.post<MutationMessageResponse>(
+                '/mortgage-companies/data/admin/bulk-delete',
+                { uuids },
+            );
+
+            return data;
+        },
+        onSuccess: async (response) => {
+            await queryClient.invalidateQueries({ queryKey: ['mortgage-companies'] });
+            sileo.success({ title: response.message });
+        },
+        onError: (error) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to bulk delete mortgage companies.') });
+        },
+    });
 }

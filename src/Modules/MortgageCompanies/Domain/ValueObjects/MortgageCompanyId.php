@@ -4,28 +4,32 @@ declare(strict_types=1);
 
 namespace Modules\MortgageCompanies\Domain\ValueObjects;
 
+use InvalidArgumentException;
 use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 
 readonly class MortgageCompanyId
 {
     private function __construct(
-        public string $value
-    ) {
-    }
+        public string $value {
+            set {
+                if (!Uuid::isValid($value)) {
+                    throw new InvalidArgumentException("Invalid UUID: {$value}");
+                }
+                $this->value = $value;
+            }
+        },
+    ) {}
 
+    #[\NoDiscard('The generated ID must be captured')]
     public static function generate(): self
     {
         return new self(Uuid::uuid4()->toString());
     }
 
-    public static function fromString(string $value): self
+    #[\NoDiscard('The ID must be captured')]
+    public static function fromString(string $uuid): self
     {
-        if (!Uuid::isValid($value)) {
-            throw new \InvalidArgumentException("Invalid UUID format: {$value}");
-        }
-
-        return new self($value);
+        return new self($uuid);
     }
 
     public function toString(): string
