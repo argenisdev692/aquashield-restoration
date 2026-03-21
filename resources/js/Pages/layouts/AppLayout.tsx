@@ -58,7 +58,8 @@ import {
   CalendarRange,
   MessageSquareText,
   Mail,
-  Bot
+  Bot,
+  Layers
 } from 'lucide-react';
 
 const icSize = 18;
@@ -146,6 +147,8 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Category Products', href: '/category-products', icon: <IconTags />, description: 'Product category catalog', permission: ['READ_CATEGORY_PRODUCT', 'CREATE_CATEGORY_PRODUCT', 'UPDATE_CATEGORY_PRODUCT', 'DELETE_CATEGORY_PRODUCT', 'RESTORE_CATEGORY_PRODUCT'] },
       { label: 'Type Damages', href: '/type-damages', icon: <IconTypeDamage />, description: 'Damage type catalog', permission: ['READ_TYPE_DAMAGE', 'CREATE_TYPE_DAMAGE', 'UPDATE_TYPE_DAMAGE', 'DELETE_TYPE_DAMAGE', 'RESTORE_TYPE_DAMAGE'] },
       { label: 'Products', href: '/products', icon: <IconPackage />, description: 'Product catalog', permission: ['READ_PRODUCT', 'CREATE_PRODUCT', 'UPDATE_PRODUCT', 'DELETE_PRODUCT', 'RESTORE_PRODUCT'] },
+      { label: 'Service Categories', href: '/service-categories', icon: <FolderTree size={icSize} />, description: 'Service category catalog', permission: ['READ_SERVICE_CATEGORY', 'CREATE_SERVICE_CATEGORY', 'UPDATE_SERVICE_CATEGORY', 'DELETE_SERVICE_CATEGORY', 'RESTORE_SERVICE_CATEGORY'] },
+      { label: 'Project Types', href: '/project-types', icon: <Layers size={icSize} />, description: 'Project type catalog', permission: ['READ_PROJECT_TYPE', 'CREATE_PROJECT_TYPE', 'UPDATE_PROJECT_TYPE', 'DELETE_PROJECT_TYPE', 'RESTORE_PROJECT_TYPE'] },
     ]
   },
   {

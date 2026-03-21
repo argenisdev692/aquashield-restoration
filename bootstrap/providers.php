@@ -27,4 +27,6 @@ return [
     Src\Modules\TypeDamages\Providers\TypeDamagesServiceProvider::class,
     Src\Modules\CauseOfLosses\Providers\CauseOfLossesServiceProvider::class,
     Src\Modules\CategoryProducts\Providers\CategoryProductsServiceProvider::class,
+    Src\Modules\ServiceCategories\Providers\ServiceCategoriesServiceProvider::class,
+    Src\Modules\ProjectTypes\Providers\ProjectTypesServiceProvider::class,
 ];
