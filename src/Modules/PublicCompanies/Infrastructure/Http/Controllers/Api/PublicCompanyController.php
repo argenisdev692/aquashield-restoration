@@ -4,109 +4,85 @@ declare(strict_types=1);
 
 namespace Modules\PublicCompanies\Infrastructure\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-use Modules\PublicCompanies\Application\Commands\CreatePublicCompany\CreatePublicCompanyCommand;
-use Modules\PublicCompanies\Application\Commands\CreatePublicCompany\CreatePublicCompanyHandler;
-use Modules\PublicCompanies\Application\Commands\DeletePublicCompany\DeletePublicCompanyCommand;
-use Modules\PublicCompanies\Application\Commands\DeletePublicCompany\DeletePublicCompanyHandler;
-use Modules\PublicCompanies\Application\Commands\RestorePublicCompany\RestorePublicCompanyCommand;
-use Modules\PublicCompanies\Application\Commands\RestorePublicCompany\RestorePublicCompanyHandler;
-use Modules\PublicCompanies\Application\Commands\UpdatePublicCompany\UpdatePublicCompanyCommand;
-use Modules\PublicCompanies\Application\Commands\UpdatePublicCompany\UpdatePublicCompanyHandler;
-use Modules\PublicCompanies\Application\DTOs\PublicCompanyDTO;
-use Modules\PublicCompanies\Application\Queries\GetPublicCompany\GetPublicCompanyHandler;
-use Modules\PublicCompanies\Application\Queries\GetPublicCompany\GetPublicCompanyQuery;
-use Modules\PublicCompanies\Application\Queries\ListPublicCompanies\ListPublicCompaniesHandler;
-use Modules\PublicCompanies\Application\Queries\ListPublicCompanies\ListPublicCompaniesQuery;
-use Modules\PublicCompanies\Infrastructure\Http\Requests\CreatePublicCompanyRequest;
+use Modules\PublicCompanies\Application\Commands\CreatePublicCompanyHandler;
+use Modules\PublicCompanies\Application\Commands\DeletePublicCompanyHandler;
+use Modules\PublicCompanies\Application\Commands\RestorePublicCompanyHandler;
+use Modules\PublicCompanies\Application\Commands\UpdatePublicCompanyHandler;
+use Modules\PublicCompanies\Application\DTOs\PublicCompanyFilterData;
+use Modules\PublicCompanies\Application\DTOs\StorePublicCompanyData;
+use Modules\PublicCompanies\Application\DTOs\UpdatePublicCompanyData;
+use Modules\PublicCompanies\Application\Queries\GetPublicCompanyHandler;
+use Modules\PublicCompanies\Application\Queries\ListPublicCompaniesHandler;
+use Modules\PublicCompanies\Infrastructure\Http\Requests\StorePublicCompanyRequest;
 use Modules\PublicCompanies\Infrastructure\Http\Requests\UpdatePublicCompanyRequest;
-use Modules\PublicCompanies\Infrastructure\Http\Resources\PublicCompanyResource;
-use Illuminate\Http\Request;
+use RuntimeException;
 
-final class PublicCompanyController
+final class PublicCompanyController extends Controller
 {
-    public function __construct(
-        private readonly CreatePublicCompanyHandler $createHandler,
-        private readonly UpdatePublicCompanyHandler $updateHandler,
-        private readonly DeletePublicCompanyHandler $deleteHandler,
-        private readonly RestorePublicCompanyHandler $restoreHandler,
-        private readonly ListPublicCompaniesHandler $listHandler,
-        private readonly GetPublicCompanyHandler $getHandler,
-    ) {
-    }
-
-    public function index(Request $request): JsonResponse
+    public function index(ListPublicCompaniesHandler $handler): JsonResponse
     {
-        $filters = $request->all();
-        $result = $this->listHandler->handle(new ListPublicCompaniesQuery($filters));
+        $companies = $handler->handle(PublicCompanyFilterData::from(request()->query()));
 
         return response()->json([
-            'data' => array_map(fn($item) => new PublicCompanyResource($item), $result['data']),
+            'data' => $companies->items(),
             'meta' => [
-                'total' => $result['total'],
-                'perPage' => $result['perPage'],
-                'currentPage' => $result['currentPage'],
-                'lastPage' => $result['lastPage'],
+                'currentPage' => $companies->currentPage(),
+                'lastPage' => $companies->lastPage(),
+                'perPage' => $companies->perPage(),
+                'total' => $companies->total(),
             ],
         ]);
     }
 
-    public function show(string $uuid): JsonResponse
+    public function show(string $uuid, GetPublicCompanyHandler $handler): JsonResponse
     {
-        $PublicCompany = $this->getHandler->handle(new GetPublicCompanyQuery($uuid));
+        $publicCompany = $handler->handle($uuid);
+
+        if ($publicCompany === null) {
+            return response()->json(['message' => 'Public company not found.'], 404);
+        }
 
         return response()->json([
-            'data' => new PublicCompanyResource($PublicCompany),
+            'data' => $publicCompany,
         ]);
     }
 
-    public function store(CreatePublicCompanyRequest $request): JsonResponse
+    public function store(StorePublicCompanyRequest $request, CreatePublicCompanyHandler $handler): JsonResponse
     {
-        $dto = new PublicCompanyDTO(
-            PublicCompanyName: $request->public_company_name,
-            address: $request->address,
-            phone: $request->phone,
-            email: $request->email,
-            website: $request->website,
-            unit: $request->unit,
-            userId: $request->user_id ?? auth()->id(),
-        );
-
-        $PublicCompany = $this->createHandler->handle(new CreatePublicCompanyCommand($dto));
+        $uuid = $handler->handle(StorePublicCompanyData::from([
+            ...$request->validated(),
+            'user_id' => (int) $request->user()->id,
+        ]));
 
         return response()->json([
-            'data' => new PublicCompanyResource($PublicCompany),
+            'uuid' => $uuid,
+            'message' => 'Public company created successfully.',
         ], 201);
     }
 
-    public function update(UpdatePublicCompanyRequest $request, string $uuid): JsonResponse
+    public function update(string $uuid, UpdatePublicCompanyRequest $request, UpdatePublicCompanyHandler $handler): JsonResponse
     {
-        $dto = new PublicCompanyDTO(
-            PublicCompanyName: $request->public_company_name,
-            address: $request->address,
-            phone: $request->phone,
-            email: $request->email,
-            website: $request->website,
-            unit: $request->unit,
-        );
+        try {
+            $handler->handle($uuid, UpdatePublicCompanyData::from($request->validated()));
+        } catch (RuntimeException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 404);
+        }
 
-        $PublicCompany = $this->updateHandler->handle(new UpdatePublicCompanyCommand($uuid, $dto));
-
-        return response()->json([
-            'data' => new PublicCompanyResource($PublicCompany),
-        ]);
+        return response()->json(['message' => 'Public company updated successfully.']);
     }
 
-    public function destroy(string $uuid): JsonResponse
+    public function destroy(string $uuid, DeletePublicCompanyHandler $handler): JsonResponse
     {
-        $this->deleteHandler->handle(new DeletePublicCompanyCommand($uuid));
+        $handler->handle($uuid);
 
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Public company deleted successfully.']);
     }
 
-    public function restore(string $uuid): JsonResponse
+    public function restore(string $uuid, RestorePublicCompanyHandler $handler): JsonResponse
     {
-        $this->restoreHandler->handle(new RestorePublicCompanyCommand($uuid));
+        $handler->handle($uuid);
 
         return response()->json(['message' => 'Public company restored successfully.']);
     }

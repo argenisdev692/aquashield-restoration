@@ -1,73 +1,86 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { router } from '@inertiajs/react';
+import type { AxiosError } from 'axios';
 import { sileo } from 'sileo';
-import { PublicCompany } from '../types';
+import type {
+    CreatePublicCompanyPayload,
+    UpdatePublicCompanyPayload,
+} from '../types';
+
+function getErrorMessage(error: AxiosError | Error | unknown, fallback: string): string {
+    if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data as { message?: string } | undefined;
+
+        if (typeof responseData?.message === 'string' && responseData.message.length > 0) {
+            return responseData.message;
+        }
+    }
+
+    if (error instanceof Error && error.message.length > 0) {
+        return error.message;
+    }
+
+    return fallback;
+}
 
 export const usePublicCompanyMutations = () => {
     const queryClient = useQueryClient();
 
-    const createMutation = useMutation({
-        mutationFn: async (data: Partial<PublicCompany>) => {
-            const response = await axios.post('/public-companies/data', data);
-            return response.data.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['public-companies'] });
+    const createPublicCompany = useMutation({
+        mutationFn: (payload: CreatePublicCompanyPayload) => axios.post('/public-companies/data/admin', payload),
+        onSuccess: async () => {
             sileo.success({ title: 'Public company created successfully' });
-            router.visit('/public-companies');
+            await queryClient.invalidateQueries({ queryKey: ['public-companies'] });
         },
-        onError: () => {
-            sileo.error({ title: 'Failed to create Public company' });
+        onError: (error: AxiosError | Error | unknown) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to create public company') });
         },
     });
 
-    const updateMutation = useMutation({
-        mutationFn: async ({ uuid, data }: { uuid: string; data: Partial<PublicCompany> }) => {
-            const response = await axios.put(`/public-companies/data/${uuid}`, data);
-            return response.data.data;
-        },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['public-companies'] });
-            queryClient.invalidateQueries({ queryKey: ['public-company', data.uuid] });
+    const updatePublicCompany = useMutation({
+        mutationFn: ({ uuid, payload }: { uuid: string; payload: UpdatePublicCompanyPayload }) =>
+            axios.put(`/public-companies/data/admin/${uuid}`, payload),
+        onSuccess: async (_, variables) => {
             sileo.success({ title: 'Public company updated successfully' });
-            router.visit('/public-companies');
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['public-companies'] }),
+                queryClient.invalidateQueries({ queryKey: ['public-company', variables.uuid] }),
+            ]);
         },
-        onError: () => {
-            sileo.error({ title: 'Failed to update Public company' });
+        onError: (error: AxiosError | Error | unknown) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to update public company') });
         },
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: async (uuid: string) => {
-            await axios.delete(`/public-companies/data/${uuid}`);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['public-companies'] });
+    const deletePublicCompany = useMutation({
+        mutationFn: (uuid: string) => axios.delete(`/public-companies/data/admin/${uuid}`),
+        onSuccess: async () => {
             sileo.success({ title: 'Public company deleted successfully' });
+            await queryClient.invalidateQueries({ queryKey: ['public-companies'] });
         },
-        onError: () => {
-            sileo.error({ title: 'Failed to delete Public company' });
+        onError: (error: AxiosError | Error | unknown) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to delete public company') });
         },
     });
 
-    const restoreMutation = useMutation({
-        mutationFn: async (uuid: string) => {
-            await axios.patch(`/public-companies/data/${uuid}/restore`);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['public-companies'] });
+    const restorePublicCompany = useMutation({
+        mutationFn: (uuid: string) => axios.patch(`/public-companies/data/admin/${uuid}/restore`),
+        onSuccess: async (_, uuid) => {
             sileo.success({ title: 'Public company restored successfully' });
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['public-companies'] }),
+                queryClient.invalidateQueries({ queryKey: ['public-company', uuid] }),
+            ]);
         },
-        onError: () => {
-            sileo.error({ title: 'Failed to restore Public company' });
+        onError: (error: AxiosError | Error | unknown) => {
+            sileo.error({ title: getErrorMessage(error, 'Failed to restore public company') });
         },
     });
 
     return {
-        createPublicCompany: createMutation,
-        updatePublicCompany: updateMutation,
-        deletePublicCompany: deleteMutation,
-        restorePublicCompany: restoreMutation,
+        createPublicCompany,
+        updatePublicCompany,
+        deletePublicCompany,
+        restorePublicCompany,
     };
 };

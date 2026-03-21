@@ -4,19 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\PublicCompanies\Infrastructure\Http\Controllers\Web;
 
+use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
-use Modules\PublicCompanies\Application\Queries\GetPublicCompany\GetPublicCompanyHandler;
-use Modules\PublicCompanies\Application\Queries\GetPublicCompany\GetPublicCompanyQuery;
-use Modules\PublicCompanies\Infrastructure\Http\Resources\PublicCompanyResource;
+use Modules\PublicCompanies\Application\Queries\GetPublicCompanyHandler;
 
-final class PublicCompanyPageController
+final class PublicCompanyPageController extends Controller
 {
-    public function __construct(
-        private readonly GetPublicCompanyHandler $getHandler,
-    ) {
-    }
-
     public function index(): Response
     {
         return Inertia::render('public-companies/PublicCompaniesIndexPage');
@@ -27,21 +21,33 @@ final class PublicCompanyPageController
         return Inertia::render('public-companies/PublicCompanyCreatePage');
     }
 
-    public function show(string $uuid): Response
+    public function show(string $uuid, GetPublicCompanyHandler $handler): Response
     {
-        $PublicCompany = $this->getHandler->handle(new GetPublicCompanyQuery($uuid));
+        $publicCompany = $handler->handle($uuid);
+
+        if ($publicCompany === null) {
+            abort(404);
+        }
 
         return Inertia::render('public-companies/PublicCompanyShowPage', [
-            'PublicCompany' => new PublicCompanyResource($PublicCompany),
+            'publicCompany' => [
+                'data' => $publicCompany,
+            ],
         ]);
     }
 
-    public function edit(string $uuid): Response
+    public function edit(string $uuid, GetPublicCompanyHandler $handler): Response
     {
-        $PublicCompany = $this->getHandler->handle(new GetPublicCompanyQuery($uuid));
+        $publicCompany = $handler->handle($uuid);
+
+        if ($publicCompany === null) {
+            abort(404);
+        }
 
         return Inertia::render('public-companies/PublicCompanyEditPage', [
-            'PublicCompany' => new PublicCompanyResource($PublicCompany),
+            'publicCompany' => [
+                'data' => $publicCompany,
+            ],
         ]);
     }
 }

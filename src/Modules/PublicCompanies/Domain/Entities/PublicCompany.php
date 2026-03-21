@@ -4,94 +4,195 @@ declare(strict_types=1);
 
 namespace Modules\PublicCompanies\Domain\Entities;
 
-use Shared\Domain\Entities\AggregateRoot;
+use InvalidArgumentException;
 use Modules\PublicCompanies\Domain\ValueObjects\PublicCompanyId;
+use Shared\Domain\Entities\AggregateRoot;
 
 final class PublicCompany extends AggregateRoot
 {
-    public function __construct(
-        private readonly PublicCompanyId $id,
-        private string $PublicCompanyName,
+    private function __construct(
+        private PublicCompanyId $id,
+        private string $publicCompanyName,
         private ?string $address,
+        private ?string $address2,
         private ?string $phone,
         private ?string $email,
         private ?string $website,
         private ?string $unit,
-        private ?int $userId,
-        protected readonly ?string $createdAt = null,
-        protected readonly ?string $updatedAt = null,
-        protected readonly ?string $deletedAt = null,
+        private int $userId,
+        private string $createdAt,
+        private string $updatedAt,
+        private ?string $deletedAt = null,
     ) {
+        $this->publicCompanyName = self::normalizeRequired($publicCompanyName, 'Public company name is required.');
+        $this->address = self::normalizeOptional($address);
+        $this->address2 = self::normalizeOptional($address2);
+        $this->phone = self::normalizeOptional($phone);
+        $this->email = self::normalizeOptional($email);
+        $this->website = self::normalizeOptional($website);
+        $this->unit = self::normalizeOptional($unit);
+
+        if ($this->userId <= 0) {
+            throw new InvalidArgumentException('User is required.');
+        }
     }
 
-    public function getId(): PublicCompanyId
+    public static function create(
+        PublicCompanyId $id,
+        string $publicCompanyName,
+        ?string $address,
+        ?string $address2,
+        ?string $phone,
+        ?string $email,
+        ?string $website,
+        ?string $unit,
+        int $userId,
+        string $createdAt,
+    ): self {
+        return new self(
+            id: $id,
+            publicCompanyName: $publicCompanyName,
+            address: $address,
+            address2: $address2,
+            phone: $phone,
+            email: $email,
+            website: $website,
+            unit: $unit,
+            userId: $userId,
+            createdAt: $createdAt,
+            updatedAt: $createdAt,
+        );
+    }
+
+    public static function reconstitute(
+        PublicCompanyId $id,
+        string $publicCompanyName,
+        ?string $address,
+        ?string $address2,
+        ?string $phone,
+        ?string $email,
+        ?string $website,
+        ?string $unit,
+        int $userId,
+        string $createdAt,
+        string $updatedAt,
+        ?string $deletedAt,
+    ): self {
+        return new self(
+            id: $id,
+            publicCompanyName: $publicCompanyName,
+            address: $address,
+            address2: $address2,
+            phone: $phone,
+            email: $email,
+            website: $website,
+            unit: $unit,
+            userId: $userId,
+            createdAt: $createdAt,
+            updatedAt: $updatedAt,
+            deletedAt: $deletedAt,
+        );
+    }
+
+    public function update(
+        string $publicCompanyName,
+        ?string $address,
+        ?string $address2,
+        ?string $phone,
+        ?string $email,
+        ?string $website,
+        ?string $unit,
+        string $updatedAt,
+    ): void {
+        $this->publicCompanyName = self::normalizeRequired($publicCompanyName, 'Public company name is required.');
+        $this->address = self::normalizeOptional($address);
+        $this->address2 = self::normalizeOptional($address2);
+        $this->phone = self::normalizeOptional($phone);
+        $this->email = self::normalizeOptional($email);
+        $this->website = self::normalizeOptional($website);
+        $this->unit = self::normalizeOptional($unit);
+        $this->updatedAt = $updatedAt;
+    }
+
+    public function id(): PublicCompanyId
     {
         return $this->id;
     }
 
-    public function getPublicCompanyName(): string
+    public function publicCompanyName(): string
     {
-        return $this->PublicCompanyName;
+        return $this->publicCompanyName;
     }
 
-    public function getAddress(): ?string
+    public function address(): ?string
     {
         return $this->address;
     }
 
-    public function getPhone(): ?string
+    public function address2(): ?string
+    {
+        return $this->address2;
+    }
+
+    public function phone(): ?string
     {
         return $this->phone;
     }
 
-    public function getEmail(): ?string
+    public function email(): ?string
     {
         return $this->email;
     }
 
-    public function getWebsite(): ?string
+    public function website(): ?string
     {
         return $this->website;
     }
 
-    public function getUnit(): ?string
+    public function unit(): ?string
     {
         return $this->unit;
     }
 
-    public function getUserId(): ?int
+    public function userId(): int
     {
         return $this->userId;
     }
 
-    public function getCreatedAt(): ?string
+    public function createdAt(): string
     {
         return $this->createdAt;
     }
 
-    public function getUpdatedAt(): ?string
+    public function updatedAt(): string
     {
         return $this->updatedAt;
     }
 
-    public function getDeletedAt(): ?string
+    public function deletedAt(): ?string
     {
         return $this->deletedAt;
     }
 
-    public function update(
-        string $PublicCompanyName,
-        ?string $address,
-        ?string $phone,
-        ?string $email,
-        ?string $website,
-        ?string $unit
-    ): void {
-        $this->PublicCompanyName = $PublicCompanyName;
-        $this->address = $address;
-        $this->phone = $phone;
-        $this->email = $email;
-        $this->website = $website;
-        $this->unit = $unit;
+    private static function normalizeRequired(string $value, string $message): string
+    {
+        $normalized = trim($value);
+
+        if ($normalized === '') {
+            throw new InvalidArgumentException($message);
+        }
+
+        return $normalized;
+    }
+
+    private static function normalizeOptional(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = trim($value);
+
+        return $normalized === '' ? null : $normalized;
     }
 }

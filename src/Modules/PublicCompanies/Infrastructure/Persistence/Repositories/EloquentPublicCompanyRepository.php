@@ -12,95 +12,35 @@ use Modules\PublicCompanies\Infrastructure\Persistence\Mappers\PublicCompanyMapp
 
 final class EloquentPublicCompanyRepository implements PublicCompanyRepositoryPort
 {
-    private const SELECT_COLUMNS = [
-        'id',
-        'uuid',
-        'public_company_name',
-        'address',
-        'phone',
-        'email',
-        'website',
-        'unit',
-        'user_id',
-        'created_at',
-        'updated_at',
-        'deleted_at',
-    ];
+    public function __construct(
+        private readonly PublicCompanyMapper $mapper,
+    ) {}
 
     public function find(PublicCompanyId $id): ?PublicCompany
     {
-        return $this->findByUuid($id->value());
-    }
-
-    public function findByUuid(string $uuid): ?PublicCompany
-    {
-        $model = PublicCompanyEloquentModel::query()
-            ->select(self::SELECT_COLUMNS)
-            ->where('uuid', $uuid)
+        $model = PublicCompanyEloquentModel::withTrashed()
+            ->where('uuid', $id->toString())
             ->first();
 
-        return $model ? PublicCompanyMapper::toDomain($model) : null;
+        return $model === null ? null : $this->mapper->toDomain($model);
     }
 
-    public function save(PublicCompany $PublicCompany): void
+    public function save(PublicCompany $publicCompany): void
     {
-        PublicCompanyEloquentModel::query()->updateOrCreate(
-            ['uuid' => $PublicCompany->getId()->value()],
-            [
-                'public_company_name' => $PublicCompany->getPublicCompanyName(),
-                'address' => $PublicCompany->getAddress(),
-                'phone' => $PublicCompany->getPhone(),
-                'email' => $PublicCompany->getEmail(),
-                'website' => $PublicCompany->getWebsite(),
-                'unit' => $PublicCompany->getUnit(),
-                'user_id' => $PublicCompany->getUserId(),
-            ]
-        );
+        $this->mapper->toEloquent($publicCompany)->save();
     }
 
-    public function delete(PublicCompanyId $id): void
+    public function softDelete(PublicCompanyId $id): void
     {
-        PublicCompanyEloquentModel::query()->where('uuid', $id->value())->delete();
+        PublicCompanyEloquentModel::query()
+            ->where('uuid', $id->toString())
+            ->delete();
     }
 
     public function restore(PublicCompanyId $id): void
     {
-        PublicCompanyEloquentModel::query()->withTrashed()->where('uuid', $id->value())->restore();
-    }
-
-    public function list(array $filters = []): array
-    {
-        $perPage = (int) ($filters['perPage'] ?? 15);
-        $page = (int) ($filters['page'] ?? 1);
-
-        $query = PublicCompanyEloquentModel::query()
-            ->select(self::SELECT_COLUMNS)
-            ->when(
-                $filters['search'] ?? null,
-                fn($q, $search) => $q->where('public_company_name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-            )
-            ->when(
-                ($filters['dateFrom'] ?? null) || ($filters['dateTo'] ?? null),
-                fn($q) => $q->inDateRange($filters['dateFrom'] ?? null, $filters['dateTo'] ?? null),
-            )
-            ->when(
-                isset($filters['onlyTrashed']) && $filters['onlyTrashed'] === 'true',
-                fn($q) => $q->onlyTrashed()
-            )
-            ->orderBy($filters['sortBy'] ?? 'created_at', $filters['sortDir'] ?? 'desc');
-
-        $paginator = $query->paginate(perPage: $perPage, page: $page);
-
-        return [
-            'data' => array_map(
-                fn(PublicCompanyEloquentModel $model) => PublicCompanyMapper::toDomain($model),
-                $paginator->items()
-            ),
-            'total' => $paginator->total(),
-            'perPage' => $paginator->perPage(),
-            'currentPage' => $paginator->currentPage(),
-            'lastPage' => $paginator->lastPage(),
-        ];
+        PublicCompanyEloquentModel::withTrashed()
+            ->where('uuid', $id->toString())
+            ->restore();
     }
 }

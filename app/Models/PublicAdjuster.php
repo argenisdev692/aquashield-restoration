@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\PublicCompanies\Infrastructure\Persistence\Eloquent\Models\PublicCompanyEloquentModel;
 
 class PublicAdjuster extends Model
 {
@@ -26,7 +27,7 @@ class PublicAdjuster extends Model
     
     public function publicCompany()
     {
-        return $this->belongsTo(PublicCompany::class,'public_company_id');
+        return $this->belongsTo(PublicCompanyEloquentModel::class,'public_company_id');
     }
 
       public function publicAdjusterAssignments()

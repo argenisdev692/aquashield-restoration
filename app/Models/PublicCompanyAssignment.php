@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Modules\PublicCompanies\Infrastructure\Persistence\Eloquent\Models\PublicCompanyEloquentModel;
 
 class PublicCompanyAssignment extends Model
 {
@@ -18,6 +19,6 @@ class PublicCompanyAssignment extends Model
 
     public function publicCompany()
     {
-        return $this->belongsTo(PublicCompany::class);
+        return $this->belongsTo(PublicCompanyEloquentModel::class);
     }
 }

@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace Modules\PublicCompanies\Infrastructure\Persistence\Eloquent\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
-/**
- * PublicCompanyEloquentModel
- * 
- * @internal â€” Infrastructure only. Use PublicCompanyRepositoryPort.
- */
-class PublicCompanyEloquentModel extends Model
+final class PublicCompanyEloquentModel extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory;
+    use SoftDeletes;
+    use LogsActivity;
 
     protected $table = 'public_companies';
 
@@ -27,6 +25,7 @@ class PublicCompanyEloquentModel extends Model
         'uuid',
         'public_company_name',
         'address',
+        'address_2',
         'phone',
         'email',
         'website',
@@ -37,9 +36,10 @@ class PublicCompanyEloquentModel extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logFillable()
+            ->logOnly(['public_company_name', 'address', 'address_2', 'phone', 'email', 'website', 'unit', 'user_id'])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontSubmitEmptyLogs()
+            ->useLogName('crm.public_companies');
     }
 
     public function user(): BelongsTo
@@ -47,9 +47,24 @@ class PublicCompanyEloquentModel extends Model
         return $this->belongsTo(UserEloquentModel::class, 'user_id');
     }
 
-    public function scopeInDateRange($query, ?string $from, ?string $to): void
+    public function scopeSearch(Builder $query, ?string $search): Builder
     {
-        $query->when($from, fn($q) => $q->whereDate('created_at', '>=', $from))
-            ->when($to, fn($q) => $q->whereDate('created_at', '<=', $to));
+        return $query->when($search, static function (Builder $builder, string $term): void {
+            $builder->where(static function (Builder $nested) use ($term): void {
+                $nested->where('public_company_name', 'like', "%{$term}%")
+                    ->orWhere('email', 'like', "%{$term}%")
+                    ->orWhere('phone', 'like', "%{$term}%")
+                    ->orWhere('address', 'like', "%{$term}%")
+                    ->orWhere('address_2', 'like', "%{$term}%")
+                    ->orWhere('unit', 'like', "%{$term}%")
+                    ->orWhere('website', 'like', "%{$term}%");
+            });
+        });
+    }
+
+    public function scopeInDateRange(Builder $query, ?string $from, ?string $to): Builder
+    {
+        return $query->when($from, fn (Builder $builder): Builder => $builder->whereDate('created_at', '>=', $from))
+            ->when($to, fn (Builder $builder): Builder => $builder->whereDate('created_at', '<=', $to));
     }
 }

@@ -1,176 +1,238 @@
 import * as React from 'react';
-import { Link, Head, useRemember } from '@inertiajs/react';
-import AppLayout from '@/pages/layouts/AppLayout';
-import { usePublicCompanies } from '@/modules/public-companies/hooks/usePublicCompanies';
-import { usePublicCompanyMutations } from '@/modules/public-companies/hooks/usePublicCompanyMutations';
-import PublicCompaniesTable from './components/PublicCompaniesTable';
-import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
+import { Head, Link, useRemember } from '@inertiajs/react';
+import type { RowSelectionState } from '@tanstack/react-table';
+import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
 import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import { ExportButton } from '@/common/export/ExportButton';
+import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
+import { usePublicCompanies } from '@/modules/public-companies/hooks/usePublicCompanies';
+import { usePublicCompanyMutations } from '@/modules/public-companies/hooks/usePublicCompanyMutations';
 import type { PublicCompanyFilters } from '@/modules/public-companies/types';
-import { Search, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import AppLayout from '@/pages/layouts/AppLayout';
+import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
+import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
+import PublicCompaniesTable from './components/PublicCompaniesTable';
+
+const DEFAULT_META = {
+    currentPage: 1,
+    lastPage: 1,
+    perPage: 15,
+    total: 0,
+};
 
 export default function PublicCompaniesIndexPage(): React.JSX.Element {
-    const [filters, setFilters] = useRemember<PublicCompanyFilters>({ page: 1, perPage: 15 }, 'public-companies-filters');
-    const [search, setSearch] = React.useState<string>(filters.search || '');
+    const [filters, setFilters] = useRemember<PublicCompanyFilters>({ page: 1, per_page: 15 }, 'public-companies-filters');
+    const [search, setSearch] = React.useState<string>(filters.search ?? '');
     const [pendingDelete, setPendingDelete] = React.useState<{ uuid: string; name: string } | null>(null);
-
+    const [pendingRestore, setPendingRestore] = React.useState<{ uuid: string; name: string } | null>(null);
+    const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
     const [isPendingExport, startExportTransition] = React.useTransition();
     const [, startSearchTransition] = React.useTransition();
 
     const { data, isPending, isError } = usePublicCompanies(filters);
-    const PublicCompanies = data?.data ?? [];
-    const meta = data?.meta ?? { currentPage: 1, lastPage: 1, perPage: 15, total: 0 };
+    const companies = data?.data ?? [];
+    const meta = data?.meta ?? DEFAULT_META;
+    const { deletePublicCompany, restorePublicCompany } = usePublicCompanyMutations();
 
-    const { deletePublicCompany } = usePublicCompanyMutations();
-
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
+    function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
+        const value = event.target.value;
         setSearch(value);
+
         startSearchTransition(() => {
-            setFilters((prev) => ({ ...prev, search: value || undefined, page: 1 }));
+            setFilters((previous) => ({
+                ...previous,
+                search: value || undefined,
+                page: 1,
+            }));
         });
-    };
+    }
 
-    const handleDeleteClick = (uuid: string, name: string) => {
-        setPendingDelete({ uuid, name });
-    };
+    async function handleConfirmDelete(): Promise<void> {
+        if (pendingDelete === null) {
+            return;
+        }
 
-    const handleConfirmDelete = async () => {
-        if (!pendingDelete) return;
         await deletePublicCompany.mutateAsync(pendingDelete.uuid);
         setPendingDelete(null);
-    };
+    }
 
-    const handleExport = (format: 'excel' | 'pdf') => {
+    async function handleConfirmRestore(): Promise<void> {
+        if (pendingRestore === null) {
+            return;
+        }
+
+        await restorePublicCompany.mutateAsync(pendingRestore.uuid);
+        setPendingRestore(null);
+    }
+
+    function handleExport(format: 'excel' | 'pdf'): void {
         startExportTransition(() => {
             const params = new URLSearchParams();
-            if (filters.search) params.append('search', filters.search);
-            if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
-            if (filters.dateTo) params.append('dateTo', filters.dateTo);
-            params.append('format', format);
-            window.open(`/public-companies/data/export?${params.toString()}`, '_blank');
-        });
-    };
 
-    const goToPage = (page: number) => {
-        setFilters((prev) => ({ ...prev, page }));
-    };
+            if (filters.search) {
+                params.append('search', filters.search);
+            }
+
+            if (filters.status) {
+                params.append('status', filters.status);
+            }
+
+            if (filters.date_from) {
+                params.append('date_from', filters.date_from);
+            }
+
+            if (filters.date_to) {
+                params.append('date_to', filters.date_to);
+            }
+
+            params.append('format', format);
+            window.open(`/public-companies/data/admin/export?${params.toString()}`, '_blank', 'noopener,noreferrer');
+        });
+    }
+
+    function goToPage(page: number): void {
+        setFilters((previous) => ({ ...previous, page }));
+    }
 
     return (
         <>
             <Head title="Public Companies" />
             <AppLayout>
-                <div className="flex flex-col gap-6 animate-in fade-in duration-500">
+                <div className="mx-auto flex max-w-7xl flex-col gap-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h1 className="text-3xl font-extrabold tracking-tight text-(--text-primary)">
+                        <div className="space-y-1">
+                            <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
                                 Public Companies
                             </h1>
-                            <p className="text-sm mt-1 text-(--text-muted) font-medium">
-                                Manage your Public carriers - <span className="text-(--accent-primary)">{meta.total} {meta.total === 1 ? 'carrier' : 'carriers'}</span> found
+                            <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+                                Manage public companies in the CRM.{' '}
+                                <span style={{ color: 'var(--accent-primary)' }}>
+                                    {meta.total} {meta.total === 1 ? 'company' : 'companies'}
+                                </span>
                             </p>
                         </div>
-                        <Link
-                            href="/public-companies/create"
-                            className="bg-(--accent-primary) text-white font-bold py-2.5 px-6 rounded-xl hover:scale-[1.03] active:scale-[0.97] transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
-                        >
-                            <Plus size={18} />
-                            <span>New Company</span>
-                        </Link>
+
+                        <PermissionGuard permissions={['CREATE_PUBLIC_COMPANY']}>
+                            <Link href="/public-companies/create" className="btn-primary inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold">
+                                <Plus size={18} />
+                                <span>New Company</span>
+                            </Link>
+                        </PermissionGuard>
                     </div>
 
-                    <div className="flex flex-col items-center gap-3 rounded-2xl px-5 py-4 sm:flex-row glass-morphism border border-(--border-default) shadow-sm bg-(--bg-card)/50">
-                        <div className="flex flex-1 items-center gap-3 w-full group">
-                            <Search size={18} className="text-(--text-disabled) group-focus-within:text-(--accent-primary) transition-colors" />
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={handleSearchChange}
-                                placeholder="Search by name or email..."
-                                className="flex-1 bg-transparent text-sm outline-none placeholder:text-(--text-disabled) text-(--text-primary)"
-                            />
-                        </div>
+                    <div className="flex flex-col gap-4 rounded-2xl border p-4 shadow-sm sm:p-5" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}>
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex w-full items-center gap-3 rounded-xl border px-4 py-3 lg:max-w-xl" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-app)' }}>
+                                <Search size={18} style={{ color: 'var(--text-disabled)' }} />
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={handleSearchChange}
+                                    placeholder="Search by company, email, phone or address"
+                                    className="w-full bg-transparent text-sm outline-none"
+                                    style={{ color: 'var(--text-primary)' }}
+                                />
+                            </div>
 
-                        <div className="flex w-full items-center gap-4 sm:w-auto">
-                            <DataTableDateRangeFilter
-                                dateFrom={filters.dateFrom}
-                                dateTo={filters.dateTo}
-                                onChange={(range) => setFilters(p => ({ 
-                                    ...p, 
-                                    dateFrom: range.dateFrom, 
-                                    dateTo: range.dateTo, 
-                                    page: 1 
-                                }))}
-                            />
-                            
-                            <select
-                                value={filters.status || "all"}
-                                onChange={(e) =>
-                                    setFilters((p) => ({
-                                        ...p,
-                                        status:
-                                            e.target.value === "all"
-                                                ? undefined
-                                                : e.target.value,
+                            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-end">
+                                <DataTableDateRangeFilter
+                                    dateFrom={filters.date_from}
+                                    dateTo={filters.date_to}
+                                    onChange={(range) => setFilters((previous) => ({
+                                        ...previous,
+                                        date_from: range.dateFrom,
+                                        date_to: range.dateTo,
                                         page: 1,
-                                    }))
-                                }
-                                className="px-3 py-2 rounded-lg text-sm outline-none bg-(--bg-subtle) text-(--text-primary) border border-(--border-default)"
-                            >
-                                <option value="all">All Status</option>
-                                <option value="active">Active</option>
-                                <option value="deleted">Deleted</option>
-                            </select>
-                            
-                            <div className="h-8 w-px bg-(--border-subtle) hidden sm:block" />
-                            <ExportButton 
-                                onExport={handleExport} 
-                                isExporting={isPendingExport} 
-                            />
+                                    }))}
+                                />
+
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-disabled)' }}>
+                                        Status
+                                    </label>
+                                    <select
+                                        value={filters.status ?? ''}
+                                        onChange={(event) => setFilters((previous) => ({
+                                            ...previous,
+                                            status: event.target.value === '' ? undefined : (event.target.value as 'active' | 'deleted'),
+                                            page: 1,
+                                        }))}
+                                        className="h-9 rounded-lg border px-3 text-sm outline-none"
+                                        style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                                    >
+                                        <option value="">All statuses</option>
+                                        <option value="active">Active</option>
+                                        <option value="deleted">Deleted</option>
+                                    </select>
+                                </div>
+
+                                <div className="flex items-end">
+                                    <ExportButton onExport={handleExport} isExporting={isPendingExport} />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="overflow-hidden rounded-2xl border border-(--border-default) shadow-2xl bg-(--bg-card)">
+                    <div className="overflow-hidden rounded-2xl border shadow-xl" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}>
                         <PublicCompaniesTable
-                            data={PublicCompanies}
+                            data={companies}
                             isLoading={isPending}
                             isError={isError}
-                            onDelete={handleDeleteClick}
+                            onDelete={(uuid, name) => setPendingDelete({ uuid, name })}
+                            onRestore={(uuid, name) => setPendingRestore({ uuid, name })}
+                            rowSelection={rowSelection}
+                            onRowSelectionChange={setRowSelection}
                         />
 
-                        {meta.lastPage > 1 && (
-                            <div className="flex items-center justify-between px-6 py-4 border-t border-(--border-subtle) bg-white/5">
-                                <span className="text-xs font-semibold text-(--text-disabled) uppercase tracking-wider">
-                                    Page {meta.currentPage} / {meta.lastPage} • {meta.total} Total
+                        {meta.lastPage > 1 ? (
+                            <div className="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6" style={{ borderColor: 'var(--border-subtle)' }}>
+                                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-disabled)' }}>
+                                    Page {meta.currentPage} / {meta.lastPage} · {meta.total} total
                                 </span>
                                 <div className="flex items-center gap-2">
                                     <button
+                                        type="button"
                                         onClick={() => goToPage(meta.currentPage - 1)}
                                         disabled={meta.currentPage <= 1}
-                                        className="h-9 w-9 flex items-center justify-center rounded-xl bg-(--bg-app) border border-(--border-default) hover:bg-(--bg-hover) disabled:opacity-30 transition-all font-bold"
+                                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border disabled:opacity-40"
+                                        style={{ borderColor: 'var(--border-default)', background: 'var(--bg-app)', color: 'var(--text-primary)' }}
                                     >
                                         <ChevronLeft size={18} />
                                     </button>
                                     <button
+                                        type="button"
                                         onClick={() => goToPage(meta.currentPage + 1)}
                                         disabled={meta.currentPage >= meta.lastPage}
-                                        className="h-9 w-9 flex items-center justify-center rounded-xl bg-(--bg-app) border border-(--border-default) hover:bg-(--bg-hover) disabled:opacity-30 transition-all font-bold"
+                                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border disabled:opacity-40"
+                                        style={{ borderColor: 'var(--border-default)', background: 'var(--bg-app)', color: 'var(--text-primary)' }}
                                     >
                                         <ChevronRight size={18} />
                                     </button>
                                 </div>
                             </div>
-                        )}
+                        ) : null}
                     </div>
                 </div>
 
                 <DeleteConfirmModal
                     open={pendingDelete !== null}
-                    entityLabel={pendingDelete?.name || ''}
-                    onConfirm={handleConfirmDelete}
+                    entityLabel={pendingDelete?.name ?? ''}
+                    onConfirm={() => {
+                        void handleConfirmDelete();
+                    }}
                     onCancel={() => setPendingDelete(null)}
                     isDeleting={deletePublicCompany.isPending}
+                />
+
+                <RestoreConfirmModal
+                    isOpen={pendingRestore !== null}
+                    entityLabel="public company"
+                    entityName={pendingRestore?.name}
+                    onConfirm={() => {
+                        void handleConfirmRestore();
+                    }}
+                    onCancel={() => setPendingRestore(null)}
+                    isPending={restorePublicCompany.isPending}
                 />
             </AppLayout>
         </>

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Cache;
 use Modules\EmailData\Infrastructure\Persistence\Eloquent\Models\EmailDataEloquentModel;
+use Modules\PublicCompanies\Infrastructure\Persistence\Eloquent\Models\PublicCompanyEloquentModel;
 
 class User extends Authenticatable
 {
@@ -134,7 +135,7 @@ class User extends Authenticatable
      */
     public function publicCompanies(): HasMany
     {
-        return $this->hasMany(PublicCompany::class);
+        return $this->hasMany(PublicCompanyEloquentModel::class);
     }
 
     /**
