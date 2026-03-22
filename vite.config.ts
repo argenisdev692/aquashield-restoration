@@ -16,7 +16,6 @@ export default defineConfig({
     ],
     build: {
         assetsInlineLimit: 4096,
-        manifest: true,
         rollupOptions: {
             output: {
                 manualChunks: {
@@ -29,6 +28,4 @@ export default defineConfig({
     server: {
         watch: { ignored: ['**/storage/framework/views/**'] },
     },
-    // Fix para producción
-    base: process.env.NODE_ENV === 'production' ? '/' : '/',
 });
