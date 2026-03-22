@@ -59,7 +59,8 @@ import {
   MessageSquareText,
   Mail,
   Bot,
-  Layers
+  Layers,
+  Briefcase
 } from 'lucide-react';
 
 const icSize = 18;
@@ -91,6 +92,7 @@ const IconAppointment = () => <CalendarRange size={icSize} />;
 const IconContactSupport = () => <MessageSquareText size={icSize} />;
 const IconEmailData = () => <Mail size={icSize} />;
 const IconAI = () => <Bot size={18} />;
+const IconPortfolio = () => <Briefcase size={icSize} />;
 
 interface TooltipRect {
   left: number;
@@ -149,6 +151,7 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Products', href: '/products', icon: <IconPackage />, description: 'Product catalog', permission: ['READ_PRODUCT', 'CREATE_PRODUCT', 'UPDATE_PRODUCT', 'DELETE_PRODUCT', 'RESTORE_PRODUCT'] },
       { label: 'Service Categories', href: '/service-categories', icon: <FolderTree size={icSize} />, description: 'Service category catalog', permission: ['READ_SERVICE_CATEGORY', 'CREATE_SERVICE_CATEGORY', 'UPDATE_SERVICE_CATEGORY', 'DELETE_SERVICE_CATEGORY', 'RESTORE_SERVICE_CATEGORY'] },
       { label: 'Project Types', href: '/project-types', icon: <Layers size={icSize} />, description: 'Project type catalog', permission: ['READ_PROJECT_TYPE', 'CREATE_PROJECT_TYPE', 'UPDATE_PROJECT_TYPE', 'DELETE_PROJECT_TYPE', 'RESTORE_PROJECT_TYPE'] },
+      { label: 'Portfolios', href: '/portfolios', icon: <IconPortfolio />, description: 'Project portfolio showcase', permission: ['VIEW_PORTFOLIO', 'CREATE_PORTFOLIO', 'UPDATE_PORTFOLIO', 'DELETE_PORTFOLIO', 'RESTORE_PORTFOLIO'] },
     ]
   },
   {

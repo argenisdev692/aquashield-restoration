@@ -15,6 +15,7 @@ final class CreateServiceCategoryHandler
         private readonly ServiceCategoryRepositoryPort $repository,
     ) {}
 
+    #[\NoDiscard('UUID of the created service category must be captured')]
     public function handle(StoreServiceCategoryData $data): string
     {
         $id = ServiceCategoryId::generate();

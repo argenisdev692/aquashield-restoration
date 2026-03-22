@@ -17,6 +17,8 @@ use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Auth\Infrastructure\Persistence\Eloquent\Models\SocialiteProviderEloquentModel;
 use Modules\CompanyData\Infrastructure\Persistence\Eloquent\Models\CompanyDataEloquentModel;
+use Src\Modules\ProjectTypes\Infrastructure\Persistence\Eloquent\Models\ProjectTypeEloquentModel;
+use Src\Modules\ServiceCategories\Infrastructure\Persistence\Eloquent\Models\ServiceCategoryEloquentModel;
 
 /**
  * UserEloquentModel
@@ -149,6 +151,26 @@ class UserEloquentModel extends Authenticatable
     public function socialiteProviders(): HasMany
     {
         return $this->hasMany(SocialiteProviderEloquentModel::class, 'user_id');
+    }
+
+    /**
+     * Service categories created by this user.
+     *
+     * @return HasMany<ServiceCategoryEloquentModel, $this>
+     */
+    public function serviceCategories(): HasMany
+    {
+        return $this->hasMany(ServiceCategoryEloquentModel::class, 'user_id');
+    }
+
+    /**
+     * Project types created by this user.
+     *
+     * @return HasMany<ProjectTypeEloquentModel, $this>
+     */
+    public function projectTypes(): HasMany
+    {
+        return $this->hasMany(ProjectTypeEloquentModel::class, 'user_id');
     }
 
     /**

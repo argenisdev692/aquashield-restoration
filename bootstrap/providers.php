@@ -29,4 +29,5 @@ return [
     Src\Modules\CategoryProducts\Providers\CategoryProductsServiceProvider::class,
     Src\Modules\ServiceCategories\Providers\ServiceCategoriesServiceProvider::class,
     Src\Modules\ProjectTypes\Providers\ProjectTypesServiceProvider::class,
+    Src\Modules\Portfolios\Providers\PortfoliosServiceProvider::class,
 ];

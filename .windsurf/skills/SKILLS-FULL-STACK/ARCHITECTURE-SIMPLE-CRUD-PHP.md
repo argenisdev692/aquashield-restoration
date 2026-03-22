@@ -49,8 +49,7 @@ src/
         │   │   ├── Store{YourEntity}Data.php
         │   │   ├── Update{YourEntity}Data.php
         │   │   ├── {YourEntity}FilterData.php
-        │   │   ├── BulkDelete{YourEntity}Data.php
-        │   │   └── {YourEntity}Data.php
+        │   │   └── BulkDelete{YourEntity}Data.php
         │   ├── Commands/
         │   │   ├── Create{YourEntity}Handler.php
         │   │   ├── Update{YourEntity}Handler.php
@@ -63,30 +62,39 @@ src/
         └── Infrastructure/
             ├── Http/
             │   ├── Controllers/
+            │   │   ├── Api/
+            │   │   │   ├── {YourEntity}Controller.php        ← Swagger @OA\Tag + method annotations MANDATORY
+            │   │   │   └── {YourEntity}ExportController.php  ← Swagger @OA\Get annotation MANDATORY if exports exist
             │   │   └── Web/
-            │   │       ├── {YourEntity}PageController.php
-            │   │       └── Admin{YourEntity}Controller.php
+            │   │       └── {YourEntity}PageController.php
+            │   ├── Export/                                  ← MANDATORY when exports are in scope
+            │   │   ├── {YourEntity}ExcelExport.php
+            │   │   ├── {YourEntity}PdfExport.php
+            │   │   └── {YourEntity}ExportTransformer.php
             │   ├── Requests/
             │   │   ├── Store{YourEntity}Request.php
             │   │   ├── Update{YourEntity}Request.php
-            │   │   └── Export{YourEntity}Request.php
+            │   │   ├── BulkDelete{YourEntity}Request.php
+            │   │   └── Export{YourEntity}Request.php         ← MANDATORY when exports are in scope
             │   └── Resources/
             │       └── {YourEntity}Resource.php
-            ├── Export/
-            │   ├── {YourEntity}ExcelExport.php
-            │   ├── {YourEntity}PdfExport.php
-            │   ├── {YourEntity}ExportController.php
-            │   └── Views/
-            │       └── pdf.blade.php
             ├── Persistence/
-            │   ├── Models/
-            │   │   └── {YourEntity}EloquentModel.php
+            │   ├── Eloquent/
+            │   │   └── Models/
+            │   │       └── {YourEntity}EloquentModel.php
             │   ├── Mappers/
             │   │   └── {YourEntity}Mapper.php
             │   └── Repositories/
             │       └── Eloquent{YourEntity}Repository.php
             └── Routes/
-                └── web.php
+                ├── web.php   ← Inertia pages + /data/admin JSON endpoints (session auth)
+                └── api.php   ← Sanctum API endpoints (MANDATORY when module exposes API)
+
+resources/
+└── views/
+    └── exports/
+        └── pdf/
+            └── {your_module_snake}.blade.php   ← MANDATORY when PDF export is in scope
 ```
 
 ---
@@ -144,12 +152,9 @@ src/
 
 Add these only when the module genuinely requires them:
 
-- `Infrastructure/Api/`
 - `Infrastructure/Storage/`
 - `Infrastructure/Queue/`
 - `Infrastructure/WebSocket/`
-- `Infrastructure/Export/` with `ExcelExport`, `PdfExport`, `ExportController`, and Blade PDF view
-- `Infrastructure/Http/Requests/Export{YourEntity}Request.php` when export query params need validation
 - `Infrastructure/ExternalServices/`
 - `Application/Policies/`
 - `Application/Listeners/`
@@ -157,6 +162,8 @@ Add these only when the module genuinely requires them:
 - extra `Tests/Integration/`
 
 If you add one of these folders, be able to explain the concrete use-case in one sentence.
+
+> `Infrastructure/Http/Export/` and `resources/views/exports/pdf/` are NOT optional when exports are in scope — see **Export Rule** below.
 
 ---
 
@@ -176,18 +183,37 @@ Canonical responsibility set:
 
 ---
 
-## Export Rule for Simple CRUD
+## Export Rule — Mandatory When Exports Are in Scope
 
-- Exports are optional in simple CRUD, not mandatory by default.
-- If exports are requested, keep them minimal and reuse the same `{YourEntity}FilterData` / filter DTO used by the list flow.
-- Add one dedicated `Export{YourEntity}Request` to validate export query params such as `format`, `date_from`, `date_to`, and any module-specific filters.
-- The export controller/action should consume `validated()` from `Export{YourEntity}Request`, not raw query input.
-- Support both Excel and PDF only when the request/module scope explicitly includes exports.
-- The export route must be declared before `/{uuid}` in the routes file.
-- Do not introduce extra adapters or abstractions for exports unless the module has a real second export use-case.
-- Keep one `ExportController` entry point and branch by requested format when possible.
-- PDF should use one dedicated Blade template.
-- Excel and PDF should keep the same column semantics whenever possible.
+Once exports are requested, ALL of the following become **mandatory with no exceptions**:
+
+### Backend files
+
+- `Infrastructure/Http/Export/{YourEntity}ExcelExport.php` — implements `FromQuery`, `WithHeadings`, `WithMapping`, `ShouldAutoSize`, `WithTitle`, `WithStyles`.
+- `Infrastructure/Http/Export/{YourEntity}PdfExport.php` — uses DomPDF `Pdf::loadView('exports.pdf.{your_module_snake}', [...])`, `cursor()` for memory efficiency, `setPaper('a4', 'landscape')`.
+- `Infrastructure/Http/Export/{YourEntity}ExportTransformer.php` — static methods `forExcel()` and `forPdf()` using `|>` pipe chains (`extract → formatDates → sanitize → toRow/object`). Both methods must carry `#[\NoDiscard]`.
+- `Infrastructure/Http/Controllers/Api/{YourEntity}ExportController.php` — single `__invoke` method using `match($format)` to branch excel/pdf. Must carry `@OA\Get` Swagger annotation.
+- `Infrastructure/Http/Requests/Export{YourEntity}Request.php` — validates `format`, `search`, `status`, `date_from`, `date_to`, and any entity-specific filter fields.
+
+### View file
+
+- `resources/views/exports/pdf/{your_module_snake}.blade.php` **in the global views directory** (NOT inside the module). Use the path `'exports.pdf.{your_module_snake}'` in `Pdf::loadView()`.
+- The Blade template must include: AquaShield logo header, generated-at metadata, a `<table>` with `@forelse`, Active/Deleted badges, and an `AquaShield CRM — Confidential` footer.
+
+### Route
+
+- Declare the export route as `Route::get('/export', {YourEntity}ExportController::class)` **before** `Route::get('/{uuid}', ...)` inside the `data/admin` prefix group.
+- Register it in both `web.php` (session auth, Inertia flow) and `api.php` (Sanctum).
+
+### Reuse filter DTO
+
+- `{YourEntity}ExcelExport` and `{YourEntity}PdfExport` must both accept `{YourEntity}FilterData` in their constructor and apply identical filter logic via `->when()` chains.
+- `{YourEntity}ExportController::__invoke` must call `{YourEntity}FilterData::from($request->validated())` — never raw `$request->query()`.
+
+### Testing
+
+- Feature test for Excel export: assert response is 200 with `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` content type.
+- Feature test for PDF export: assert response is 200 with `application/pdf` content type.
 
 ---
 
@@ -249,3 +275,106 @@ If a reviewer cannot identify all of these quickly, the module is too complex fo
 - and where the routes are registered.
 
 For language, PHP 8.5 syntax, route conventions, security rules, exports, and observability rules, always defer to `BACKEND-PHP.md`.
+
+---
+
+## Swagger / OpenAPI Rule — Mandatory on All API Controllers
+
+Every controller under `Infrastructure/Http/Controllers/Api/` **must** carry OpenAPI annotations. No exceptions.
+
+### CRUD controller
+
+```php
+/**
+ * @OA\Tag(name="{Human Name}", description="{Human Name} CRUD operations")
+ */
+final class {YourEntity}Controller extends Controller
+{
+    /**
+     * @OA\Get(
+     *     path="/api/{module-slug}",
+     *     tags={"{Human Name}"},
+     *     summary="List {entities}",
+     *     @OA\Parameter(name="search", in="query", required=false, @OA\Schema(type="string", maxLength=255)),
+     *     @OA\Parameter(name="status", in="query", required=false, @OA\Schema(type="string", enum={"active","deleted"})),
+     *     @OA\Parameter(name="date_from", in="query", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="date_to", in="query", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="page", in="query", required=false, @OA\Schema(type="integer", default=1)),
+     *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", default=15)),
+     *     @OA\Response(response=200, description="Paginated list", @OA\JsonContent(
+     *         @OA\Property(property="data", type="array", @OA\Items(type="object")),
+     *         @OA\Property(property="meta", type="object")
+     *     )),
+     *     @OA\Response(response=403, description="Forbidden"),
+     *     security={{"sanctum": {}}}
+     * )
+     */
+    public function index(...): JsonResponse { ... }
+
+    // @OA\Get    → show      path="/api/{module-slug}/{uuid}"
+    // @OA\Post   → store     path="/api/{module-slug}"
+    // @OA\Put    → update    path="/api/{module-slug}/{uuid}"
+    // @OA\Delete → destroy   path="/api/{module-slug}/{uuid}"
+    // @OA\Patch  → restore   path="/api/{module-slug}/{uuid}/restore"
+    // @OA\Post   → bulk-delete path="/api/{module-slug}/bulk-delete"
+}
+```
+
+### Export controller
+
+```php
+/**
+ * @OA\Get(
+ *     path="/{module-slug}/data/admin/export",
+ *     tags={"{Human Name}"},
+ *     summary="Export {entities} to Excel or PDF",
+ *     @OA\Parameter(name="format", in="query", required=false, @OA\Schema(type="string", enum={"excel","pdf"}, default="excel")),
+ *     @OA\Parameter(name="search", in="query", required=false, @OA\Schema(type="string", maxLength=255)),
+ *     @OA\Parameter(name="status", in="query", required=false, @OA\Schema(type="string", enum={"active","deleted"})),
+ *     @OA\Parameter(name="date_from", in="query", required=false, @OA\Schema(type="string", format="date")),
+ *     @OA\Parameter(name="date_to", in="query", required=false, @OA\Schema(type="string", format="date")),
+ *     @OA\Response(response=200, description="File downloaded successfully"),
+ *     @OA\Response(response=403, description="Forbidden"),
+ *     security={{"sanctum": {}}}
+ * )
+ */
+final class {YourEntity}ExportController { ... }
+```
+
+### Rules
+
+- `@OA\Tag` on the class body (not inside a method doc-block).
+- Every public HTTP method gets its own annotation block.
+- Path prefix is always `/api/{module-slug}` for CRUD endpoints (Sanctum).
+- Export annotation path uses the web `/data/admin/export` path (session auth).
+- All annotations include `security={{"sanctum": {}}}` even on read endpoints.
+- Never annotate `Web/` page controllers — those are Inertia only.
+
+---
+
+## API Routes Rule — Mandatory When Module Exposes API Endpoints
+
+### File location
+
+`Infrastructure/Routes/api.php` — mirroring the `web.php` permission groups but without Web page routes.
+
+### ServiceProvider registration
+
+```php
+private function registerApiRoutes(): void
+{
+    Route::middleware(['api', 'auth:sanctum'])
+        ->prefix('api/{module-slug}')
+        ->group(__DIR__ . '/../Infrastructure/Routes/api.php');
+}
+```
+
+### Route order inside `api.php`
+
+1. Export route first (before `/{uuid}` to avoid route capture).
+2. Static named paths second (`/service-categories`, `/project-types`, etc.).
+3. `/{uuid}` last within each middleware group.
+
+### Permission middleware
+
+Mirror the exact permissions used in `web.php`. Use `VIEW_*` for read-only API and match the project's permission naming convention.

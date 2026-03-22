@@ -17,6 +17,7 @@ final class CreateProjectTypeHandler
         private readonly ProjectTypeRepositoryPort $repository,
     ) {}
 
+    #[\NoDiscard('UUID of the created project type must be captured')]
     public function handle(StoreProjectTypeData $data): string
     {
         $serviceCategory = ServiceCategoryEloquentModel::where('uuid', $data->serviceCategoryUuid)->first();

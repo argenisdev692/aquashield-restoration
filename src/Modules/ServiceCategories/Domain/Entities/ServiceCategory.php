@@ -94,7 +94,7 @@ class ServiceCategory extends AggregateRoot
 
     private static function normalizeCategory(string $category): string
     {
-        $normalized = trim($category);
+        $normalized = $category |> trim(...);
 
         if ($normalized === '') {
             throw new InvalidArgumentException('Service category name is required.');
@@ -109,7 +109,7 @@ class ServiceCategory extends AggregateRoot
             return null;
         }
 
-        $normalized = trim($type);
+        $normalized = $type |> trim(...);
 
         return $normalized === '' ? null : $normalized;
     }

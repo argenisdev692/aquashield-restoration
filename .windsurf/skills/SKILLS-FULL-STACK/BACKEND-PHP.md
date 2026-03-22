@@ -23,6 +23,30 @@ description: Primary guide for backend tasks with PHP 8.5 and Laravel 12, includ
 
 ## §1 — PHP 8.5 Features (Genuine)
 
+### Adoption Map — Where to use each feature
+
+> Sources verified: [php.net/migration85](https://www.php.net/manual/en/migration85.new-features.php) · [php.net/releases/8.5](https://www.php.net/releases/8.5/en.php) · laravel-news · stitcher.io
+
+| Feature | Version | Where to apply in this project | Mandatory |
+| --- | --- | --- | --- |
+| **Pipe operator `\|>`** | PHP 8.5 | `Application/Commands/` handlers, `Infrastructure/Http/Export/*Transformer` (`forExcel`/`forPdf`), `Infrastructure/Http/Resources/` mappers, entity normalization methods | ✅ Yes |
+| **Property hooks (`get`/`set`)** | PHP 8.4 ¹ | `Domain/ValueObjects/` — `*Id`, `Email`, `Url`, `Money`, `PhoneNumber`; any VO where the setter must validate an invariant | ✅ Yes |
+| **`clone($obj, [...])`** | PHP 8.5 | `Domain/ValueObjects/` wither methods on `readonly` VOs, `Domain/Entities/` immutable update patterns | ✅ Yes |
+| **`#[\NoDiscard]`** | PHP 8.5 | `Application/Commands/Create*Handler::handle()` returning UUID, static sanitization methods, `Domain/Services/` methods with meaningful return values | ✅ Yes |
+| **`array_first()` / `array_last()`** | PHP 8.5 | `Infrastructure/Persistence/Repositories/` — replaces `reset()`/`end()` on Eloquent collections, `Application/Queries/` handlers inspecting result sets | ✅ Yes |
+| **`FILTER_THROW_ON_FAILURE`** | PHP 8.5 | `Domain/ValueObjects/` — `Email`, `Url`, phone VOs using `filter_var()` for validation; replaces manual `=== false` checks | ✅ Yes |
+| **FCCs in constant expressions** | PHP 8.5 | `Infrastructure/Http/Export/*Transformer` — declare transformation pipelines as `const PIPELINE = [trim(...), strtolower(...)]` | When needed |
+| **`Closure::getCurrent()`** | PHP 8.5 | Anonymous recursive closures in `Application/Commands/` or `Infrastructure/Http/Export/` transformers | When needed |
+| **Asymmetric visibility (static)** | PHP 8.5 ² | `Shared/Infrastructure/` singleton adapters, module config classes where the value is set once internally | When needed |
+| **Final constructor promotion** | PHP 8.5 | `Domain/Entities/AggregateRoot` — mark `$id` as `final` to prevent child override | When needed |
+
+> **¹** Property hooks were introduced in PHP 8.4. They are available and enforced in this PHP 8.5 project — do not confuse origin with availability.  
+> **²** Instance-level asymmetric visibility (`public private(set)`) was PHP 8.4. PHP 8.5 extends this to **static** properties.
+
+**Rule**: Before writing any PHP block, scan this table. Any layer listed as "✅ Yes" must use the corresponding feature — no exceptions, no legacy workarounds.
+
+---
+
 ### Pipe Operator (`|>`)
 
 Passes the left expression as the **sole argument** to the right callable. Compiled away — zero runtime overhead.
@@ -333,6 +357,14 @@ final class {Module}EloquentModel extends Model
     }
 }
 ```
+
+### Eloquent Relationship Rules
+
+- Every FK column (`user_id`, `*_id`) in a migration **must** have a typed `BelongsTo` on the child model and a typed `HasMany`/`HasOne` on the parent — both sides, always, no orphan FKs.
+- When adding or reviewing any `EloquentModel`, check that all FK columns in `$fillable` have their relationship method declared; if `user_id` is present, add `createdBy(): BelongsTo` on the model and the inverse `hasMany` on `UserEloquentModel`.
+- All relationship methods must carry a typed `@return` generic: `@return BelongsTo<ParentModel, $this>` / `@return HasMany<ChildModel, $this>`.
+
+---
 
 ### §4.1 — Eloquent Performance (Senior-Level Mandatory)
 

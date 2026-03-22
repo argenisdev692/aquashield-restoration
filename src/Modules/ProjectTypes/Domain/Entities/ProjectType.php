@@ -118,7 +118,7 @@ class ProjectType extends AggregateRoot
 
     private static function normalizeTitle(string $title): string
     {
-        $normalized = trim($title);
+        $normalized = $title |> trim(...);
 
         if ($normalized === '') {
             throw new InvalidArgumentException('Project type title is required.');
@@ -129,7 +129,7 @@ class ProjectType extends AggregateRoot
 
     private static function normalizeStatus(string $status): string
     {
-        $normalized = strtolower(trim($status));
+        $normalized = $status |> trim(...) |> strtolower(...);
 
         if (!in_array($normalized, self::ALLOWED_STATUSES, true)) {
             throw new InvalidArgumentException('Invalid project type status.');
