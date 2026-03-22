@@ -10,19 +10,17 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
-final class CallHistoryPermissionsSeeder extends Seeder
+final class DocumentTemplateAlliancePermissionsSeeder extends Seeder
 {
     public function run(): void
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $permissions = [
-            'READ_CALL_HISTORY',
-            'CREATE_CALL_HISTORY',
-            'UPDATE_CALL_HISTORY',
-            'DELETE_CALL_HISTORY',
-            'RESTORE_CALL_HISTORY',
-            'SYNC_CALL_HISTORY',
+            'VIEW_DOCUMENT_TEMPLATE_ALLIANCE',
+            'CREATE_DOCUMENT_TEMPLATE_ALLIANCE',
+            'UPDATE_DOCUMENT_TEMPLATE_ALLIANCE',
+            'DELETE_DOCUMENT_TEMPLATE_ALLIANCE',
         ];
 
         foreach ($permissions as $name) {

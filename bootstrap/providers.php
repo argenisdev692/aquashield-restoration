@@ -23,6 +23,7 @@ return [
     Modules\PublicCompanies\Providers\PublicCompaniesServiceProvider::class,
     Src\Modules\Appointments\Providers\AppointmentsServiceProvider::class,
     Src\Modules\ContactSupports\Providers\ContactSupportsServiceProvider::class,
+    Src\Modules\ServiceRequests\Providers\ServiceRequestsServiceProvider::class,
     Src\Modules\Products\Providers\ProductsServiceProvider::class,
     Src\Modules\TypeDamages\Providers\TypeDamagesServiceProvider::class,
     Src\Modules\CauseOfLosses\Providers\CauseOfLossesServiceProvider::class,
@@ -32,4 +33,5 @@ return [
     Src\Modules\Portfolios\Providers\PortfoliosServiceProvider::class,
     Modules\CallHistory\Providers\CallHistoryServiceProvider::class,
     Src\Modules\ClaimStatuses\Providers\ClaimStatusesServiceProvider::class,
+    Src\Modules\DocumentTemplateAlliances\Providers\DocumentTemplateAlliancesServiceProvider::class,
 ];

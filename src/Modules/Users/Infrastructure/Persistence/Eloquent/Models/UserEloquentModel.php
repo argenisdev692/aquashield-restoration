@@ -17,6 +17,7 @@ use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Auth\Infrastructure\Persistence\Eloquent\Models\SocialiteProviderEloquentModel;
 use Modules\CompanyData\Infrastructure\Persistence\Eloquent\Models\CompanyDataEloquentModel;
+use Src\Modules\DocumentTemplateAlliances\Infrastructure\Persistence\Eloquent\Models\DocumentTemplateAllianceEloquentModel;
 use Src\Modules\ProjectTypes\Infrastructure\Persistence\Eloquent\Models\ProjectTypeEloquentModel;
 use Src\Modules\ServiceCategories\Infrastructure\Persistence\Eloquent\Models\ServiceCategoryEloquentModel;
 
@@ -171,6 +172,16 @@ class UserEloquentModel extends Authenticatable
     public function projectTypes(): HasMany
     {
         return $this->hasMany(ProjectTypeEloquentModel::class, 'user_id');
+    }
+
+    /**
+     * Document template alliances uploaded by this user.
+     *
+     * @return HasMany<DocumentTemplateAllianceEloquentModel, $this>
+     */
+    public function documentTemplateAlliances(): HasMany
+    {
+        return $this->hasMany(DocumentTemplateAllianceEloquentModel::class, 'uploaded_by');
     }
 
     /**
