@@ -1,0 +1,66 @@
+[build]
+dockerComposeFile = "compose.yaml"
+dockerComposeService = "laravel.test"
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 100
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+
+[env]
+APP_ENV = "production"
+APP_DEBUG = "false"
+APP_URL = "${RAILWAY_PUBLIC_URL}"
+LOG_CHANNEL = "errorlog"
+LOG_DEPRECATIONS_CHANNEL = "null"
+LOG_LEVEL = "debug"
+
+# Database (Railway MySQL Plugin)
+DB_CONNECTION = "mysql"
+DB_HOST = "${RAILWAY_MYSQLHOST}"
+DB_PORT = "${RAILWAY_MYSQLPORT}"
+DB_DATABASE = "${RAILWAY_MYSQLDATABASE}"
+DB_USERNAME = "${RAILWAY_MYSQLUSER}"
+DB_PASSWORD = "${RAILWAY_MYSQLPASSWORD}"
+
+# Cache & Queue
+CACHE_DRIVER = "redis"
+QUEUE_CONNECTION = "redis"
+REDIS_HOST = "${RAILWAY_REDISHOST}"
+REDIS_PORT = "${RAILWAY_REDISPORT}"
+REDIS_PASSWORD = "${RAILWAY_REDISPASSWORD}"
+
+# File Storage (Cloudflare R2 según memoria del proyecto)
+FILESYSTEM_DISK = "r2"
+AWS_ACCESS_KEY_ID = "${AWS_ACCESS_KEY_ID}"
+AWS_SECRET_ACCESS_KEY = "${AWS_SECRET_ACCESS_KEY}"
+AWS_DEFAULT_REGION = "auto"
+AWS_BUCKET = "${AWS_BUCKET}"
+AWS_ENDPOINT = "${AWS_ENDPOINT}"
+
+# Mail
+MAIL_MAILER = "smtp"
+MAIL_HOST = "${MAIL_HOST}"
+MAIL_PORT = "${MAIL_PORT}"
+MAIL_USERNAME = "${MAIL_USERNAME}"
+MAIL_PASSWORD = "${MAIL_PASSWORD}"
+MAIL_ENCRYPTION = "${MAIL_ENCRYPTION}"
+MAIL_FROM_ADDRESS = "${MAIL_FROM_ADDRESS}"
+MAIL_FROM_NAME = "${MAIL_FROM_NAME}"
+
+# Reverb (WebSocket)
+REVERB_APP_ID = "${REVERB_APP_ID}"
+REVERB_APP_KEY = "${REVERB_APP_KEY}"
+REVERB_APP_SECRET = "${REVERB_APP_SECRET}"
+REVERB_HOST = "${RAILWAY_PUBLIC_URL}"
+REVERB_PORT = "443"
+REVERB_SCHEME = "https"
+
+# OpenTelemetry
+OTEL_PHP_AUTOLOAD_ENABLED = "true"
+OTEL_SERVICE_NAME = "aquashield-crm"
+OTEL_TRACES_EXPORTER = "otlp"
+OTEL_EXPORTER_OTLP_ENDPOINT = "${OTEL_EXPORTER_OTLP_ENDPOINT}"
+OTEL_EXPORTER_OTLP_PROTOCOL = "http/protobuf"
+OTEL_PROPAGATORS = "baggage,tracecontext"
