@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\Blog\Infrastructure\Persistence\Eloquent\Seeders\PostPermissionsSeeder;
-use Modules\CallHistory\Database\Seeders\CallHistoryPermissionsSeeder;
+use Database\Seeders\CallHistoryPermissionsSeeder;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Seeders\UsersPermissionsSeeder;
 
 class DatabaseSeeder extends Seeder
