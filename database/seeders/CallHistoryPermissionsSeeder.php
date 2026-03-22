@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Ramsey\Uuid\Uuid;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -24,7 +25,10 @@ final class CallHistoryPermissionsSeeder extends Seeder
         ];
 
         foreach ($permissions as $name) {
-            Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
+            Permission::firstOrCreate(
+                ['name' => $name, 'guard_name' => 'web'],
+                ['uuid' => Uuid::uuid4()->toString()]
+            );
         }
 
         $superAdmin = Role::where('name', 'SUPER_ADMIN')->first();

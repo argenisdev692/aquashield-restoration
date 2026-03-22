@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Ramsey\Uuid\Uuid;
 use Spatie\Permission\Models\Permission;
 
 final class MortgageCompanyPermissionsSeeder extends Seeder
@@ -24,6 +25,7 @@ final class MortgageCompanyPermissionsSeeder extends Seeder
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(
                 ['name' => $permission, 'guard_name' => 'web'],
+                ['uuid' => Uuid::uuid4()->toString()]
             );
         }
     }
