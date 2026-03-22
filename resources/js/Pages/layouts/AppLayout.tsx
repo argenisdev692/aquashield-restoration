@@ -60,7 +60,9 @@ import {
   Mail,
   Bot,
   Layers,
-  Briefcase
+  Briefcase,
+  Phone,
+  CircleDot
 } from 'lucide-react';
 
 const icSize = 18;
@@ -88,11 +90,13 @@ const IconPermission = () => <KeyRound size={icSize} />;
 const IconCatalogs = () => <FolderTree size={icSize} />;
 const IconTypeDamage = () => <AlertTriangle size={icSize} />;
 const IconClientIntake = () => <CalendarRange size={icSize} />;
+const IconCall = () => <Phone size={icSize} />;
 const IconAppointment = () => <CalendarRange size={icSize} />;
 const IconContactSupport = () => <MessageSquareText size={icSize} />;
 const IconEmailData = () => <Mail size={icSize} />;
 const IconAI = () => <Bot size={18} />;
 const IconPortfolio = () => <Briefcase size={icSize} />;
+const IconClaimStatus = () => <CircleDot size={icSize} />;
 
 interface TooltipRect {
   left: number;
@@ -152,6 +156,7 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Service Categories', href: '/service-categories', icon: <FolderTree size={icSize} />, description: 'Service category catalog', permission: ['READ_SERVICE_CATEGORY', 'CREATE_SERVICE_CATEGORY', 'UPDATE_SERVICE_CATEGORY', 'DELETE_SERVICE_CATEGORY', 'RESTORE_SERVICE_CATEGORY'] },
       { label: 'Project Types', href: '/project-types', icon: <Layers size={icSize} />, description: 'Project type catalog', permission: ['READ_PROJECT_TYPE', 'CREATE_PROJECT_TYPE', 'UPDATE_PROJECT_TYPE', 'DELETE_PROJECT_TYPE', 'RESTORE_PROJECT_TYPE'] },
       { label: 'Portfolios', href: '/portfolios', icon: <IconPortfolio />, description: 'Project portfolio showcase', permission: ['VIEW_PORTFOLIO', 'CREATE_PORTFOLIO', 'UPDATE_PORTFOLIO', 'DELETE_PORTFOLIO', 'RESTORE_PORTFOLIO'] },
+      { label: 'Claim Statuses', href: '/claim-statuses', icon: <IconClaimStatus />, description: 'Claim status catalog', permission: ['READ_CLAIM_STATUS', 'CREATE_CLAIM_STATUS', 'UPDATE_CLAIM_STATUS', 'DELETE_CLAIM_STATUS', 'RESTORE_CLAIM_STATUS'] },
     ]
   },
   {
@@ -162,6 +167,13 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Appointments', href: '/appointments', icon: <IconAppointment />, description: 'Manage appointment leads', permission: ['READ_APPOINTMENT', 'CREATE_APPOINTMENT', 'UPDATE_APPOINTMENT', 'DELETE_APPOINTMENT', 'RESTORE_APPOINTMENT'] },
       { label: 'Contact Supports', href: '/contact-supports', icon: <IconContactSupport />, description: 'Manage support contact requests', permission: ['READ_CONTACT_SUPPORT', 'CREATE_CONTACT_SUPPORT', 'UPDATE_CONTACT_SUPPORT', 'DELETE_CONTACT_SUPPORT', 'RESTORE_CONTACT_SUPPORT'] },
     ]
+  },
+  {
+    label: 'Call History',
+    href: '/call-history',
+    icon: <IconCall />,
+    description: 'Retell AI call records',
+    permission: 'VIEW_CALL_HISTORY'
   },
   {
     label: 'Blog',

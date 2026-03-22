@@ -21,7 +21,20 @@ final class TypeDamagesServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->registerWebRoutes();
+        $this->registerApiRoutes();
+    }
+
+    private function registerWebRoutes(): void
+    {
         Route::middleware(['web', 'auth'])
             ->group(__DIR__ . '/../Infrastructure/Routes/web.php');
+    }
+
+    private function registerApiRoutes(): void
+    {
+        Route::middleware(['api', 'auth:sanctum'])
+            ->prefix('api/type-damages')
+            ->group(__DIR__ . '/../Infrastructure/Routes/api.php');
     }
 }

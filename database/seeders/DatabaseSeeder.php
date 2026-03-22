@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Modules\Blog\Infrastructure\Persistence\Eloquent\Seeders\PostPermissionsSeeder;
+use Modules\CallHistory\Database\Seeders\CallHistoryPermissionsSeeder;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Seeders\UsersPermissionsSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -49,6 +50,7 @@ class DatabaseSeeder extends Seeder
 
         // CLAIM STATUS - Call ClaimStatuSeeder
         $this->call(ClaimStatuSeeder::class);
+        $this->call(ClaimStatusPermissionsSeeder::class);
 
         // PUBLIC COMPANIES - Call PublicCompanySeeder
         $this->call(PublicCompanySeeder::class);
@@ -63,5 +65,8 @@ class DatabaseSeeder extends Seeder
         $this->call(BlogCategorySeeder::class);
         $this->call(PostPermissionsSeeder::class);
         $this->call(EmailDataSeeder::class);
+
+        // CALL HISTORY - Call History Permissions
+        $this->call(CallHistoryPermissionsSeeder::class);
     }
 }

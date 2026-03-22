@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Src\Modules\TypeDamages\Infrastructure\Http\Controllers\Api\TypeDamageController;
+use Src\Modules\TypeDamages\Infrastructure\Http\Controllers\Api\TypeDamageExportController;
 use Src\Modules\TypeDamages\Infrastructure\Http\Controllers\Web\TypeDamagePageController;
 
 Route::middleware(['permission:READ_TYPE_DAMAGE'])->group(function (): void {
@@ -22,7 +23,7 @@ Route::middleware(['permission:UPDATE_TYPE_DAMAGE'])->group(function (): void {
 Route::prefix('/type-damages/data/admin')->group(function (): void {
     Route::middleware(['permission:READ_TYPE_DAMAGE'])->group(function (): void {
         Route::get('/', [TypeDamageController::class, 'index']);
-        Route::get('/export', [TypeDamageController::class, 'export']);
+        Route::get('/export', TypeDamageExportController::class);
         Route::get('/{uuid}', [TypeDamageController::class, 'show'])->whereUuid('uuid');
     });
 

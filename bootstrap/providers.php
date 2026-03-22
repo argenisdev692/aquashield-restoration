@@ -30,4 +30,6 @@ return [
     Src\Modules\ServiceCategories\Providers\ServiceCategoriesServiceProvider::class,
     Src\Modules\ProjectTypes\Providers\ProjectTypesServiceProvider::class,
     Src\Modules\Portfolios\Providers\PortfoliosServiceProvider::class,
+    Modules\CallHistory\Providers\CallHistoryServiceProvider::class,
+    Src\Modules\ClaimStatuses\Providers\ClaimStatusesServiceProvider::class,
 ];
