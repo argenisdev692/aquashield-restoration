@@ -62,7 +62,8 @@ import {
   Briefcase,
   Phone,
   CircleDot,
-  MapPin
+  MapPin,
+  FolderOpen
 } from 'lucide-react';
 
 const icSize = 18;
@@ -96,6 +97,7 @@ const IconEmailData = () => <Mail size={icSize} />;
 const IconAI = () => <Bot size={18} />;
 const IconPortfolio = () => <Briefcase size={icSize} />;
 const IconClaimStatus = () => <CircleDot size={icSize} />;
+const IconFilesEsx    = () => <FolderOpen size={icSize} />;
 
 interface TooltipRect {
   left: number;
@@ -177,6 +179,13 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Contact Supports', href: '/contact-supports', icon: <IconContactSupport />, description: 'Manage support contact requests', permission: ['READ_CONTACT_SUPPORT', 'CREATE_CONTACT_SUPPORT', 'UPDATE_CONTACT_SUPPORT', 'DELETE_CONTACT_SUPPORT', 'RESTORE_CONTACT_SUPPORT'] },
       { label: 'Service Requests', href: '/service-requests', icon: <FileText />, description: 'Manage service request intake', permission: ['READ_SERVICE_REQUEST', 'CREATE_SERVICE_REQUEST', 'UPDATE_SERVICE_REQUEST', 'DELETE_SERVICE_REQUEST', 'RESTORE_SERVICE_REQUEST'] },
     ]
+  },
+  {
+    label: 'Files ESX',
+    href: '/files-esx',
+    icon: <IconFilesEsx />,
+    description: 'ESX claim file management',
+    permission: 'VIEW_FILES_ESX',
   },
   {
     label: 'Call History',

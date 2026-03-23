@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Head, Link, usePage } from "@inertiajs/react";
 import type { PageProps } from "@inertiajs/core";
-import { ArrowLeft, ExternalLink, FileText, Pencil } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, FileText, Pencil } from "lucide-react";
 import { PermissionGuard } from "@/modules/auth/components/PermissionGuard";
 import type { DocumentTemplateAlliance } from "@/modules/document-template-alliances/types";
 import AppLayout from "@/pages/layouts/AppLayout";
@@ -110,16 +110,30 @@ export default function DocumentTemplateAllianceShowPage(): React.JSX.Element {
                                 <p className="mb-2 text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
                                     File
                                 </p>
-                                <a
-                                    href={t.template_path_alliance}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 text-sm font-medium"
-                                    style={{ color: "var(--accent-primary)" }}
-                                >
-                                    <ExternalLink size={14} />
-                                    View / Download File
-                                </a>
+                                <div className="flex items-center gap-3">
+                                    <a
+                                        href={t.template_path_alliance}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn-ghost inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold"
+                                        aria-label="Open file in new tab"
+                                        title="Open file"
+                                    >
+                                        <ExternalLink size={14} />
+                                        Open
+                                    </a>
+                                    <a
+                                        href={t.template_path_alliance}
+                                        download={t.template_name_alliance}
+                                        className="btn-ghost inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold"
+                                        aria-label="Download file"
+                                        title="Download file"
+                                        style={{ color: "var(--accent-primary)" }}
+                                    >
+                                        <Download size={14} />
+                                        Download
+                                    </a>
+                                </div>
                             </div>
                         ) : null}
                     </div>

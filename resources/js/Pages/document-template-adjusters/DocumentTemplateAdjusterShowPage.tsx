@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import type { PageProps } from '@inertiajs/core';
-import { ArrowLeft, ExternalLink, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, ExternalLink, Pencil, Trash2 } from 'lucide-react';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { useDeleteDocumentTemplateAdjuster } from '@/modules/document-template-adjusters/hooks/useDocumentTemplateAdjusterMutations';
@@ -141,16 +141,30 @@ export default function DocumentTemplateAdjusterShowPage(): React.JSX.Element {
                                 >
                                     File
                                 </p>
-                                <a
-                                    href={t.template_path_adjuster}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 text-sm font-medium"
-                                    style={{ color: 'var(--accent-primary)' }}
-                                >
-                                    <ExternalLink size={14} />
-                                    View / Download File
-                                </a>
+                                <div className="flex items-center gap-3">
+                                    <a
+                                        href={t.template_path_adjuster}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn-ghost inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold"
+                                        aria-label="Open file in new tab"
+                                        title="Open file"
+                                    >
+                                        <ExternalLink size={14} />
+                                        Open
+                                    </a>
+                                    <a
+                                        href={t.template_path_adjuster}
+                                        download={typeLabel}
+                                        className="btn-ghost inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold"
+                                        aria-label="Download file"
+                                        title="Download file"
+                                        style={{ color: 'var(--accent-primary)' }}
+                                    >
+                                        <Download size={14} />
+                                        Download
+                                    </a>
+                                </div>
                             </div>
                         ) : null}
                     </div>

@@ -37,4 +37,5 @@ return [
     Src\Modules\DocumentTemplates\Providers\DocumentTemplatesServiceProvider::class,
     Src\Modules\DocumentTemplateAdjusters\Providers\DocumentTemplateAdjustersServiceProvider::class,
     Src\Modules\Zones\Providers\ZonesServiceProvider::class,
+    Src\Modules\FilesEsx\Providers\FilesEsxServiceProvider::class,
 ];
