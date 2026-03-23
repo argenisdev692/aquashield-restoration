@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('document_templates', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('signature_path_id')->constrained('company_signatures')->onUpdate('cascade')->onDelete('cascade');
             $table->string('template_name');
             $table->string('template_description')->nullable();
             $table->string('template_type');

@@ -11,7 +11,6 @@ class DocumentTemplate extends Model
 
     protected $fillable = [
         'uuid',
-        'signature_path_id',
         'template_name',
         'template_description',
         'template_type',
@@ -24,10 +23,6 @@ class DocumentTemplate extends Model
     return $this->belongsTo(User::class, 'uploaded_by');
     }
 
-    public function signature()
-    {
-        return $this->belongsTo(CompanySignature::class, 'signature_path_id');
-    }
 
 
 }

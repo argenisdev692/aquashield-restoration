@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "@inertiajs/react";
-import { createColumnHelper, type OnChangeFn, type RowSelectionState } from "@tanstack/react-table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Eye, Pencil } from "lucide-react";
 import { DataTable } from "@/shadcn/data-table";
 import { formatDateShort } from "@/utils/dateFormatter";
 import type { DocumentTemplateAlliance } from "@/modules/document-template-alliances/types";
@@ -9,9 +9,6 @@ import type { DocumentTemplateAlliance } from "@/modules/document-template-allia
 interface DocumentTemplateAlliancesTableProps {
     data: DocumentTemplateAlliance[];
     isPending: boolean;
-    onDeleteClick: (uuid: string, name: string) => void;
-    rowSelection: RowSelectionState;
-    onRowSelectionChange: OnChangeFn<RowSelectionState>;
 }
 
 const columnHelper = createColumnHelper<DocumentTemplateAlliance>();
@@ -19,35 +16,9 @@ const columnHelper = createColumnHelper<DocumentTemplateAlliance>();
 export default function DocumentTemplateAlliancesTable({
     data,
     isPending,
-    onDeleteClick,
-    rowSelection,
-    onRowSelectionChange,
 }: DocumentTemplateAlliancesTableProps): React.JSX.Element {
     const columns = React.useMemo(
         () => [
-            columnHelper.display({
-                id: "select",
-                header: ({ table }) => (
-                    <input
-                        type="checkbox"
-                        checked={table.getIsAllPageRowsSelected()}
-                        onChange={table.getToggleAllPageRowsSelectedHandler()}
-                        aria-label="Select all"
-                        className="h-4 w-4 cursor-pointer rounded"
-                        style={{ accentColor: "var(--accent-primary)" }}
-                    />
-                ),
-                cell: ({ row }) => (
-                    <input
-                        type="checkbox"
-                        checked={row.getIsSelected()}
-                        onChange={row.getToggleSelectedHandler()}
-                        aria-label="Select row"
-                        className="h-4 w-4 cursor-pointer rounded"
-                        style={{ accentColor: "var(--accent-primary)" }}
-                    />
-                ),
-            }),
             columnHelper.display({
                 id: "template_name_alliance",
                 header: "Template Name",
@@ -103,9 +74,8 @@ export default function DocumentTemplateAlliancesTable({
             columnHelper.display({
                 id: "actions",
                 header: "Actions",
-                cell: (info) => {
-                    const item = info.row.original;
-
+                cell: ({ row }) => {
+                    const item = row.original;
                     return (
                         <div className="flex items-center justify-center gap-2">
                             <Link
@@ -124,26 +94,12 @@ export default function DocumentTemplateAlliancesTable({
                             >
                                 <Pencil size={14} />
                             </Link>
-                            <button
-                                type="button"
-                                onClick={() => onDeleteClick(item.uuid, item.template_name_alliance)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg p-0"
-                                title="Delete document template alliance"
-                                aria-label="Delete document template alliance"
-                                style={{
-                                    color: "var(--accent-error)",
-                                    border: "1px solid color-mix(in srgb, var(--accent-error) 30%, var(--border-default))",
-                                    background: "color-mix(in srgb, var(--accent-error) 10%, transparent)",
-                                }}
-                            >
-                                <Trash2 size={14} />
-                            </button>
                         </div>
                     );
                 },
             }),
         ],
-        [onDeleteClick],
+        [],
     );
 
     return (
@@ -154,8 +110,6 @@ export default function DocumentTemplateAlliancesTable({
             isError={false}
             noDataMessage="No document template alliances found."
             getRowId={(row) => row.uuid}
-            rowSelection={rowSelection}
-            onRowSelectionChange={onRowSelectionChange}
         />
     );
 }

@@ -46,6 +46,17 @@ final class DocumentTemplateAllianceCrudTest extends TestCase
         $this->actingAs($this->user);
     }
 
+    private function createAllianceCompanyId(): int
+    {
+        return \DB::table('alliance_companies')->insertGetId([
+            'uuid'                  => \Ramsey\Uuid\Uuid::uuid4()->toString(),
+            'alliance_company_name' => 'Test Alliance Co.',
+            'user_id'               => $this->user->id,
+            'created_at'            => now(),
+            'updated_at'            => now(),
+        ]);
+    }
+
     public function test_index_returns_paginated_list(): void
     {
         $response = $this->getJson('/document-template-alliances/data/admin');
@@ -56,15 +67,8 @@ final class DocumentTemplateAllianceCrudTest extends TestCase
 
     public function test_store_creates_document_template_alliance(): void
     {
-        $file = UploadedFile::fake()->create('template.pdf', 512, 'application/pdf');
-
-        $allianceCompanyId = \DB::table('alliance_companies')->insertGetId([
-            'uuid'                  => \Ramsey\Uuid\Uuid::uuid4()->toString(),
-            'alliance_company_name' => 'Test Alliance Co.',
-            'user_id'               => $this->user->id,
-            'created_at'            => now(),
-            'updated_at'            => now(),
-        ]);
+        $file = UploadedFile::fake()->create('agreement.docx', 512, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        $allianceCompanyId = $this->createAllianceCompanyId();
 
         $response = $this->post('/document-template-alliances/data/admin', [
             'template_name_alliance'        => 'Test Template',
@@ -78,6 +82,29 @@ final class DocumentTemplateAllianceCrudTest extends TestCase
             ->assertJsonStructure(['uuid', 'message']);
     }
 
+    public function test_export_downloads_a_file(): void
+    {
+        $allianceCompanyId = $this->createAllianceCompanyId();
+
+        $uuid = \Ramsey\Uuid\Uuid::uuid4()->toString();
+
+        \DB::table('document_template_alliances')->insert([
+            'uuid'                    => $uuid,
+            'template_name_alliance'  => 'Export Template',
+            'template_type_alliance'  => 'agreement',
+            'template_path_alliance'  => 'document-templates/export.docx',
+            'alliance_company_id'     => $allianceCompanyId,
+            'uploaded_by'             => $this->user->id,
+            'created_at'              => now(),
+            'updated_at'              => now(),
+        ]);
+
+        $response = $this->get('/document-template-alliances/data/admin/export?format=excel');
+
+        $response->assertOk();
+        $response->assertHeader('content-disposition');
+    }
+
     public function test_show_returns_404_for_unknown_uuid(): void
     {
         $uuid     = \Ramsey\Uuid\Uuid::uuid4()->toString();
@@ -88,14 +115,15 @@ final class DocumentTemplateAllianceCrudTest extends TestCase
 
     public function test_destroy_deletes_record(): void
     {
+        $allianceCompanyId = $this->createAllianceCompanyId();
         $uuid = \Ramsey\Uuid\Uuid::uuid4()->toString();
 
         \DB::table('document_template_alliances')->insert([
             'uuid'                    => $uuid,
             'template_name_alliance'  => 'To Delete',
             'template_type_alliance'  => 'agreement',
-            'template_path_alliance'  => 'document-templates/fake.pdf',
-            'alliance_company_id'     => 1,
+            'template_path_alliance'  => 'document-templates/fake.docx',
+            'alliance_company_id'     => $allianceCompanyId,
             'uploaded_by'             => $this->user->id,
             'created_at'              => now(),
             'updated_at'              => now(),
@@ -111,6 +139,7 @@ final class DocumentTemplateAllianceCrudTest extends TestCase
 
     public function test_bulk_delete_removes_multiple_records(): void
     {
+        $allianceCompanyId = $this->createAllianceCompanyId();
         $uuids = [];
 
         for ($i = 0; $i < 3; $i++) {
@@ -121,8 +150,8 @@ final class DocumentTemplateAllianceCrudTest extends TestCase
                 'uuid'                   => $uuid,
                 'template_name_alliance' => "Template {$i}",
                 'template_type_alliance' => 'contract',
-                'template_path_alliance' => "document-templates/fake-{$i}.pdf",
-                'alliance_company_id'    => 1,
+                'template_path_alliance' => "document-templates/fake-{$i}.docx",
+                'alliance_company_id'    => $allianceCompanyId,
                 'uploaded_by'            => $this->user->id,
                 'created_at'             => now(),
                 'updated_at'             => now(),

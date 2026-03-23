@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Auth\Infrastructure\Persistence\Eloquent\Models\SocialiteProviderEloquentModel;
 use Modules\CompanyData\Infrastructure\Persistence\Eloquent\Models\CompanyDataEloquentModel;
 use Src\Modules\DocumentTemplateAlliances\Infrastructure\Persistence\Eloquent\Models\DocumentTemplateAllianceEloquentModel;
+use Src\Modules\DocumentTemplates\Infrastructure\Persistence\Eloquent\Models\DocumentTemplateEloquentModel;
+use Src\Modules\Zones\Infrastructure\Persistence\Eloquent\Models\ZoneEloquentModel;
 use Src\Modules\ProjectTypes\Infrastructure\Persistence\Eloquent\Models\ProjectTypeEloquentModel;
 use Src\Modules\ServiceCategories\Infrastructure\Persistence\Eloquent\Models\ServiceCategoryEloquentModel;
 
@@ -182,6 +184,26 @@ class UserEloquentModel extends Authenticatable
     public function documentTemplateAlliances(): HasMany
     {
         return $this->hasMany(DocumentTemplateAllianceEloquentModel::class, 'uploaded_by');
+    }
+
+    /**
+     * Document templates uploaded by this user.
+     *
+     * @return HasMany<DocumentTemplateEloquentModel, $this>
+     */
+    public function documentTemplates(): HasMany
+    {
+        return $this->hasMany(DocumentTemplateEloquentModel::class, 'uploaded_by');
+    }
+
+    /**
+     * Zones assigned to this user.
+     *
+     * @return HasMany<ZoneEloquentModel, $this>
+     */
+    public function zones(): HasMany
+    {
+        return $this->hasMany(ZoneEloquentModel::class, 'user_id');
     }
 
     /**

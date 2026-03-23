@@ -2,34 +2,10 @@ import * as React from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import type { AuthPageProps } from '@/types/auth';
-import {
-  Area,
-  AreaChart,
-  Pie,
-  PieChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Label
-} from "recharts";
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shadcn/card";
-
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/shadcn/chart";
+import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 
 // ══════════════════════════════════════════════════════════════════
-// Types & Data
+// Types
 // ══════════════════════════════════════════════════════════════════
 
 interface MetricCard {
@@ -40,6 +16,29 @@ interface MetricCard {
   icon: string;
   gradient: string;
 }
+
+type KanbanColumnId = 'backlog' | 'todo' | 'in_progress' | 'done';
+
+interface KanbanTask {
+  id: string;
+  title: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  assignee: string;
+  dueDate: string;
+}
+
+interface KanbanColumn {
+  id: KanbanColumnId;
+  title: string;
+  color: string;
+  dotColor: string;
+  tasks: KanbanTask[];
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Static Data
+// ══════════════════════════════════════════════════════════════════
 
 const METRIC_CARDS: MetricCard[] = [
   {
@@ -76,60 +75,49 @@ const METRIC_CARDS: MetricCard[] = [
   },
 ];
 
-const REVENUE_DATA = [
-  { month: "Jan", revenue: 15400, target: 14000 },
-  { month: "Feb", revenue: 22100, target: 18000 },
-  { month: "Mar", revenue: 18500, target: 20000 },
-  { month: "Apr", revenue: 28900, target: 25000 },
-  { month: "May", revenue: 35200, target: 30000 },
-  { month: "Jun", revenue: 48520, target: 40000 },
-];
-
-const NEW_CUSTOMER_CLAIMS = [
-  { customer: "Sophia Martinez", claim: "AQ-2031", category: "Water Damage", city: "Miami, FL", submitted_at: "2 min ago" },
-  { customer: "Daniel Carter", claim: "AQ-2030", category: "Roof Leak", city: "Orlando, FL", submitted_at: "8 min ago" },
-  { customer: "Olivia Bennett", claim: "AQ-2029", category: "Mold Remediation", city: "Tampa, FL", submitted_at: "14 min ago" },
-  { customer: "Ethan Brooks", claim: "AQ-2028", category: "Storm Damage", city: "Naples, FL", submitted_at: "21 min ago" },
-  { customer: "Ava Richardson", claim: "AQ-2027", category: "Fire Cleanup", city: "Sarasota, FL", submitted_at: "34 min ago" },
-  { customer: "Noah Peterson", claim: "AQ-2026", category: "Flood Extraction", city: "Fort Myers, FL", submitted_at: "42 min ago" },
-];
-
-const USER_DIST_DATA = [
-  { role: "Contractors", count: 45, fill: "var(--color-chart-4)" },
-  { role: "Clients", count: 30, fill: "var(--color-chart-1)" },
-  { role: "Managers", count: 15, fill: "var(--color-chart-2)" },
-  { role: "Admins", count: 10, fill: "var(--color-chart-5)" },
-];
-
-const revenueChartConfig = {
-  revenue: {
-    label: "Revenue",
-    color: "var(--color-chart-4)",
+const INITIAL_COLUMNS: KanbanColumn[] = [
+  {
+    id: 'backlog',
+    title: 'Backlog',
+    color: 'var(--text-muted)',
+    dotColor: 'var(--text-disabled)',
+    tasks: [
+      { id: 'T-001', title: 'Setup monitoring alerts', description: 'Configure OTel spans for auth flows', priority: 'medium', assignee: 'JD', dueDate: 'Mar 5' },
+      { id: 'T-002', title: 'Database backup automation', description: 'Schedule nightly encrypted backups', priority: 'high', assignee: 'MK', dueDate: 'Mar 8' },
+    ],
   },
-  target: {
-    label: "Target",
-    color: "var(--color-chart-5)",
+  {
+    id: 'todo',
+    title: 'To Do',
+    color: 'var(--accent-info)',
+    dotColor: '#00B5E2',
+    tasks: [
+      { id: 'T-003', title: 'Implement user export', description: 'Excel + PDF export with date range filters', priority: 'high', assignee: 'AS', dueDate: 'Mar 1' },
+      { id: 'T-004', title: 'Design contractor dashboard', description: 'Wireframe + Figma prototype', priority: 'medium', assignee: 'LP', dueDate: 'Mar 3' },
+      { id: 'T-005', title: 'API rate limiting review', description: 'Audit all public endpoints', priority: 'low', assignee: 'JD', dueDate: 'Mar 10' },
+    ],
   },
-} satisfies ChartConfig;
-
-const userChartConfig = {
-  count: { label: "Users" },
-  Contractors: { label: "Contractors", color: "var(--color-chart-4)" },
-  Clients: { label: "Clients", color: "var(--color-chart-1)" },
-  Managers: { label: "Managers", color: "var(--color-chart-2)" },
-  Admins: { label: "Admins", color: "var(--color-chart-5)" },
-} satisfies ChartConfig;
-
-const dashboardPanelStyle: React.CSSProperties = {
-  background: 'color-mix(in srgb, var(--bg-elevated) 92%, transparent)',
-  borderColor: 'color-mix(in srgb, var(--border-default) 72%, transparent)',
-  backdropFilter: 'blur(14px)',
-  boxShadow: '0 20px 44px -30px color-mix(in srgb, var(--bg-base) 80%, transparent)',
-};
-
-// ══════════════════════════════════════════════════════════════════
-// Metric Card Icon
-// ══════════════════════════════════════════════════════════════════
+  {
+    id: 'in_progress',
+    title: 'In Progress',
+    color: 'var(--accent-warning)',
+    dotColor: '#f59e0b',
+    tasks: [
+      { id: 'T-006', title: 'Claims module backend', description: 'CQRS implementation with domain events', priority: 'urgent', assignee: 'MK', dueDate: 'Feb 28' },
+      { id: 'T-007', title: 'Auth interface frontend', description: 'Login, OTP, Forgot Password pages', priority: 'high', assignee: 'AS', dueDate: 'Feb 27' },
+    ],
+  },
+  {
+    id: 'done',
+    title: 'Done',
+    color: 'var(--accent-success)',
+    dotColor: '#22c55e',
+    tasks: [
+      { id: 'T-008', title: 'User model + migrations', description: 'Complete with soft deletes and roles', priority: 'high', assignee: 'MK', dueDate: 'Feb 25' },
+      { id: 'T-009', title: 'Email templates branded', description: 'OTP, password reset, credentials', priority: 'medium', assignee: 'LP', dueDate: 'Feb 24' },
+    ],
+  },
+];
 
 // ══════════════════════════════════════════════════════════════════
 // Metric Card Icon
@@ -153,14 +141,10 @@ function CardIcon({ name }: { name: string }): React.JSX.Element {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// Premium Metric Card Component (2026 Edition)
+// Premium Metric Card
 // ══════════════════════════════════════════════════════════════════
 
-interface MetricCardProps {
-  card: MetricCard;
-}
-
-function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
+function PremiumMetricCard({ card }: { card: MetricCard }): React.JSX.Element {
   const changeTone = card.changeType === 'positive'
     ? 'var(--accent-success)'
     : card.changeType === 'negative'
@@ -185,7 +169,7 @@ function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
         boxShadow: '0 20px 42px -32px color-mix(in srgb, var(--bg-base) 84%, transparent)',
       }}
     >
-      <div 
+      <div
         className="absolute inset-x-0 top-0 h-px"
         style={{
           background: 'linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--accent-primary) 35%, transparent) 50%, transparent 100%)',
@@ -193,9 +177,9 @@ function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
       />
 
       <div className="flex items-center justify-between">
-        <div 
+        <div
           className="flex h-12 w-12 items-center justify-center rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
-          style={{ 
+          style={{
             background: card.gradient,
             boxShadow: '0 12px 24px -10px color-mix(in srgb, var(--bg-base) 45%, transparent)',
           }}
@@ -204,8 +188,8 @@ function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
             <CardIcon name={card.icon} />
           </div>
         </div>
-        
-        <div 
+
+        <div
           className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold tracking-tight shadow-sm"
           style={{
             background: changeBackground,
@@ -222,89 +206,224 @@ function PremiumMetricCard({ card }: MetricCardProps): React.JSX.Element {
         <p className="text-xs font-medium uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>
           {card.title}
         </p>
-        <div className="flex items-baseline gap-2 mt-1">
+        <div className="mt-1 flex items-baseline gap-2">
           <h3 className="text-3xl font-black tracking-tighter" style={{ color: 'var(--text-primary)' }}>
             {card.value}
           </h3>
-          <span className="text-[10px] font-medium uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-            USD
-          </span>
         </div>
       </div>
     </div>
   );
 }
 
-function NewCustomerClaimsMarquee(): React.JSX.Element {
-  const claims = [...NEW_CUSTOMER_CLAIMS, ...NEW_CUSTOMER_CLAIMS];
+// ══════════════════════════════════════════════════════════════════
+// Priority Badge
+// ══════════════════════════════════════════════════════════════════
+
+function PriorityBadge({ priority }: { priority: KanbanTask['priority'] }): React.JSX.Element {
+  const config = {
+    low:    { tint: 'var(--accent-info)',    label: 'Low'    },
+    medium: { tint: 'var(--accent-warning)', label: 'Medium' },
+    high:   { tint: 'var(--accent-error)',   label: 'High'   },
+    urgent: { tint: 'var(--accent-error)',   label: 'Urgent' },
+  };
+  const c = config[priority];
 
   return (
-    <div
-      className="relative h-[248px] overflow-hidden rounded-[20px]"
+    <span
+      className="inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
       style={{
-        background: 'color-mix(in srgb, var(--bg-subtle) 88%, transparent)',
-        border: '1px solid color-mix(in srgb, var(--border-default) 68%, transparent)',
+        background: `color-mix(in srgb, ${c.tint} ${priority === 'urgent' ? '20%' : '12%'}, transparent)`,
+        color: c.tint,
+        border: `1px solid color-mix(in srgb, ${c.tint} 28%, transparent)`,
       }}
     >
-      <style>{`
-        @keyframes dashboard-claims-marquee {
-          from { transform: translateY(0); }
-          to { transform: translateY(-50%); }
+      {c.label}
+    </span>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Kanban Board
+// ══════════════════════════════════════════════════════════════════
+
+function KanbanBoard(): React.JSX.Element {
+  const [columns, setColumns] = React.useState<KanbanColumn[]>(INITIAL_COLUMNS);
+  const [draggedTask, setDraggedTask] = React.useState<KanbanTask | null>(null);
+  const [dragSourceCol, setDragSourceCol] = React.useState<KanbanColumnId | null>(null);
+  const [dragOverCol, setDragOverCol] = React.useState<KanbanColumnId | null>(null);
+
+  function handleDragStart(task: KanbanTask, sourceColId: KanbanColumnId): void {
+    setDraggedTask(task);
+    setDragSourceCol(sourceColId);
+  }
+
+  function handleDragOver(e: React.DragEvent, colId: KanbanColumnId): void {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverCol(colId);
+  }
+
+  function handleDragLeave(): void {
+    setDragOverCol(null);
+  }
+
+  function handleDrop(e: React.DragEvent, targetColId: KanbanColumnId): void {
+    e.preventDefault();
+    setDragOverCol(null);
+
+    if (!draggedTask || !dragSourceCol || dragSourceCol === targetColId) {
+      setDraggedTask(null);
+      setDragSourceCol(null);
+      return;
+    }
+
+    setColumns((prev) =>
+      prev.map((col) => {
+        if (col.id === dragSourceCol) {
+          return { ...col, tasks: col.tasks.filter((t) => t.id !== draggedTask.id) };
         }
-      `}</style>
-      <div
-        className="absolute inset-x-0 top-0 z-10 h-12"
-        style={{ background: 'linear-gradient(180deg, var(--bg-elevated) 0%, transparent 100%)' }}
-      />
-      <div
-        className="absolute inset-x-0 bottom-0 z-10 h-12"
-        style={{ background: 'linear-gradient(0deg, var(--bg-elevated) 0%, transparent 100%)' }}
-      />
-      <div
-        className="flex flex-col gap-2.5 p-3.5"
-        style={{ animation: 'dashboard-claims-marquee 20s linear infinite' }}
-      >
-        {claims.map((claim, index) => (
-          <div
-            key={`${claim.claim}-${index}`}
-            className="rounded-[18px] px-4 py-3.5"
-            style={{
-              background: 'color-mix(in srgb, var(--bg-elevated) 86%, transparent)',
-              border: '1px solid color-mix(in srgb, var(--border-default) 64%, transparent)',
-              boxShadow: '0 12px 24px -20px color-mix(in srgb, var(--bg-base) 75%, transparent)',
-            }}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate text-[13px] font-semibold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
-                  {claim.customer}
-                </p>
-                <p className="mt-1 text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--accent-secondary)', fontFamily: 'var(--font-sans)' }}>
-                  {claim.claim}
-                </p>
-              </div>
-              <span
-                className="shrink-0 rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em]"
-                style={{
-                  background: 'color-mix(in srgb, var(--accent-primary) 14%, transparent)',
-                  color: 'var(--accent-primary)',
-                  border: '1px solid color-mix(in srgb, var(--accent-primary) 24%, transparent)',
-                }}
-              >
-                New
-              </span>
-            </div>
-            <div className="mt-2.5 flex items-center justify-between gap-3 text-[11px]" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
-              <span className="truncate">{claim.category}</span>
-              <span className="shrink-0">{claim.city}</span>
-            </div>
-            <div className="mt-1.5 text-[10px]" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-              Submitted {claim.submitted_at}
-            </div>
-          </div>
-        ))}
+        if (col.id === targetColId) {
+          return { ...col, tasks: [...col.tasks, draggedTask] };
+        }
+        return col;
+      }),
+    );
+
+    setDraggedTask(null);
+    setDragSourceCol(null);
+  }
+
+  function handleDragEnd(): void {
+    setDraggedTask(null);
+    setDragSourceCol(null);
+    setDragOverCol(null);
+  }
+
+  return (
+    <>
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
+            Project Board
+          </h2>
+          <p className="text-xs" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+            Drag and drop tasks between columns
+          </p>
+        </div>
+        <span className="text-xs font-medium" style={{ color: 'var(--text-disabled)', fontFamily: 'var(--font-sans)' }}>
+          {columns.reduce((acc, col) => acc + col.tasks.length, 0)} tasks
+        </span>
       </div>
-    </div>
+
+      <div className="overflow-x-auto">
+        <div className="grid min-w-[700px] grid-cols-4 gap-4">
+          {columns.map((column) => (
+            <div
+              key={column.id}
+              className="flex flex-col rounded-xl transition-all duration-200"
+              style={{
+                background: dragOverCol === column.id
+                  ? 'color-mix(in srgb, var(--bg-elevated) 90%, var(--accent-primary))'
+                  : 'var(--bg-elevated)',
+                border: dragOverCol === column.id
+                  ? '1px solid var(--accent-primary)'
+                  : '1px solid var(--border-default)',
+                minHeight: '400px',
+              }}
+              onDragOver={(e) => handleDragOver(e, column.id)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, column.id)}
+            >
+              <div
+                className="flex items-center justify-between px-4 py-3"
+                style={{ borderBottom: '1px solid var(--border-subtle)' }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ background: column.dotColor }} />
+                  <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
+                    {column.title}
+                  </span>
+                </div>
+                <span
+                  className="flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold"
+                  style={{ background: 'rgba(255, 255, 255, 0.06)', color: 'var(--text-muted)' }}
+                >
+                  {column.tasks.length}
+                </span>
+              </div>
+
+              <div className="flex-1 space-y-2.5 p-3">
+                {column.tasks.map((task) => (
+                  <div
+                    key={task.id}
+                    draggable
+                    onDragStart={() => handleDragStart(task, column.id)}
+                    onDragEnd={handleDragEnd}
+                    className="cursor-grab rounded-lg p-3.5 transition-all duration-150 active:cursor-grabbing active:scale-[0.97]"
+                    style={{
+                      background: 'var(--bg-surface)',
+                      border: '1px solid var(--border-subtle)',
+                      opacity: draggedTask?.id === task.id ? 0.4 : 1,
+                    }}
+                  >
+                    <div className="mb-2 flex items-center justify-between">
+                      <span
+                        className="text-[10px] font-bold tracking-wider"
+                        style={{ color: 'var(--text-disabled)', fontFamily: 'var(--font-mono)' }}
+                      >
+                        {task.id}
+                      </span>
+                      <PriorityBadge priority={task.priority} />
+                    </div>
+
+                    <h4 className="text-sm font-semibold leading-tight" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
+                      {task.title}
+                    </h4>
+
+                    <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+                      {task.description}
+                    </p>
+
+                    <div className="mt-3 flex items-center justify-between">
+                      <div
+                        className="flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold"
+                        style={{
+                          background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
+                          color: '#ffffff',
+                        }}
+                      >
+                        {task.assignee}
+                      </div>
+                      <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--text-disabled)', fontFamily: 'var(--font-sans)' }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                          <line x1="16" y1="2" x2="16" y2="6" />
+                          <line x1="8" y1="2" x2="8" y2="6" />
+                          <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                        {task.dueDate}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
+                {column.tasks.length === 0 && (
+                  <div
+                    className="flex h-24 items-center justify-center rounded-lg border-2 border-dashed"
+                    style={{ borderColor: 'var(--border-subtle)' }}
+                  >
+                    <p className="text-xs" style={{ color: 'var(--text-disabled)', fontFamily: 'var(--font-sans)' }}>
+                      Drop tasks here
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -319,24 +438,22 @@ export default function DashboardPage(): React.JSX.Element {
     <>
       <Head title="Dashboard — AquaShield" />
       <AppLayout>
-        <div className="relative min-h-full overflow-hidden">
-          {/* ── Content layer ── */}
-          <div className="relative">
-
+        <div className="relative min-h-full">
           {/* ── Header ── */}
           <div className="mb-6">
-            <div>
-              <h1 className="text-xl font-bold md:text-2xl" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
-                Welcome back, {auth.user?.name ?? 'User'} 👋
-              </h1>
-              <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-                Here's your projects and revenue overview for today.
-              </p>
-            </div>
+            <h1
+              className="text-xl font-bold md:text-2xl"
+              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}
+            >
+              Welcome back, {auth.user?.name ?? 'User'} 👋
+            </h1>
+            <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+              Here's your projects and tasks overview for today.
+            </p>
           </div>
 
           {/* ═══════════════════════════════════════
-              METRIC CARDS (Upgraded to Modern 2026 Style)
+              METRIC CARDS
               ═══════════════════════════════════════ */}
           <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
             {METRIC_CARDS.map((card) => (
@@ -345,139 +462,12 @@ export default function DashboardPage(): React.JSX.Element {
           </div>
 
           {/* ═══════════════════════════════════════
-              DASHBOARD CHARTS (Replaces Kanban)
+              KANBAN BOARD (permission-gated)
               ═══════════════════════════════════════ */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            
-            {/* Linear Chart - Wide (Takes 2 columns on desktop) */}
-            <Card className="col-span-1 md:col-span-2 shadow-sm border-border bg-card" style={dashboardPanelStyle}>
-              <CardHeader>
-                <CardTitle>Revenue & Targets</CardTitle>
-                <CardDescription>
-                  Tracking revenue growth for the last 6 months
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer config={revenueChartConfig} className="h-[300px] w-full">
-                  <AreaChart
-                    accessibilityLayer
-                    data={REVENUE_DATA}
-                    margin={{ left: 12, right: 12 }}
-                  >
-                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="month"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={8}
-                    />
-                    <YAxis
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={8}
-                      tickFormatter={(value) => `$${value}`}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent indicator="dot" />}
-                    />
-                    <Area
-                      dataKey="target"
-                      type="monotone"
-                      fill="var(--color-chart-5)"
-                      fillOpacity={0.1}
-                      stroke="var(--color-chart-5)"
-                      strokeWidth={2}
-                    />
-                    <Area
-                      dataKey="revenue"
-                      type="monotone"
-                      fill="var(--color-chart-4)"
-                      fillOpacity={0.4}
-                      stroke="var(--color-chart-4)"
-                      strokeWidth={2}
-                    />
-                  </AreaChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-
-            <div className="flex flex-col gap-4">
-              {/* Circular Chart 1 - Donut */}
-              <Card className="flex-1 flex flex-col shadow-sm border-border bg-card" style={dashboardPanelStyle}>
-                <CardHeader className="items-center pb-0">
-                  <CardTitle>New customers claims</CardTitle>
-                  <CardDescription>Live intake queue</CardDescription>
-                </CardHeader>
-                <CardContent className="mt-4 flex-1 pb-0">
-                  <NewCustomerClaimsMarquee />
-                </CardContent>
-              </Card>
-
-              <Card className="flex-1 flex flex-col shadow-sm border-border bg-card" style={dashboardPanelStyle}>
-                <CardHeader className="items-center pb-0">
-                  <CardTitle>User Distribution</CardTitle>
-                  <CardDescription>Active platform roles</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1 pb-0 mt-4">
-                  <ChartContainer
-                    config={userChartConfig}
-                    className="mx-auto aspect-4/3 max-h-[220px]"
-                  >
-                    <PieChart>
-                      <ChartTooltip
-                        cursor={false}
-                        content={<ChartTooltipContent hideLabel />}
-                      />
-                      <Pie
-                        data={USER_DIST_DATA}
-                        dataKey="count"
-                        nameKey="role"
-                        innerRadius={50}
-                        outerRadius={75}
-                        strokeWidth={2}
-                        stroke="var(--bg-elevated)"
-                      >
-                        <Label
-                          content={({ viewBox }) => {
-                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                              return (
-                                <text
-                                  x={viewBox.cx}
-                                  y={viewBox.cy}
-                                  textAnchor="middle"
-                                  dominantBaseline="middle"
-                                >
-                                  <tspan
-                                    x={viewBox.cx}
-                                    y={viewBox.cy}
-                                    className="fill-foreground text-3xl font-bold"
-                                  >
-                                    100
-                                  </tspan>
-                                  <tspan
-                                    x={viewBox.cx}
-                                    y={(viewBox.cy || 0) + 24}
-                                    className="fill-muted-foreground text-xs"
-                                  >
-                                    Users
-                                  </tspan>
-                                </text>
-                              )
-                            }
-                          }}
-                        />
-                      </Pie>
-                    </PieChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-            </div>
-            
-          </div>
-
-          </div>{/* z-10 content layer */}
-        </div>{/* relative overflow container */}
+          <PermissionGuard permissions={['VIEW_DASHBOARD_KANBAN']}>
+            <KanbanBoard />
+          </PermissionGuard>
+        </div>
       </AppLayout>
     </>
   );

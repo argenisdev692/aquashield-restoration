@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import { ArrowLeft } from "lucide-react";
+import { sileo } from "sileo";
 import { useCreateDocumentTemplateAlliance } from "@/modules/document-template-alliances/hooks/useDocumentTemplateAllianceMutations";
 import type { DocumentTemplateAllianceFormData } from "@/modules/document-template-alliances/types";
 import AppLayout from "@/pages/layouts/AppLayout";
@@ -62,8 +63,10 @@ export default function DocumentTemplateAllianceCreatePage(): React.JSX.Element 
 
         try {
             await createMutation.mutateAsync(data);
+            sileo.success({ title: "Template uploaded successfully." });
             router.visit("/document-template-alliances");
         } catch (error: unknown) {
+            sileo.error({ title: "Failed to upload template. Please try again." });
             if (error instanceof Error) {
                 setErrors({ template_name_alliance: error.message });
             }

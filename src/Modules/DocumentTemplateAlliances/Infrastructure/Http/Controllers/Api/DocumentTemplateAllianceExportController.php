@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * @OA\Get(
- *     path="/document-template-alliances/data/admin/export",
+ *     path="/api/document-template-alliances/export",
  *     tags={"Document Template Alliances"},
  *     summary="Export document template alliances to Excel or PDF",
  *     @OA\Parameter(name="format", in="query", required=false, @OA\Schema(type="string", enum={"excel","pdf"}, default="excel")),

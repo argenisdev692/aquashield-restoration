@@ -2,6 +2,7 @@ import * as React from "react";
 import { Head, Link, router, usePage } from "@inertiajs/react";
 import type { PageProps } from "@inertiajs/core";
 import { ArrowLeft } from "lucide-react";
+import { sileo } from "sileo";
 import { useUpdateDocumentTemplateAlliance } from "@/modules/document-template-alliances/hooks/useDocumentTemplateAllianceMutations";
 import type {
     DocumentTemplateAlliance,
@@ -68,8 +69,10 @@ export default function DocumentTemplateAllianceEditPage(): React.JSX.Element {
 
         try {
             await updateMutation.mutateAsync({ uuid: t.uuid, formData: data });
+            sileo.success({ title: "Template updated successfully." });
             router.visit(`/document-template-alliances/${t.uuid}`);
         } catch (error: unknown) {
+            sileo.error({ title: "Failed to update template. Please try again." });
             if (error instanceof Error) {
                 setErrors({ template_name_alliance: error.message });
             }

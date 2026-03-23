@@ -34,4 +34,7 @@ return [
     Modules\CallHistory\Providers\CallHistoryServiceProvider::class,
     Src\Modules\ClaimStatuses\Providers\ClaimStatusesServiceProvider::class,
     Src\Modules\DocumentTemplateAlliances\Providers\DocumentTemplateAlliancesServiceProvider::class,
+    Src\Modules\DocumentTemplates\Providers\DocumentTemplatesServiceProvider::class,
+    Src\Modules\DocumentTemplateAdjusters\Providers\DocumentTemplateAdjustersServiceProvider::class,
+    Src\Modules\Zones\Providers\ZonesServiceProvider::class,
 ];

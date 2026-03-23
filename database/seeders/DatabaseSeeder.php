@@ -66,7 +66,13 @@ class DatabaseSeeder extends Seeder
         $this->call(PostPermissionsSeeder::class);
         $this->call(EmailDataSeeder::class);
 
+        // DASHBOARD - Dashboard Permissions (Kanban board)
+        $this->call(DashboardPermissionsSeeder::class);
+
         // CALL HISTORY - Call History Permissions
         $this->call(CallHistoryPermissionsSeeder::class);
+
+        // DOCUMENT TEMPLATE ALLIANCES - Call Permissions Seeder
+        $this->call(DocumentTemplateAlliancePermissionsSeeder::class);
     }
 }

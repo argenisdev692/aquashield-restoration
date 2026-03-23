@@ -23,10 +23,6 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('dashboard/DashboardPage');
     })->name('dashboard');
 
-    Route::get('/kanban', function () {
-        return Inertia::render('kanban/KanbanPage');
-    })->name('kanban');
-
     Route::get('/profile', function () {
         return Inertia::render('profile/ProfilePage');
     })->name('profile');

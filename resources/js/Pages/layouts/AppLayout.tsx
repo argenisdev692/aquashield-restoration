@@ -45,7 +45,6 @@ import {
   Settings, 
   ArrowLeft, 
   X,
-  Kanban,
   Package,
   Home,
   ChevronRight,
@@ -62,14 +61,14 @@ import {
   Layers,
   Briefcase,
   Phone,
-  CircleDot
+  CircleDot,
+  MapPin
 } from 'lucide-react';
 
 const icSize = 18;
 
 const IconGrid    = () => <LayoutDashboard size={icSize} />;
 const IconUsers   = () => <Users size={icSize} />;
-const IconKanban  = () => <Kanban size={icSize} />;
 const IconSun     = () => <Sun size={icSize} />;
 const IconMoon    = () => <Moon size={icSize} />;
 const IconLogout  = () => <LogOut size={16} />;
@@ -120,7 +119,6 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <IconGrid />, description: 'Overview & metrics' },
-  { label: 'Kanban', href: '/kanban', icon: <IconKanban />, description: 'Project board' },
   {
     label: 'Management',
     icon: <IconSettings />,
@@ -148,7 +146,9 @@ const NAV_ITEMS: NavItem[] = [
     icon: <FileText size={icSize} />,
     description: 'Document template management',
     children: [
+      { label: 'Templates', href: '/document-templates', icon: <FileText size={icSize} />, description: 'Manage document templates', permission: 'READ_DOCUMENT_TEMPLATE' },
       { label: 'Alliance Templates', href: '/document-template-alliances', icon: <FileText size={icSize} />, description: 'Alliance document templates', permission: 'VIEW_DOCUMENT_TEMPLATE_ALLIANCE' },
+      { label: 'Adjuster Templates', href: '/document-template-adjusters', icon: <FileText size={icSize} />, description: 'Adjuster document templates', permission: 'VIEW_DOCUMENT_TEMPLATE_ADJUSTER' },
     ]
   },
   {
@@ -165,6 +165,7 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Project Types', href: '/project-types', icon: <Layers size={icSize} />, description: 'Project type catalog', permission: ['READ_PROJECT_TYPE', 'CREATE_PROJECT_TYPE', 'UPDATE_PROJECT_TYPE', 'DELETE_PROJECT_TYPE', 'RESTORE_PROJECT_TYPE'] },
       { label: 'Portfolios', href: '/portfolios', icon: <IconPortfolio />, description: 'Project portfolio showcase', permission: ['VIEW_PORTFOLIO', 'CREATE_PORTFOLIO', 'UPDATE_PORTFOLIO', 'DELETE_PORTFOLIO', 'RESTORE_PORTFOLIO'] },
       { label: 'Claim Statuses', href: '/claim-statuses', icon: <IconClaimStatus />, description: 'Claim status catalog', permission: ['READ_CLAIM_STATUS', 'CREATE_CLAIM_STATUS', 'UPDATE_CLAIM_STATUS', 'DELETE_CLAIM_STATUS', 'RESTORE_CLAIM_STATUS'] },
+      { label: 'Zones', href: '/zones', icon: <MapPin size={icSize} />, description: 'Zone reference catalog', permission: ['VIEW_ZONE', 'CREATE_ZONE', 'UPDATE_ZONE', 'DELETE_ZONE', 'RESTORE_ZONE'] },
     ]
   },
   {

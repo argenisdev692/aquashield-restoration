@@ -21,51 +21,63 @@ interface UseGoogleMapsAddressAutocompleteResult {
 }
 
 type GoogleAddressComponent = {
-  long_name: string;
-  short_name: string;
+  longText: string;
+  shortText: string;
   types: string[];
 };
 
-type GooglePlaceResult = {
-  address_components?: GoogleAddressComponent[];
-  formatted_address?: string;
+type GooglePlace = {
+  addressComponents?: GoogleAddressComponent[];
+  formattedAddress?: string;
+  fetchFields: (options: { fields: string[] }) => Promise<{ place: GooglePlace }>;
 };
 
-type GoogleAutocompleteOptions = {
-  componentRestrictions?: { country: string | string[] };
-  fields?: string[];
-  types?: string[];
+type GooglePlacePrediction = {
+  toPlace: () => GooglePlace;
 };
 
-type GoogleMapsEventListener = {
-  remove: () => void;
+type GmpSelectEvent = Event & {
+  placePrediction: GooglePlacePrediction;
 };
 
-type GoogleAutocompleteInstance = {
-  addListener: (eventName: 'place_changed', handler: () => void) => GoogleMapsEventListener;
-  getPlace: () => GooglePlaceResult;
+type PlaceAutocompleteElementOptions = {
+  includedRegionCodes?: string[];
+  includedPrimaryTypes?: string[];
 };
 
-type GooglePlacesNamespace = {
-  Autocomplete: new (input: HTMLInputElement, options?: GoogleAutocompleteOptions) => GoogleAutocompleteInstance;
-};
+interface PlaceAutocompleteElementInstance {
+  setAttribute(name: string, value: string): void;
+  getAttribute(name: string): string | null;
+  removeAttribute(name: string): void;
+  remove(): void;
+  addEventListener(
+    type: 'gmp-select',
+    listener: (event: GmpSelectEvent) => void,
+  ): void;
+  removeEventListener(
+    type: 'gmp-select',
+    listener: (event: GmpSelectEvent) => void,
+  ): void;
+}
 
-type GoogleMapsNamespace = {
-  places: GooglePlacesNamespace;
-};
-
-type GoogleWindow = {
-  maps: GoogleMapsNamespace;
+type GooglePlacesLibrary = {
+  PlaceAutocompleteElement: new (
+    options?: PlaceAutocompleteElementOptions,
+  ) => PlaceAutocompleteElementInstance;
 };
 
 declare global {
   interface Window {
-    google?: GoogleWindow;
+    google?: {
+      maps: {
+        importLibrary: (library: string) => Promise<unknown>;
+      };
+    };
   }
 }
 
 const SCRIPT_ID = 'google-maps-places-script';
-let googleMapsScriptPromise: Promise<GoogleWindow> | null = null;
+let googleMapsBootstrapPromise: Promise<void> | null = null;
 
 function getGoogleMapsApiKey(): string {
   const publicKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -83,29 +95,28 @@ function getGoogleMapsApiKey(): string {
   return '';
 }
 
-function loadGoogleMapsScript(apiKey: string): Promise<GoogleWindow> {
-  if (window.google) {
-    return Promise.resolve(window.google);
+function loadGoogleMapsBootstrap(apiKey: string): Promise<void> {
+  if (window.google?.maps?.importLibrary) {
+    return Promise.resolve();
   }
 
-  if (googleMapsScriptPromise) {
-    return googleMapsScriptPromise;
+  if (googleMapsBootstrapPromise) {
+    return googleMapsBootstrapPromise;
   }
 
-  googleMapsScriptPromise = new Promise<GoogleWindow>((resolve, reject) => {
+  googleMapsBootstrapPromise = new Promise<void>((resolve, reject) => {
     const existingScript = document.getElementById(SCRIPT_ID);
 
     const handleLoad = (): void => {
-      if (window.google) {
-        resolve(window.google);
+      if (window.google?.maps?.importLibrary) {
+        resolve();
         return;
       }
-
-      reject(new Error('Google Maps script loaded without google namespace.'));
+      reject(new Error('Google Maps bootstrap loaded but importLibrary is not available.'));
     };
 
     const handleError = (): void => {
-      reject(new Error('Failed to load Google Maps script.'));
+      reject(new Error('Failed to load Google Maps bootstrap script.'));
     };
 
     if (existingScript instanceof HTMLScriptElement) {
@@ -118,21 +129,27 @@ function loadGoogleMapsScript(apiKey: string): Promise<GoogleWindow> {
     script.id = SCRIPT_ID;
     script.async = true;
     script.defer = true;
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places&loading=async`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&loading=async&libraries=places`;
     script.addEventListener('load', handleLoad, { once: true });
     script.addEventListener('error', handleError, { once: true });
     document.head.appendChild(script);
   }).catch((error: unknown) => {
-    googleMapsScriptPromise = null;
+    googleMapsBootstrapPromise = null;
     throw error;
   });
 
-  return googleMapsScriptPromise;
+  return googleMapsBootstrapPromise;
 }
 
-function buildAddressValue(place: GooglePlaceResult): UserAddressAutocompleteValue {
-  const components = place.address_components ?? [];
+async function loadPlacesLibrary(): Promise<GooglePlacesLibrary> {
+  const lib = await window.google!.maps.importLibrary('places');
+  return lib as GooglePlacesLibrary;
+}
 
+function buildAddressValue(
+  components: GoogleAddressComponent[],
+  formattedAddress: string | undefined,
+): UserAddressAutocompleteValue {
   let streetNumber = '';
   let route = '';
   let city = '';
@@ -144,55 +161,60 @@ function buildAddressValue(place: GooglePlaceResult): UserAddressAutocompleteVal
 
   for (const component of components) {
     if (component.types.includes('street_number')) {
-      streetNumber = component.long_name;
+      streetNumber = component.longText;
       continue;
     }
 
     if (component.types.includes('route')) {
-      route = component.short_name;
+      route = component.shortText;
       continue;
     }
 
     if (component.types.includes('locality')) {
-      city = component.long_name;
+      city = component.longText;
       continue;
     }
 
     if (city.length === 0 && component.types.includes('postal_town')) {
-      city = component.long_name;
+      city = component.longText;
       continue;
     }
 
     if (city.length === 0 && component.types.includes('administrative_area_level_2')) {
-      city = component.long_name;
+      city = component.longText;
       continue;
     }
 
     if (component.types.includes('administrative_area_level_1')) {
-      state = component.long_name;
+      state = component.longText;
       continue;
     }
 
     if (component.types.includes('country')) {
-      country = component.long_name;
-      countryCode = component.short_name;
+      country = component.longText;
+      countryCode = component.shortText;
       continue;
     }
 
     if (component.types.includes('postal_code')) {
-      postalCode = component.long_name;
+      postalCode = component.longText;
       continue;
     }
 
     if (component.types.includes('postal_code_suffix')) {
-      postalCodeSuffix = component.long_name;
+      postalCodeSuffix = component.longText;
     }
   }
 
-  const address = [streetNumber, route].filter((segment) => segment.length > 0).join(' ').trim();
-  const fallbackAddress = typeof place.formatted_address === 'string'
-    ? place.formatted_address.split(',')[0]?.trim() ?? ''
-    : '';
+  const address = [streetNumber, route]
+    .filter((segment) => segment.length > 0)
+    .join(' ')
+    .trim();
+
+  const fallbackAddress =
+    typeof formattedAddress === 'string'
+      ? (formattedAddress.split(',')[0]?.trim() ?? '')
+      : '';
 
   return {
     address: address.length > 0 ? address : fallbackAddress,
@@ -203,6 +225,49 @@ function buildAddressValue(place: GooglePlaceResult): UserAddressAutocompleteVal
   };
 }
 
+function injectAutocompleteStyles(): void {
+  const styleId = 'gmp-autocomplete-override-styles';
+  if (document.getElementById(styleId)) return;
+
+  const style = document.createElement('style');
+  style.id = styleId;
+  style.textContent = `
+    gmp-place-autocomplete {
+      display: block;
+      width: 100%;
+    }
+    gmp-place-autocomplete input,
+    gmp-place-autocomplete::part(input) {
+      width: 100%;
+      font-family: var(--font-sans, inherit);
+      font-size: 0.875rem;
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      outline: none;
+      transition: all 0.3s;
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      color: var(--text-primary);
+    }
+    gmp-place-autocomplete input::placeholder,
+    gmp-place-autocomplete::part(input)::placeholder {
+      color: var(--text-disabled);
+    }
+    gmp-place-autocomplete input:hover,
+    gmp-place-autocomplete::part(input):hover {
+      border-color: var(--accent-primary);
+    }
+    gmp-place-autocomplete input:focus,
+    gmp-place-autocomplete::part(input):focus {
+      ring: 2px;
+      ring-color: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 export function useGoogleMapsAddressAutocomplete({
   inputRef,
   onAddressSelected,
@@ -211,6 +276,9 @@ export function useGoogleMapsAddressAutocomplete({
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+
+  const onAddressSelectedRef = React.useRef(onAddressSelected);
+  onAddressSelectedRef.current = onAddressSelected;
 
   React.useEffect(() => {
     if (!enabled) {
@@ -235,38 +303,75 @@ export function useGoogleMapsAddressAutocomplete({
       return;
     }
 
-    let listener: GoogleMapsEventListener | null = null;
     let isCancelled = false;
+    let autocompleteElement: PlaceAutocompleteElementInstance | null = null;
 
     setIsLoading(true);
     setErrorMessage(null);
 
-    void loadGoogleMapsScript(apiKey)
-      .then((google) => {
-        if (isCancelled) {
-          return;
+    const handleSelect = (event: GmpSelectEvent): void => {
+      if (isCancelled) return;
+
+      const place = event.placePrediction.toPlace();
+
+      void place
+        .fetchFields({ fields: ['addressComponents', 'formattedAddress'] })
+        .then(({ place: filledPlace }) => {
+          if (isCancelled) return;
+
+          const components = filledPlace.addressComponents ?? [];
+          const value = buildAddressValue(components, filledPlace.formattedAddress);
+          onAddressSelectedRef.current(value);
+
+          if (input) {
+            input.value = value.address;
+          }
+        })
+        .catch(() => {
+          if (!isCancelled) {
+            setErrorMessage('Could not retrieve address details.');
+          }
+        });
+    };
+
+    void loadGoogleMapsBootstrap(apiKey)
+      .then(loadPlacesLibrary)
+      .then(({ PlaceAutocompleteElement }) => {
+        if (isCancelled) return;
+
+        injectAutocompleteStyles();
+
+        autocompleteElement = new PlaceAutocompleteElement({
+          includedRegionCodes: ['US'],
+          includedPrimaryTypes: ['address'],
+        });
+
+        const placeholder = input.getAttribute('placeholder') ?? 'Start typing a USA address';
+        autocompleteElement.setAttribute('placeholder', placeholder);
+
+        const inputId = input.getAttribute('id');
+        if (inputId) {
+          autocompleteElement.setAttribute('id', `${inputId}-autocomplete`);
         }
 
-        const autocomplete = new google.maps.places.Autocomplete(input, {
-          componentRestrictions: { country: 'us' },
-          fields: ['address_components', 'formatted_address'],
-          types: ['address'],
-        });
+        const parent = input.parentElement;
 
-        listener = autocomplete.addListener('place_changed', () => {
-          const place = autocomplete.getPlace();
-          onAddressSelected(buildAddressValue(place));
-        });
+        if (parent) {
+          const domEl = autocompleteElement as unknown as HTMLElement;
+          domEl.style.cssText = 'display:block;width:100%;';
+          input.style.display = 'none';
+          parent.insertBefore(domEl, input.nextSibling);
+        }
+
+        autocompleteElement.addEventListener('gmp-select', handleSelect);
 
         setIsReady(true);
       })
       .catch(() => {
-        if (isCancelled) {
-          return;
+        if (!isCancelled) {
+          setIsReady(false);
+          setErrorMessage('Google Maps autocomplete could not be loaded.');
         }
-
-        setIsReady(false);
-        setErrorMessage('Google Maps autocomplete could not be loaded.');
       })
       .finally(() => {
         if (!isCancelled) {
@@ -276,9 +381,18 @@ export function useGoogleMapsAddressAutocomplete({
 
     return () => {
       isCancelled = true;
-      listener?.remove();
+
+      if (autocompleteElement) {
+        autocompleteElement.removeEventListener('gmp-select', handleSelect);
+        (autocompleteElement as unknown as HTMLElement).remove();
+        autocompleteElement = null;
+      }
+
+      if (input) {
+        input.style.display = '';
+      }
     };
-  }, [enabled, inputRef, onAddressSelected]);
+  }, [enabled, inputRef]);
 
   return {
     isLoading,

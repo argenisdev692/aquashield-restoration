@@ -1,16 +1,9 @@
 import * as React from "react";
 import { Head, Link, useRemember } from "@inertiajs/react";
-import type { RowSelectionState } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { ExportButton } from "@/common/export/ExportButton";
-import { DataTableBulkActions } from "@/shadcn/DataTableBulkActions";
-import { DeleteConfirmModal } from "@/shadcn/DeleteConfirmModal";
 import { DataTableDateRangeFilter } from "@/common/data-table/DataTableDateRangeFilter";
 import { PermissionGuard } from "@/modules/auth/components/PermissionGuard";
-import {
-    useBulkDeleteDocumentTemplateAlliances,
-    useDeleteDocumentTemplateAlliance,
-} from "@/modules/document-template-alliances/hooks/useDocumentTemplateAllianceMutations";
 import { useDocumentTemplateAlliances } from "@/modules/document-template-alliances/hooks/useDocumentTemplateAlliances";
 import type { DocumentTemplateAllianceFilters } from "@/modules/document-template-alliances/types";
 import AppLayout from "@/pages/layouts/AppLayout";
@@ -22,18 +15,13 @@ export default function DocumentTemplateAlliancesIndexPage(): React.JSX.Element 
         "document-template-alliances-filters",
     );
     const [search, setSearch] = React.useState<string>(filters.search ?? "");
-    const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
-    const [pendingDelete, setPendingDelete] = React.useState<{ uuid: string; name: string } | null>(null);
     const [, startTransition] = React.useTransition();
     const [isPendingExport, startExportTransition] = React.useTransition();
 
     const { data, isPending } = useDocumentTemplateAlliances(filters);
-    const deleteMutation = useDeleteDocumentTemplateAlliance();
-    const bulkDeleteMutation = useBulkDeleteDocumentTemplateAlliances();
 
     const items = data?.data ?? [];
     const meta = data?.meta ?? { current_page: 1, last_page: 1, per_page: 15, total: 0 };
-    const selectedCount = Object.values(rowSelection).filter(Boolean).length;
 
     function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
         const value = event.target.value;
@@ -54,21 +42,6 @@ export default function DocumentTemplateAlliancesIndexPage(): React.JSX.Element 
             params.append("format", format);
             window.open(`/document-template-alliances/data/admin/export?${params.toString()}`, "_blank");
         });
-    }
-
-    async function handleConfirmDelete(): Promise<void> {
-        if (pendingDelete === null) return;
-        await deleteMutation.mutateAsync(pendingDelete.uuid);
-        setPendingDelete(null);
-    }
-
-    async function handleBulkDelete(): Promise<void> {
-        const selectedUuids = Object.entries(rowSelection)
-            .filter(([, selected]) => selected)
-            .map(([uuid]) => uuid);
-        if (selectedUuids.length === 0) return;
-        await bulkDeleteMutation.mutateAsync(selectedUuids);
-        setRowSelection({});
     }
 
     function goToPage(page: number): void {
@@ -101,7 +74,7 @@ export default function DocumentTemplateAlliancesIndexPage(): React.JSX.Element 
                                 className="btn-primary inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
                             >
                                 <Plus size={16} />
-                                <span>New template</span>
+                                <span>New Template</span>
                             </Link>
                         </PermissionGuard>
                     </div>
@@ -113,12 +86,12 @@ export default function DocumentTemplateAlliancesIndexPage(): React.JSX.Element 
                                 className="flex flex-1 items-center gap-3 rounded-xl px-4 py-3"
                                 style={{ border: "1px solid var(--border-default)", background: "var(--bg-surface)" }}
                             >
-                                <Search size={16} style={{ color: "var(--text-muted)" }} />
+                                <Search size={16} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
                                 <input
                                     type="text"
                                     value={search}
                                     onChange={handleSearchChange}
-                                    placeholder="Search templates..."
+                                    placeholder="Search templates…"
                                     className="w-full bg-transparent text-sm outline-none"
                                     style={{ color: "var(--text-primary)", fontFamily: "var(--font-sans)" }}
                                 />
@@ -143,23 +116,11 @@ export default function DocumentTemplateAlliancesIndexPage(): React.JSX.Element 
                         </div>
                     </div>
 
-                    {/* Bulk actions */}
-                    <PermissionGuard permissions={["DELETE_DOCUMENT_TEMPLATE_ALLIANCE"]}>
-                        <DataTableBulkActions
-                            count={selectedCount}
-                            onDelete={handleBulkDelete}
-                            isDeleting={bulkDeleteMutation.isPending}
-                        />
-                    </PermissionGuard>
-
                     {/* Table */}
                     <div className="card overflow-hidden p-0">
                         <DocumentTemplateAlliancesTable
                             data={items}
                             isPending={isPending}
-                            onDeleteClick={(uuid, name) => setPendingDelete({ uuid, name })}
-                            rowSelection={rowSelection}
-                            onRowSelectionChange={setRowSelection}
                         />
                     </div>
 
@@ -192,14 +153,6 @@ export default function DocumentTemplateAlliancesIndexPage(): React.JSX.Element 
                         </div>
                     ) : null}
                 </div>
-
-                <DeleteConfirmModal
-                    open={pendingDelete !== null}
-                    entityLabel={pendingDelete?.name ?? ""}
-                    onConfirm={() => { void handleConfirmDelete(); }}
-                    onCancel={() => setPendingDelete(null)}
-                    isDeleting={deleteMutation.isPending}
-                />
             </AppLayout>
         </>
     );
