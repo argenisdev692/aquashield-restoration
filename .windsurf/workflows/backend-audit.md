@@ -1,8 +1,8 @@
 ---
-description: Audits a Laravel 12 / PHP 8.5 module against architecture, security, audit & test rules. Generates a FAIL/PASS checklist, auto-fixes violations, then re-verifies until 100% score.
+description: Audits a Laravel 13 / PHP 8.5 module against architecture, security, audit & test rules. Generates a FAIL/PASS checklist, auto-fixes violations, then re-verifies until 100% score.
 ---
 
-# BACKEND AUDIT AGENT — PHP 8.5 + Laravel 12
+# BACKEND AUDIT AGENT — PHP 8.5 + Laravel 13
 
 ## PHASE 0 — CLASSIFY THE MODULE
 
@@ -52,8 +52,8 @@ The audit output MUST start by stating:
 
 Before starting the audit, you MUST:
 
-1. Call context7 to resolve current docs for: Laravel 12, filesystem / storage disks, events & listeners, Spatie Laravel Data 4.x, Spatie Permission 6.x, Spatie Activitylog, Pest 3
-2. Call tavily to verify the latest stable versions of all packages in §12
+1. Call context7 to resolve current docs for: Laravel 13, filesystem / storage disks, events & listeners, Spatie Laravel Data 4.x, Spatie Permission 7.x, Spatie Activitylog, Pest 3
+2. Call tavily to verify the latest stable versions of all packages in §12, prioritizing recent/current sources (`time_range: day`, `week`, or `month`) and official docs; avoid historical years unless the task explicitly asks for them
 
 Then analyze the indicated module against these rules.
 For each item mark ✅ PASS, ❌ FAIL (with file:line and brief description), ⚠️ WARN, or ➖ N/A (with reason when the item is outside the module scope).

@@ -1,8 +1,8 @@
 ---
-description: Generates a simple Laravel 12 / PHP 8.5 CRUD module for standard entities without enterprise overengineering. 5-line summary.
+description: Generates a simple Laravel 13 / PHP 8.5 CRUD module for standard entities without enterprise overengineering. 5-line summary.
 ---
 
-# BACKEND NEW SIMPLE CRUD AGENT — PHP 8.5 + Laravel 12
+# BACKEND NEW SIMPLE CRUD AGENT — PHP 8.5 + Laravel 13
 
 ## PHASE 0 — QUALIFY THE REQUEST
 
@@ -10,8 +10,8 @@ Before writing any code, you MUST:
 
 1. Read `.windsurf/skills/SKILLS-FULL-STACK/BACKEND-PHP.md`
 2. Read `.windsurf/skills/SKILLS-FULL-STACK/ARCHITECTURE-SIMPLE-CRUD-PHP.md`
-3. Call context7 to resolve current docs for: Laravel 12, Spatie Laravel Data 4.x, Spatie Permission 6.x, Spatie Activitylog, Pest 3
-4. Call tavily to verify the latest stable versions of all packages you will touch
+3. Call context7 to resolve current docs for: Laravel 13, Spatie Laravel Data 4.x, Spatie Permission 7.x, Spatie Activitylog, Pest 3
+4. Call tavily to verify the latest stable versions of all packages you will touch, prioritizing recent/current sources (`time_range: day`, `week`, or `month`) and official docs; avoid historical years unless the task explicitly asks for them
 
 Only continue if the requested module qualifies as a simple CRUD:
 

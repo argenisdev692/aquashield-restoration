@@ -4,13 +4,13 @@ trigger: always_on
 
 # [ABSOLUTE] Non-negotiable constraints — ALWAYS apply
 
-- **Language:** Respond in Spanish at all times.
+- **Language:** Respond in English at all times.
 - **CLI:** Use `./vendor/bin/sail artisan` — NEVER bare `php`.
 - **PHP 8.5:** Follow `.windsurf/skills/SKILLS-FULL-STACK/BACKEND-PHP.md` §0–§3 — SINGLE SOURCE OF TRUTH for PHP 8.5 syntax.
 - **TypeScript:** Strict mode enforced on ALL `.tsx` / `.ts` files.
 - **Context7 (MCP):** Always resolve live docs — never rely on cached training knowledge.
 - **Sequential Thinking (MCP):** Use `mcp3_sequentialthinking` for ALL non-trivial tasks — architecture decisions, debugging, multi-step implementations, and any task with unclear scope. No exceptions.
-- **Investigate / Investigar:** Run Tavily search immediately before responding.
+- **Investigate / Investigar:** Run Tavily search immediately before responding, prioritizing recent/current sources (`time_range: day`, `week`, or `month`) and official docs; avoid historical years unless the task explicitly asks for them.
 
 # [MUST] Before writing any code — read the relevant skill
 

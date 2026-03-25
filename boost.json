@@ -1,0 +1,19 @@
+{
+    "guidelines": true,
+    "mcp": true,
+    "nightwatch_mcp": false,
+    "packages": [
+        "echolabsdev/prism"
+    ],
+    "sail": true,
+    "skills": [
+        "laravel-best-practices",
+        "configuring-horizon",
+        "socialite-development",
+        "pest-testing",
+        "inertia-react-development",
+        "echo-development",
+        "tailwindcss-development",
+        "developing-with-prism"
+    ]
+}

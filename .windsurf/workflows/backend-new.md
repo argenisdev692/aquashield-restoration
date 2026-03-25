@@ -1,12 +1,12 @@
 ---
-description: Generates a Laravel 12 / PHP 8.5 CRUD module following architecture, security & test rules. Sequential thinking. 5-line summary.
+description: Generates a Laravel 13 / PHP 8.5 CRUD module following architecture, security & test rules. Sequential thinking. 5-line summary.
 ---
 
 ---
 
-## description: Generates a complete Laravel 12 / PHP 8.5 CRUD module from scratch against architecture, security, audit & test rules. Uses sequential thinking for hard reasoning. Responds with a 5-line summary only.
+## description: Generates a complete Laravel 13 / PHP 8.5 CRUD module from scratch against architecture, security, audit & test rules. Uses sequential thinking for hard reasoning. Responds with a 5-line summary only.
 
-# BACKEND NEW MODULE AGENT — PHP 8.5 + Laravel 12
+# BACKEND NEW MODULE AGENT — PHP 8.5 + Laravel 13
 
 ## PHASE 0 — QUALIFY THE REQUEST
 
@@ -26,8 +26,8 @@ STOP and instruct the user to use `/backend-new-crud` instead.
 
 Before writing any code, you MUST:
 
-1. Call context7 to resolve current docs for: Laravel 12, Spatie Laravel Data 4.x, Spatie Permission 6.x, Spatie Activitylog, Pest 3
-2. Call tavily to verify the latest stable versions of all packages in §12
+1. Call context7 to resolve current docs for: Laravel 13, Spatie Laravel Data 4.x, Spatie Permission 7.x, Spatie Activitylog, Pest 3
+2. Call tavily to verify the latest stable versions of all packages in §12, prioritizing recent/current sources (`time_range: day`, `week`, or `month`) and official docs; avoid historical years unless the task explicitly asks for them
 3. USE SEQUENTIAL THINKING TO REASON HARD about the module structure, field types, ValueObject candidates, CQRS boundaries, audit fields, permission names, export shape, and test coverage — before generating a single file
 
 Then generate the indicated module following these rules.

@@ -1,13 +1,13 @@
 ---
 name: backend-php
-description: Primary guide for backend tasks with PHP 8.5 and Laravel 12, including Hexagonal Architecture, SOLID, DDD, Value Objects, Repository Pattern, CQRS, Event Driven Architecture, routes, security, DTOs, mappers, storage, and the project's enterprise conventions.
+description: Primary guide for backend tasks with PHP 8.5 and Laravel 13, including Hexagonal Architecture, SOLID, DDD, Value Objects, Repository Pattern, CQRS, Event Driven Architecture, routes, security, DTOs, mappers, storage, and the project's enterprise conventions.
 ---
 
-# BACKEND-PHP.md — PHP 8.5 + Laravel 12 · Enterprise Backend Bible (2026)
+# BACKEND-PHP.md — PHP 8.5 + Laravel 13 · Enterprise Backend Bible (2026)
 
 > **Authority**: This file is the SINGLE SOURCE OF TRUTH for all PHP backend rules.
 > **Binary**: `/usr/bin/php8.5` (Sail container). Validate ALL code against this runtime.
-> **Stack**: PHP 8.5 · Laravel 12 · Spatie Permission 6.x · Spatie Laravel Data 4.x · Pest 3.x
+> **Stack**: PHP 8.5 · Laravel 13 · Spatie Permission 7.x · Spatie Laravel Data 4.x · Pest 3.x
 
 ---
 
@@ -285,12 +285,12 @@ final readonly class Email
 
 ---
 
-## §4 — Laravel 12 Rules
+## §4 — Laravel 13 Rules
 
 ### Service Provider Registration
 
 ```php
-// bootstrap/providers.php (NOT config/app.php in Laravel 12)
+// bootstrap/providers.php (NOT config/app.php in Laravel 13)
 return [
     App\Providers\AppServiceProvider::class,
     Src\Providers\SharedServiceProvider::class,
@@ -334,6 +334,8 @@ public function register(): void
 - Use `when()` for conditional filters.
 
 ### EloquentModel Template
+
+- Laravel 13 allows model metadata to move to PHP attributes (`#[]`) where the framework exposes an attribute-based configuration path. Prefer the attribute style for new models and keep legacy properties only where no attribute equivalent exists yet.
 
 ```php
 declare(strict_types=1);
