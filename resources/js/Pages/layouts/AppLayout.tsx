@@ -63,7 +63,10 @@ import {
   Phone,
   CircleDot,
   MapPin,
-  FolderOpen
+  FolderOpen,
+  Contact,
+  House,
+  Database,
 } from 'lucide-react';
 
 const icSize = 18;
@@ -98,6 +101,9 @@ const IconAI = () => <Bot size={18} />;
 const IconPortfolio = () => <Briefcase size={icSize} />;
 const IconClaimStatus = () => <CircleDot size={icSize} />;
 const IconFilesEsx    = () => <FolderOpen size={icSize} />;
+const IconCustomers   = () => <Contact size={icSize} />;
+const IconProperties  = () => <House size={icSize} />;
+const IconCRM         = () => <Database size={icSize} />;
 
 interface TooltipRect {
   left: number;
@@ -129,6 +135,15 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Users', href: '/users', icon: <IconUsers />, description: 'Manage system users', permission: 'VIEW_USERS' },
       { label: 'Roles', href: '/roles', icon: <ShieldCheck size={icSize} />, description: 'Manage access roles', permission: 'READ_ROLE' },
       { label: 'Permissions', href: '/permissions', icon: <IconPermission />, description: 'Manage permissions and user access', permission: ['READ_PERMISSION', 'VIEW_USERS'] },
+    ]
+  },
+  {
+    label: 'CRM',
+    icon: <IconCRM />,
+    description: 'Customers and properties',
+    children: [
+      { label: 'Customers', href: '/customers', icon: <IconCustomers />, description: 'Manage CRM customers', permission: 'VIEW_CUSTOMER' },
+      { label: 'Properties', href: '/properties', icon: <IconProperties />, description: 'Manage property records', permission: 'VIEW_PROPERTY' },
     ]
   },
   { 

@@ -38,4 +38,6 @@ return [
     Src\Modules\DocumentTemplateAdjusters\Providers\DocumentTemplateAdjustersServiceProvider::class,
     Src\Modules\Zones\Providers\ZonesServiceProvider::class,
     Src\Modules\FilesEsx\Providers\FilesEsxServiceProvider::class,
+    Src\Modules\Customers\Providers\CustomersServiceProvider::class,
+    Src\Modules\Properties\Providers\PropertiesServiceProvider::class,
 ];
