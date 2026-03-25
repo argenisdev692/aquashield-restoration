@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Ramsey\Uuid\Uuid;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -32,6 +33,7 @@ final class FilesEsxPermissionsSeeder extends Seeder
             foreach (self::ALL_PERMISSIONS as $permissionName) {
                 Permission::firstOrCreate(
                     ['name' => $permissionName, 'guard_name' => $guard],
+                    ['uuid' => Uuid::uuid4()->toString()],
                 );
             }
         }

@@ -7,8 +7,17 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Modules\Blog\Infrastructure\Persistence\Eloquent\Seeders\PostPermissionsSeeder;
 use Database\Seeders\CallHistoryPermissionsSeeder;
+use Database\Seeders\ClaimStatusPermissionsSeeder;
+use Database\Seeders\CustomerPermissionsSeeder;
+use Database\Seeders\DocumentTemplateAdjusterPermissionsSeeder;
+use Database\Seeders\DocumentTemplatePermissionsSeeder;
+use Database\Seeders\FilesEsxPermissionsSeeder;
+use Database\Seeders\MortgageCompanyPermissionsSeeder;
+use Database\Seeders\PortfolioPermissionsSeeder;
+use Database\Seeders\PropertyPermissionsSeeder;
+use Database\Seeders\ZonePermissionsSeeder;
+use Modules\Blog\Infrastructure\Persistence\Eloquent\Seeders\PostPermissionsSeeder;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Seeders\UsersPermissionsSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -58,13 +67,27 @@ class DatabaseSeeder extends Seeder
         // ALLIANCE COMPANIES - Call AllianceCompanySeeder
         $this->call(AllianceCompanySeeder::class);
 
+        // CUSTOMER / PROPERTY / PORTFOLIO - Call related seeders
+        $this->call(CustomerPermissionsSeeder::class);
+        $this->call(PropertyPermissionsSeeder::class);
+        $this->call(PortfolioPermissionsSeeder::class);
+
+        // MORTGAGE COMPANY - Call permissions seeder
+        $this->call(MortgageCompanyPermissionsSeeder::class);
+
         // ZONES - Call ZoneSeeder
         $this->call(ZoneSeeder::class);
+        $this->call(ZonePermissionsSeeder::class);
 
         // BLOG AND EMAIL DATA - Call Blog and Email Seeders
         $this->call(BlogCategorySeeder::class);
         $this->call(PostPermissionsSeeder::class);
+        $this->call(DocumentTemplatePermissionsSeeder::class);
+        $this->call(DocumentTemplateAdjusterPermissionsSeeder::class);
         $this->call(EmailDataSeeder::class);
+
+        // FILES ESX - Call permissions seeder
+        $this->call(FilesEsxPermissionsSeeder::class);
 
         // DASHBOARD - Dashboard Permissions (Kanban board)
         $this->call(DashboardPermissionsSeeder::class);

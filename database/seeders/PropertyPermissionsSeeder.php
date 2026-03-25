@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Ramsey\Uuid\Uuid;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -27,6 +28,8 @@ final class PropertyPermissionsSeeder extends Seeder
                 Permission::firstOrCreate([
                     'name'       => $permissionName,
                     'guard_name' => $guard,
+                ], [
+                    'uuid' => Uuid::uuid4()->toString(),
                 ]);
             }
 
