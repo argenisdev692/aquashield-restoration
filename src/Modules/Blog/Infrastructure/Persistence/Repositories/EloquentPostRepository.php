@@ -26,7 +26,6 @@ final class EloquentPostRepository implements PostRepositoryPort
         'category_id',
         'user_id',
         'post_status',
-        'published_at',
         'scheduled_at',
         'created_at',
         'updated_at',

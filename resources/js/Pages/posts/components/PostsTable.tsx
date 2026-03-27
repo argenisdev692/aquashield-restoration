@@ -92,11 +92,11 @@ export default function PostsTable({
       },
     },
     {
-      accessorKey: 'published_at',
-      header: 'Published',
+      accessorKey: 'scheduled_at',
+      header: 'Scheduled',
       cell: ({ row }: CellContext<PostListItem, unknown>) => (
         <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          {formatDateShort(row.original.published_at)}
+          {formatDateShort(row.original.scheduled_at)}
         </span>
       ),
     },

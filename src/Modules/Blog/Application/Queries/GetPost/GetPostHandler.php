@@ -39,7 +39,6 @@ final readonly class GetPostHandler
                 categoryName: $post->categoryName,
                 userId: $post->userId,
                 postStatus: $post->status,
-                publishedAt: $post->publishedAt,
                 scheduledAt: $post->scheduledAt,
                 createdAt: $post->createdAt,
                 updatedAt: $post->updatedAt,

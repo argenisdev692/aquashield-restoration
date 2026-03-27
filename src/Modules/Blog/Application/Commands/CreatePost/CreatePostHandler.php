@@ -38,7 +38,6 @@ final readonly class CreatePostHandler
             'category_id' => $dto->categoryUuid ? $this->repository->findCategoryIdByUuid($dto->categoryUuid) : null,
             'user_id' => auth()->id(),
             'post_status' => $status,
-            'published_at' => $status === 'published' ? ($dto->publishedAt ?? now()->toIso8601String()) : null,
             'scheduled_at' => $status === 'scheduled' ? $dto->scheduledAt : null,
         ]);
 

@@ -48,7 +48,6 @@ final readonly class ListPostsHandler
                         postCoverImage: $post->coverImage,
                         categoryName: $post->categoryName,
                         postStatus: $post->status,
-                        publishedAt: $post->publishedAt,
                         scheduledAt: $post->scheduledAt,
                         createdAt: $post->createdAt ?? '',
                         updatedAt: $post->updatedAt ?? '',

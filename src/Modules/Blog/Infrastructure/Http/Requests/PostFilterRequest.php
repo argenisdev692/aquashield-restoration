@@ -22,7 +22,7 @@ final class PostFilterRequest extends FormRequest
             'status' => ['nullable', 'string', 'in:active,deleted,draft,published,scheduled,archived'],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date'],
-            'sort_by' => ['nullable', 'string', 'in:post_title,post_status,published_at,scheduled_at,created_at,updated_at'],
+            'sort_by' => ['nullable', 'string', 'in:post_title,post_status,scheduled_at,created_at,updated_at'],
             'sort_dir' => ['nullable', 'string', 'in:asc,desc'],
         ];
     }

@@ -31,7 +31,6 @@ it('maps the post eloquent model into the domain entity', function (): void {
         'category_id' => $category->id,
         'user_id' => $user->id,
         'post_status' => 'published',
-        'published_at' => now(),
     ]);
 
     $postModel->load('category');

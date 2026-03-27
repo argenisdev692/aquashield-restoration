@@ -30,7 +30,6 @@ final class PostResource extends JsonResource
             'category_name' => $isDomain ? $this->resource->categoryName : $this->resource->categoryName,
             'user_id' => $isDomain ? $this->resource->userId : $this->resource->userId,
             'post_status' => $isDomain ? $this->resource->status : $this->resource->postStatus,
-            'published_at' => $isDomain ? $this->resource->publishedAt : $this->resource->publishedAt,
             'scheduled_at' => $isDomain ? $this->resource->scheduledAt : $this->resource->scheduledAt,
             'created_at' => $isDomain ? $this->resource->createdAt : $this->resource->createdAt,
             'updated_at' => $isDomain ? $this->resource->updatedAt : $this->resource->updatedAt,

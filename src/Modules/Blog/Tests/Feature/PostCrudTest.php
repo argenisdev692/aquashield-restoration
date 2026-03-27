@@ -132,7 +132,6 @@ it('exports posts to excel and pdf', function (): void {
         'category_id' => $category->id,
         'user_id' => $user->id,
         'post_status' => 'published',
-        'published_at' => now(),
     ]);
 
     $this->actingAs($user)

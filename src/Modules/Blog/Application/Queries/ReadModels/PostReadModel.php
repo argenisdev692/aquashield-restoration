@@ -25,7 +25,6 @@ final class PostReadModel extends Data
         public ?string $categoryName,
         public ?int $userId,
         public string $postStatus,
-        public ?string $publishedAt,
         public ?string $scheduledAt,
         public ?string $createdAt,
         public ?string $updatedAt,

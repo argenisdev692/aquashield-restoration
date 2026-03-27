@@ -9,7 +9,6 @@ export interface PostListItem {
   post_cover_image: string | null;
   category_name: string | null;
   post_status: PostStatus;
-  published_at: string | null;
   scheduled_at: string | null;
   created_at: string;
   updated_at: string;
@@ -32,7 +31,7 @@ export interface PostFilters {
   status?: PostStatusFilter;
   date_from?: string;
   date_to?: string;
-  sort_by?: 'post_title' | 'post_status' | 'published_at' | 'scheduled_at' | 'created_at' | 'updated_at';
+  sort_by?: 'post_title' | 'post_status' | 'scheduled_at' | 'created_at' | 'updated_at';
   sort_dir?: 'asc' | 'desc';
 }
 
@@ -47,7 +46,6 @@ export interface CreatePostPayload {
   meta_keywords?: string | null;
   category_uuid?: string | null;
   post_status: PostStatus;
-  published_at?: string | null;
   scheduled_at?: string | null;
 }
 
@@ -62,6 +60,21 @@ export interface UpdatePostPayload {
   meta_keywords?: string | null;
   category_uuid?: string | null;
   post_status?: PostStatus;
-  published_at?: string | null;
   scheduled_at?: string | null;
+}
+
+export interface GeneratePostContentPayload {
+  topic: string;
+  niche: string;
+  word_count?: number;
+}
+
+export interface GeneratePostContentResponse {
+  post_content: string;
+  post_title_slug: string;
+  post_excerpt: string;
+  meta_title: string;
+  meta_description: string;
+  meta_keywords: string;
+  sources: Array<{ title: string; url: string; snippet: string }>;
 }

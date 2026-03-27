@@ -48,9 +48,6 @@ final readonly class UpdatePostHandler
                 ? ($dto->categoryUuid !== '' ? $this->repository->findCategoryIdByUuid($dto->categoryUuid) : null)
                 : $existing->categoryId,
             'post_status' => $status,
-            'published_at' => $status === 'published'
-                ? ($dto->publishedAt ?? $existing->publishedAt ?? now()->toIso8601String())
-                : null,
             'scheduled_at' => $status === 'scheduled'
                 ? ($dto->scheduledAt ?? $existing->scheduledAt)
                 : null,

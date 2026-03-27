@@ -25,7 +25,6 @@ final class Post extends AggregateRoot
         public ?string $categoryName = null,
         public ?int $userId = null,
         public string $status = 'draft',
-        public ?string $publishedAt = null,
         public ?string $scheduledAt = null,
         public ?string $createdAt = null,
         public ?string $updatedAt = null,

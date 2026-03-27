@@ -39,7 +39,7 @@ final class PostExcelExport implements FromQuery, WithHeadings, WithMapping, Sho
             'Category',
             'Publication Status',
             'Status',
-            'Published At',
+            'Scheduled At',
             'Created At',
         ];
     }
@@ -55,7 +55,7 @@ final class PostExcelExport implements FromQuery, WithHeadings, WithMapping, Sho
             $data['category'],
             $data['publication_status'],
             $data['status'],
-            $data['published_at'],
+            $data['scheduled_at'],
             $data['created_at'],
         ];
     }
@@ -83,7 +83,7 @@ final class PostExcelExport implements FromQuery, WithHeadings, WithMapping, Sho
                 'post_title_slug',
                 'category_id',
                 'post_status',
-                'published_at',
+                'scheduled_at',
                 'created_at',
                 'deleted_at',
             ]);

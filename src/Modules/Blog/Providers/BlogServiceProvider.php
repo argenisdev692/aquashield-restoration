@@ -7,9 +7,13 @@ namespace Modules\Blog\Providers;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Modules\Blog\Domain\Ports\BlogCategoryRepositoryPort;
+use Modules\Blog\Domain\Ports\ContentGenerationPort;
 use Modules\Blog\Domain\Ports\PostRepositoryPort;
+use Modules\Blog\Infrastructure\ExternalServices\Ai\ContentPipelineAdapter;
 use Modules\Blog\Infrastructure\Persistence\Repositories\EloquentBlogCategoryRepository;
 use Modules\Blog\Infrastructure\Persistence\Repositories\EloquentPostRepository;
+use Modules\AI\Domain\Ports\ResearchPort;
+use Modules\AI\Domain\Ports\TextGenerationPort;
 
 /**
  * BlogServiceProvider — Binds Blog context ports to their infrastructure adapters.
@@ -21,6 +25,13 @@ final class BlogServiceProvider extends ServiceProvider
         // ── Domain Ports → Infrastructure Adapters ──
         $this->app->bind(BlogCategoryRepositoryPort::class, EloquentBlogCategoryRepository::class);
         $this->app->bind(PostRepositoryPort::class, EloquentPostRepository::class);
+        $this->app->bind(
+            ContentGenerationPort::class,
+            fn (): ContentPipelineAdapter => new ContentPipelineAdapter(
+                textGen:  $this->app->make(TextGenerationPort::class),
+                research: $this->app->make(ResearchPort::class),
+            ),
+        );
     }
 
     public function boot(): void

@@ -34,7 +34,6 @@ final class PostMapper
             categoryName: $model->category?->blog_category_name,
             userId: $model->user_id,
             status: $model->post_status,
-            publishedAt: $model->published_at?->toIso8601String(),
             scheduledAt: $model->scheduled_at?->toIso8601String(),
             createdAt: $model->created_at?->toIso8601String(),
             updatedAt: $model->updated_at?->toIso8601String(),

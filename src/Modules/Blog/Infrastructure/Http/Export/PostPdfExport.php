@@ -45,7 +45,7 @@ final class PostPdfExport
                 'post_title_slug',
                 'category_id',
                 'post_status',
-                'published_at',
+                'scheduled_at',
                 'created_at',
                 'deleted_at',
             ]);

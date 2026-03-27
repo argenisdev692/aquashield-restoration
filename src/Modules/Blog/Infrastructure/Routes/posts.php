@@ -17,6 +17,7 @@ Route::prefix('data')->group(function (): void {
         Route::get('/export', PostExportController::class)->name('posts.data.export')->middleware('permission:VIEW_POST');
         Route::get('/', [AdminPostController::class, 'index'])->name('posts.data.index')->middleware('permission:VIEW_POST');
         Route::post('/', [AdminPostController::class, 'store'])->name('posts.data.store')->middleware('permission:CREATE_POST');
+        Route::post('/generate-content', [AdminPostController::class, 'generateContent'])->name('posts.data.generate-content')->middleware('permission:CREATE_POST');
         Route::get('/{uuid}', [AdminPostController::class, 'show'])->name('posts.data.show')->whereUuid('uuid')->middleware('permission:VIEW_POST');
         Route::put('/{uuid}', [AdminPostController::class, 'update'])->name('posts.data.update')->whereUuid('uuid')->middleware('permission:UPDATE_POST');
         Route::delete('/{uuid}', [AdminPostController::class, 'destroy'])->name('posts.data.destroy')->whereUuid('uuid')->middleware('permission:DELETE_POST');

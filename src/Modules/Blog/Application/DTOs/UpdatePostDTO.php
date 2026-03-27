@@ -22,7 +22,6 @@ final class UpdatePostDTO extends Data
         public ?string $metaKeywords = null,
         public ?string $categoryUuid = null,
         public ?string $postStatus = null,
-        public ?string $publishedAt = null,
         public ?string $scheduledAt = null,
     ) {
     }

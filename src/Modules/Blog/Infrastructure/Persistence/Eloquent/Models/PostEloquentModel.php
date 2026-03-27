@@ -32,19 +32,17 @@ final class PostEloquentModel extends Model
         'category_id',
         'user_id',
         'post_status',
-        'published_at',
         'scheduled_at',
     ];
 
     protected $casts = [
-        'published_at' => 'datetime',
         'scheduled_at' => 'datetime',
     ];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['post_title', 'post_title_slug', 'post_status', 'category_id', 'published_at', 'scheduled_at'])
+            ->logOnly(['post_title', 'post_title_slug', 'post_status', 'category_id', 'scheduled_at'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('blog.posts');

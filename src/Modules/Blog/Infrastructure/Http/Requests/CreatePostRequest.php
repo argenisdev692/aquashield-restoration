@@ -26,7 +26,6 @@ final class CreatePostRequest extends FormRequest
             'meta_keywords' => ['nullable', 'string', 'max:500'],
             'category_uuid' => ['nullable', 'string', 'uuid'],
             'post_status' => ['required', 'string', 'in:draft,published,scheduled,archived'],
-            'published_at' => ['nullable', 'date'],
             'scheduled_at' => ['nullable', 'date'],
         ];
     }

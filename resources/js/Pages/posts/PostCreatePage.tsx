@@ -38,11 +38,21 @@ export default function PostCreatePage(): React.JSX.Element {
     meta_keywords: '',
     category_uuid: '',
     post_status: 'draft',
-    published_at: '',
     scheduled_at: '',
   });
+
+  const [aiTopic, setAiTopic] = React.useState<string>('');
+  const [aiNiche, setAiNiche] = React.useState<string>('');
+  const [aiWordCount, setAiWordCount] = React.useState<number>(1200);
+
   const [errors, setErrors] = React.useState<Record<string, string>>({});
-  const { createPost } = usePostMutations();
+  const { createPost, generatePostContent } = usePostMutations();
+
+  React.useEffect(() => {
+    if (form.post_title && aiTopic === '') {
+      setAiTopic(form.post_title);
+    }
+  }, [form.post_title, aiTopic]);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>): void {
     const { name, value } = event.target;
@@ -60,12 +70,31 @@ export default function PostCreatePage(): React.JSX.Element {
     }
   }
 
+  function handleGenerate(): void {
+    generatePostContent.mutate(
+      { topic: aiTopic, niche: aiNiche, word_count: aiWordCount },
+      {
+        onSuccess: (result) => {
+          setForm((previous) => ({
+            ...previous,
+            post_content: result.post_content,
+            post_title_slug: result.post_title_slug,
+            post_excerpt: result.post_excerpt,
+            meta_title: result.meta_title,
+            meta_description: result.meta_description,
+            meta_keywords: result.meta_keywords,
+          }));
+        },
+      },
+    );
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
 
     createPost.mutate(form, {
-      onSuccess: () => {
-        router.visit('/posts');
+      onSuccess: (post) => {
+        router.visit(`/posts/${post.uuid}`);
       },
       onError: (error: unknown) => {
         setErrors(normalizeServerErrors(error));
@@ -75,12 +104,12 @@ export default function PostCreatePage(): React.JSX.Element {
 
   return (
     <AppLayout>
-      <Head title="Create Post" />
+      <Head title="New Post" />
       <PostForm
         title="New Post"
-        description="Create a rich article with structured content, metadata and publishing controls."
+        description="Write and configure a new article for your blog."
         backHref="/posts"
-        submitLabel="Save Post"
+        submitLabel="Publish Post"
         isSubmitting={createPost.isPending}
         form={form}
         errors={errors}
@@ -88,6 +117,16 @@ export default function PostCreatePage(): React.JSX.Element {
         onContentChange={handleContentChange}
         onSubmit={(event) => {
           void handleSubmit(event);
+        }}
+        aiGenerate={{
+          topic: aiTopic,
+          niche: aiNiche,
+          wordCount: aiWordCount,
+          isGenerating: generatePostContent.isPending,
+          onTopicChange: setAiTopic,
+          onNicheChange: setAiNiche,
+          onWordCountChange: setAiWordCount,
+          onGenerate: handleGenerate,
         }}
       />
     </AppLayout>

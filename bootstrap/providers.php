@@ -15,6 +15,7 @@ return [
     Modules\Roles\Providers\RolesServiceProvider::class,
     Modules\Users\Providers\UsersServiceProvider::class,
     Modules\CompanyData\Providers\CompanyDataServiceProvider::class,
+    Modules\AI\Providers\AIServiceProvider::class,
     Modules\Blog\Providers\BlogServiceProvider::class,
     Modules\InsuranceCompanies\Providers\InsuranceCompaniesServiceProvider::class,
     Modules\MortgageCompanies\Providers\MortgageCompaniesServiceProvider::class,

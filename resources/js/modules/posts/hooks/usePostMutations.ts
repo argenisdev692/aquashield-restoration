@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import type { AxiosError } from 'axios';
 import { sileo } from 'sileo';
-import type { CreatePostPayload, PostDetail, UpdatePostPayload } from '@/modules/posts/types';
+import type { CreatePostPayload, GeneratePostContentPayload, GeneratePostContentResponse, PostDetail, UpdatePostPayload } from '@/modules/posts/types';
 
 function getErrorMessage(error: AxiosError | Error | unknown, fallback: string): string {
   if (axios.isAxiosError(error)) {
@@ -86,11 +86,25 @@ export function usePostMutations() {
     },
   });
 
+  const generatePostContent = useMutation({
+    mutationFn: async (payload: GeneratePostContentPayload) => {
+      const { data } = await axios.post<{ data: GeneratePostContentResponse }>(
+        '/posts/data/admin/generate-content',
+        payload,
+      );
+      return data.data;
+    },
+    onError: (error: AxiosError | Error | unknown) => {
+      sileo.error({ title: getErrorMessage(error, 'AI generation failed. Check your API keys.') });
+    },
+  });
+
   return {
     createPost,
     updatePost,
     deletePost,
     restorePost,
     bulkDeletePosts,
+    generatePostContent,
   };
 }

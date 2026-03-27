@@ -24,7 +24,7 @@ return new class extends Migration
             $table->foreignId('category_id')->nullable()->constrained('blog_categories')->nullOnDelete();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('post_status')->default('draft');
-            $table->timestamp('published_at')->nullable();
+            
             $table->timestamp('scheduled_at')->nullable();
             $table->timestamps();
             $table->softDeletes();

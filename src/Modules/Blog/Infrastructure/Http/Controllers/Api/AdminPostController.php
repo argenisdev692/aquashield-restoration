@@ -8,6 +8,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Blog\Application\Commands\CreatePost\CreatePostCommand;
 use Modules\Blog\Application\Commands\CreatePost\CreatePostHandler;
+use Modules\Blog\Application\Commands\GeneratePostContent\GeneratePostContentCommand;
+use Modules\Blog\Application\Commands\GeneratePostContent\GeneratePostContentHandler;
+use Modules\Blog\Application\DTOs\GeneratePostContentDTO;
 use Modules\Blog\Application\Commands\DeletePost\DeletePostCommand;
 use Modules\Blog\Application\Commands\DeletePost\DeletePostHandler;
 use Modules\Blog\Application\Commands\RestorePost\RestorePostCommand;
@@ -22,6 +25,7 @@ use Modules\Blog\Application\Queries\GetPost\GetPostQuery;
 use Modules\Blog\Application\Queries\ListPosts\ListPostsHandler;
 use Modules\Blog\Application\Queries\ListPosts\ListPostsQuery;
 use Modules\Blog\Infrastructure\Http\Requests\CreatePostRequest;
+use Modules\Blog\Infrastructure\Http\Requests\GeneratePostContentRequest;
 use Modules\Blog\Infrastructure\Http\Requests\PostFilterRequest;
 use Modules\Blog\Infrastructure\Http\Requests\UpdatePostRequest;
 use Modules\Blog\Infrastructure\Http\Resources\PostResource;
@@ -35,6 +39,7 @@ final class AdminPostController
         private readonly RestorePostHandler $restoreHandler,
         private readonly ListPostsHandler $listHandler,
         private readonly GetPostHandler $getHandler,
+        private readonly GeneratePostContentHandler $generateContentHandler,
     ) {
     }
 
@@ -85,6 +90,25 @@ final class AdminPostController
         $this->restoreHandler->handle(new RestorePostCommand($uuid));
 
         return response()->json(['message' => 'Post restored successfully.']);
+    }
+
+    public function generateContent(GeneratePostContentRequest $request): JsonResponse
+    {
+        $result = $this->generateContentHandler->handle(
+            new GeneratePostContentCommand(GeneratePostContentDTO::from($request->validated())),
+        );
+
+        return response()->json([
+            'data' => [
+                'post_content'     => $result->postContent,
+                'post_title_slug'  => $result->postTitleSlug,
+                'post_excerpt'     => $result->postExcerpt,
+                'meta_title'       => $result->metaTitle,
+                'meta_description' => $result->metaDescription,
+                'meta_keywords'    => $result->metaKeywords,
+                'sources'          => $result->sources,
+            ],
+        ]);
     }
 
     public function bulkDelete(Request $request): JsonResponse

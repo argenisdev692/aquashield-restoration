@@ -61,7 +61,6 @@ export default function PostEditPage({ uuid }: PostEditPageProps): React.JSX.Ele
     meta_keywords: '',
     category_uuid: '',
     post_status: 'draft',
-    published_at: '',
     scheduled_at: '',
   });
   const [errors, setErrors] = React.useState<Record<string, string>>({});
@@ -82,7 +81,6 @@ export default function PostEditPage({ uuid }: PostEditPageProps): React.JSX.Ele
       meta_keywords: data.meta_keywords ?? '',
       category_uuid: data.category_uuid ?? '',
       post_status: data.post_status,
-      published_at: toDateTimeLocal(data.published_at),
       scheduled_at: toDateTimeLocal(data.scheduled_at),
     });
   }, [data]);

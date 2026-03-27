@@ -1,10 +1,21 @@
 import * as React from 'react';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Sparkles } from 'lucide-react';
 import { PremiumField } from '@/shadcn/PremiumField';
 import { useBlogCategories } from '@/modules/blog-categories/hooks/useBlogCategories';
 import type { CreatePostPayload, UpdatePostPayload } from '@/modules/posts/types';
 import PostEditor from '@/pages/posts/components/PostEditor';
+
+interface AiGenerateProps {
+  topic: string;
+  niche: string;
+  wordCount: number;
+  isGenerating: boolean;
+  onTopicChange: (value: string) => void;
+  onNicheChange: (value: string) => void;
+  onWordCountChange: (value: number) => void;
+  onGenerate: () => void;
+}
 
 interface PostFormProps {
   title: string;
@@ -17,6 +28,7 @@ interface PostFormProps {
   onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onContentChange: (value: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  aiGenerate?: AiGenerateProps;
 }
 
 export default function PostForm({
@@ -30,6 +42,7 @@ export default function PostForm({
   onChange,
   onContentChange,
   onSubmit,
+  aiGenerate,
 }: PostFormProps): React.JSX.Element {
   const { data: categoriesResponse } = useBlogCategories({ per_page: 100, status: 'active' });
   const categories = categoriesResponse?.data ?? [];
@@ -173,6 +186,104 @@ export default function PostForm({
         </div>
 
         <div className="space-y-6">
+          {aiGenerate ? (
+            <div
+              className="space-y-5 rounded-3xl p-6"
+              style={{
+                background: 'color-mix(in srgb, var(--accent-primary) 6%, var(--bg-surface))',
+                border: '1px solid color-mix(in srgb, var(--accent-primary) 22%, var(--border-subtle))',
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Sparkles size={16} style={{ color: 'var(--accent-primary)' }} />
+                <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--accent-primary)' }}>
+                  AI Generate
+                </h2>
+              </div>
+
+              <p className="text-[12px] leading-5" style={{ color: 'var(--text-secondary)' }}>
+                Enter a topic and niche — Tavily researches real sources, Claude writes the article and fills all SEO fields automatically.
+              </p>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                  Topic
+                </span>
+                <input
+                  type="text"
+                  value={aiGenerate.topic}
+                  onChange={(e) => aiGenerate.onTopicChange(e.target.value)}
+                  placeholder="e.g. How to prevent water damage after a storm"
+                  className="h-10 rounded-xl border px-3 text-sm outline-none"
+                  style={{
+                    background: 'var(--bg-card)',
+                    borderColor: 'var(--border-default)',
+                    color: 'var(--text-primary)',
+                  }}
+                />
+              </label>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                  Niche / Industry
+                </span>
+                <input
+                  type="text"
+                  value={aiGenerate.niche}
+                  onChange={(e) => aiGenerate.onNicheChange(e.target.value)}
+                  placeholder="e.g. water damage restoration"
+                  className="h-10 rounded-xl border px-3 text-sm outline-none"
+                  style={{
+                    background: 'var(--bg-card)',
+                    borderColor: 'var(--border-default)',
+                    color: 'var(--text-primary)',
+                  }}
+                />
+              </label>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                  Word Count
+                </span>
+                <input
+                  type="number"
+                  min={300}
+                  max={5000}
+                  step={100}
+                  value={aiGenerate.wordCount}
+                  onChange={(e) => aiGenerate.onWordCountChange(Number(e.target.value))}
+                  className="h-10 rounded-xl border px-3 text-sm outline-none"
+                  style={{
+                    background: 'var(--bg-card)',
+                    borderColor: 'var(--border-default)',
+                    color: 'var(--text-primary)',
+                  }}
+                />
+              </label>
+
+              <button
+                type="button"
+                onClick={aiGenerate.onGenerate}
+                disabled={aiGenerate.isGenerating || aiGenerate.topic.trim().length < 3 || aiGenerate.niche.trim().length < 2}
+                className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all disabled:opacity-50"
+                style={{
+                  background: 'var(--grad-primary)',
+                  color: 'var(--color-white)',
+                  boxShadow: '0 8px 20px color-mix(in srgb, var(--accent-primary) 20%, transparent)',
+                }}
+              >
+                <Sparkles size={16} />
+                <span>{aiGenerate.isGenerating ? 'Generating…' : 'Generate with AI'}</span>
+              </button>
+
+              {aiGenerate.isGenerating ? (
+                <p className="text-center text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                  Researching with Tavily + writing with Claude… (~30–60s)
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
           <div
             className="space-y-5 rounded-3xl p-6"
             style={{
@@ -247,15 +358,6 @@ export default function PostForm({
               onChange={onChange}
               error={errors.post_cover_image}
               placeholder="https://example.com/cover.jpg"
-            />
-
-            <PremiumField
-              label="Published At"
-              name="published_at"
-              type="datetime-local"
-              value={form.published_at ?? ''}
-              onChange={onChange}
-              error={errors.published_at}
             />
 
             <PremiumField

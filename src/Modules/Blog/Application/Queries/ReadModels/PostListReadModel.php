@@ -19,7 +19,6 @@ final class PostListReadModel extends Data
         public ?string $postCoverImage,
         public ?string $categoryName,
         public string $postStatus,
-        public ?string $publishedAt,
         public ?string $scheduledAt,
         public string $createdAt,
         public string $updatedAt,

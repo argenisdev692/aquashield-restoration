@@ -155,7 +155,6 @@ export default function PostShowPage({ uuid }: PostShowPageProps): React.JSX.Ele
                 <InfoRow label="Excerpt" value={data.post_excerpt} />
                 <InfoRow label="Category" value={data.category_name} />
                 <InfoRow label="Cover Image" value={data.post_cover_image} />
-                <InfoRow label="Published" value={formatDate(data.published_at)} />
                 <InfoRow label="Scheduled" value={formatDate(data.scheduled_at)} />
                 <InfoRow label="Created" value={formatDate(data.created_at)} />
                 <InfoRow label="Updated" value={formatDate(data.updated_at)} />
