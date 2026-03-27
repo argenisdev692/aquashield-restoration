@@ -13,24 +13,24 @@ final class DocumentTemplatePageController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('document-templates/IndexPage');
+        return Inertia::render('document-templates/DocumentTemplatesIndexPage');
     }
 
     public function show(string $uuid): Response
     {
-        return Inertia::render('document-templates/ShowPage', [
+        return Inertia::render('document-templates/DocumentTemplateShowPage', [
             'uuid' => $uuid,
         ]);
     }
 
     public function create(): Response
     {
-        return Inertia::render('document-templates/CreatePage');
+        return Inertia::render('document-templates/DocumentTemplateCreatePage');
     }
 
     public function edit(string $uuid): Response
     {
-        return Inertia::render('document-templates/EditPage', [
+        return Inertia::render('document-templates/DocumentTemplateEditPage', [
             'uuid' => $uuid,
         ]);
     }

@@ -100,12 +100,7 @@ export default function BlogCategoriesIndexPage(): React.JSX.Element {
 
             <Link
               href="/blog-categories/create"
-              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all"
-              style={{
-                background: 'var(--grad-primary)',
-                color: '#ffffff',
-                boxShadow: '0 10px 24px color-mix(in srgb, var(--accent-primary) 24%, transparent)',
-              }}
+              className="btn-primary inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
             >
               <FolderPlus size={18} />
               <span>New Category</span>
@@ -117,6 +112,7 @@ export default function BlogCategoriesIndexPage(): React.JSX.Element {
             style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border-default)',
+              fontFamily: 'var(--font-sans)',
             }}
           >
             <div className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-3" style={{ background: 'var(--bg-surface)' }}>

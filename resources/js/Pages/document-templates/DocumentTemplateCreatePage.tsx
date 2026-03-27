@@ -72,7 +72,7 @@ export default function DocumentTemplateCreatePage(): React.JSX.Element {
         <>
             <Head title="New Document Template" />
             <AppLayout>
-                <div className="flex flex-col gap-6">
+                <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
                     <div className="flex items-center gap-3">
                         <Link
                             href="/document-templates"
@@ -98,7 +98,7 @@ export default function DocumentTemplateCreatePage(): React.JSX.Element {
                         onSubmit={(e) => {
                             void handleSubmit(e);
                         }}
-                        className="card p-6"
+                        className="card w-full p-8"
                         style={{ fontFamily: 'var(--font-sans)' }}
                     >
                         <DocumentTemplateForm

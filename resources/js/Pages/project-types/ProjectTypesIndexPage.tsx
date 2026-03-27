@@ -117,10 +117,10 @@ export default function ProjectTypesIndexPage(): React.JSX.Element {
                     </div>
 
                     <div className="card flex flex-col gap-4" style={{ fontFamily: 'var(--font-sans)' }}>
-                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                             <div
-                                className="flex flex-1 items-center gap-3 rounded-xl px-4 py-3"
-                                style={{ border: '1px solid var(--border-default)', background: 'var(--bg-surface)' }}
+                                className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-3"
+                                style={{ background: 'var(--bg-surface)' }}
                             >
                                 <Search size={16} style={{ color: 'var(--text-muted)' }} />
                                 <input
@@ -133,7 +133,7 @@ export default function ProjectTypesIndexPage(): React.JSX.Element {
                                 />
                             </div>
 
-                            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:items-end">
                                 <select
                                     value={filters.service_category_uuid ?? ''}
                                     onChange={(e) =>

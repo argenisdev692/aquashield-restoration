@@ -141,13 +141,10 @@ export default function ClaimStatusesIndexPage(): React.JSX.Element {
                         className="card flex flex-col gap-4"
                         style={{ fontFamily: "var(--font-sans)" }}
                     >
-                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                             <div
-                                className="flex flex-1 items-center gap-3 rounded-xl px-4 py-3"
-                                style={{
-                                    border: "1px solid var(--border-default)",
-                                    background: "var(--bg-surface)",
-                                }}
+                                className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-3"
+                                style={{ background: "var(--bg-surface)" }}
                             >
                                 <Search
                                     size={16}
@@ -166,7 +163,7 @@ export default function ClaimStatusesIndexPage(): React.JSX.Element {
                                 />
                             </div>
 
-                            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:items-end">
                                 <select
                                     value={filters.status ?? ""}
                                     onChange={(event) =>
@@ -194,11 +191,6 @@ export default function ClaimStatusesIndexPage(): React.JSX.Element {
                                     <option value="deleted">Deleted</option>
                                 </select>
 
-                                <div
-                                    className="h-6 w-px hidden sm:block"
-                                    style={{ background: "var(--border-subtle)" }}
-                                />
-
                                 <DataTableDateRangeFilter
                                     dateFrom={filters.date_from}
                                     dateTo={filters.date_to}
@@ -211,11 +203,6 @@ export default function ClaimStatusesIndexPage(): React.JSX.Element {
                                     }
                                 />
 
-                                <div
-                                    className="h-6 w-px hidden sm:block"
-                                    style={{ background: "var(--border-subtle)" }}
-                                />
-
                                 <ExportButton
                                     onExport={handleExport}
                                     isExporting={isPendingExport}
@@ -223,13 +210,11 @@ export default function ClaimStatusesIndexPage(): React.JSX.Element {
                             </div>
                         </div>
 
-                        {selectedCount > 0 && (
-                            <DataTableBulkActions
-                                selectedCount={selectedCount}
-                                onBulkDelete={handleBulkDelete}
-                                isDeleting={bulkDeleteClaimStatuses.isPending}
-                            />
-                        )}
+                        <DataTableBulkActions
+                            count={selectedCount}
+                            onDelete={() => { void handleBulkDelete(); }}
+                            isDeleting={bulkDeleteClaimStatuses.isPending}
+                        />
 
                         <ClaimStatusesTable
                             data={claimStatuses}
@@ -313,18 +298,18 @@ export default function ClaimStatusesIndexPage(): React.JSX.Element {
 
                 <DeleteConfirmModal
                     open={pendingDelete !== null}
-                    name={pendingDelete?.name ?? ""}
+                    entityLabel={pendingDelete?.name ?? ""}
                     onConfirm={handleConfirmDelete}
                     onCancel={() => setPendingDelete(null)}
                     isDeleting={deleteClaimStatus.isPending}
                 />
 
                 <RestoreConfirmModal
-                    open={pendingRestore !== null}
-                    name={pendingRestore?.name ?? ""}
-                    onConfirm={handleConfirmRestore}
+                    isOpen={pendingRestore !== null}
+                    entityLabel={pendingRestore?.name ?? ""}
+                    onConfirm={() => { void handleConfirmRestore(); }}
                     onCancel={() => setPendingRestore(null)}
-                    isRestoring={restoreClaimStatus.isPending}
+                    isPending={restoreClaimStatus.isPending}
                 />
             </AppLayout>
         </>

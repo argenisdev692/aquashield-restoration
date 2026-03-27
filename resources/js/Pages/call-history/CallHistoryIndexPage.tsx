@@ -1,5 +1,6 @@
+import * as React from 'react';
 import { useState, useMemo, useTransition, useCallback } from 'react';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import {
     useReactTable,
     getCoreRowModel,
@@ -10,11 +11,8 @@ import {
     type RowSelectionState,
 } from '@tanstack/react-table';
 import {
-    Phone,
     PhoneIncoming,
     PhoneOutgoing,
-    Play,
-    Pause,
     Calendar,
     Clock,
     Filter,
@@ -25,7 +23,6 @@ import {
     Eye,
     Trash2,
     CheckCircle,
-    MoreHorizontal,
 } from 'lucide-react';
 import AppLayout from '../layouts/AppLayout';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
@@ -39,27 +36,17 @@ import {
     useRestoreCallHistory,
     useBulkDeleteCallHistory,
     useSyncCallsFromRetell,
-    callHistoryQueryKeys,
 } from './hooks';
 import type { CallHistoryListItem, CallHistoryFilters } from './types';
 
 const columnHelper = createColumnHelper<CallHistoryListItem>();
 
-interface PageProps {
-    auth: {
-        user: {
-            permissions: string[];
-        };
-    };
-}
-
-export default function CallHistoryIndexPage(): JSX.Element {
-    const { auth } = usePage<PageProps>().props;
-    const [sorting, setSorting] = useState<SortingState>([{ id: 'start_timestamp', desc: true }]);
+export default function CallHistoryIndexPage(): React.JSX.Element {
+    const [sorting, setSorting] = React.useState<SortingState>([{ id: 'start_timestamp', desc: true }]);
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
     const [pendingDelete, setPendingDelete] = useState<CallHistoryListItem | null>(null);
     const [pendingRestore, setPendingRestore] = useState<CallHistoryListItem | null>(null);
-    const [isPendingSearch, startSearchTransition] = useTransition();
+    const [, startSearchTransition] = useTransition();
     const [isPendingExport, startExportTransition] = useTransition();
 
     const [filters, setFilters] = useState<CallHistoryFilters>({

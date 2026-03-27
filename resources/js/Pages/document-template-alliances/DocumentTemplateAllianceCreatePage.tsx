@@ -77,7 +77,7 @@ export default function DocumentTemplateAllianceCreatePage(): React.JSX.Element 
         <>
             <Head title="New Document Template Alliance" />
             <AppLayout>
-                <div className="flex flex-col gap-6">
+                <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
                     <div className="flex items-center gap-3">
                         <Link
                             href="/document-template-alliances"
@@ -99,7 +99,7 @@ export default function DocumentTemplateAllianceCreatePage(): React.JSX.Element 
                         </div>
                     </div>
 
-                    <form onSubmit={(e) => { void handleSubmit(e); }} className="card" style={{ fontFamily: "var(--font-sans)" }}>
+                    <form onSubmit={(e) => { void handleSubmit(e); }} className="card w-full p-8" style={{ fontFamily: "var(--font-sans)" }}>
                         <DocumentTemplateAllianceForm
                             formData={formData}
                             onChange={handleChange}

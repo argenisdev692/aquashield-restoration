@@ -12,7 +12,7 @@ final class ZonePageController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('zones/ZoneIndexPage');
+        return Inertia::render('zones/ZonesIndexPage');
     }
 
     public function show(string $uuid): Response

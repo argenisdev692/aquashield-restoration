@@ -159,100 +159,89 @@ export default function ZonesIndexPage(): React.JSX.Element {
                     </div>
 
                     {/* ── Toolbar / Filters ── */}
-                    <div className="card flex flex-col gap-4" style={{ fontFamily: 'var(--font-sans)' }}>
-                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                    <div
+                        className="flex flex-col gap-4 rounded-3xl px-5 py-4 shadow-sm lg:flex-row lg:items-end lg:justify-between"
+                        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', fontFamily: 'var(--font-sans)' }}
+                    >
+                        <div
+                            className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-3"
+                            style={{ background: 'var(--bg-surface)' }}
+                        >
+                            <Search size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={handleSearchChange}
+                                placeholder="Search zones by name, code or description…"
+                                className="w-full bg-transparent text-sm outline-none"
+                                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}
+                            />
+                        </div>
 
-                            {/* Search */}
-                            <div
-                                className="flex flex-1 items-center gap-3 rounded-xl px-4 py-3"
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:items-end">
+                            <select
+                                value={filters.status ?? ''}
+                                onChange={(e) =>
+                                    setFilters((prev) => ({
+                                        ...prev,
+                                        status: e.target.value === '' ? undefined : (e.target.value as 'active' | 'deleted'),
+                                        page: 1,
+                                    }))
+                                }
+                                className="rounded-xl px-4 py-3 text-sm outline-none"
                                 style={{
                                     border: '1px solid var(--border-default)',
                                     background: 'var(--bg-surface)',
+                                    color: 'var(--text-primary)',
+                                    fontFamily: 'var(--font-sans)',
+                                    colorScheme: 'dark',
                                 }}
                             >
-                                <Search size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={handleSearchChange}
-                                    placeholder="Search zones by name, code or description…"
-                                    className="w-full bg-transparent text-sm outline-none"
-                                    style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}
-                                />
-                            </div>
+                                <option value="">All status</option>
+                                <option value="active">Active</option>
+                                <option value="deleted">Deleted</option>
+                            </select>
 
-                            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                            <select
+                                value={filters.zone_type ?? ''}
+                                onChange={(e) =>
+                                    setFilters((prev) => ({
+                                        ...prev,
+                                        zone_type: e.target.value === '' ? undefined : (e.target.value as ZoneType),
+                                        page: 1,
+                                    }))
+                                }
+                                className="rounded-xl px-4 py-3 text-sm outline-none"
+                                style={{
+                                    border: '1px solid var(--border-default)',
+                                    background: 'var(--bg-surface)',
+                                    color: 'var(--text-primary)',
+                                    fontFamily: 'var(--font-sans)',
+                                    colorScheme: 'dark',
+                                }}
+                            >
+                                <option value="">All types</option>
+                                {ZONE_TYPES.map((type) => (
+                                    <option key={type} value={type}>
+                                        {ZONE_TYPE_LABELS[type]}
+                                    </option>
+                                ))}
+                            </select>
 
-                                {/* Status filter */}
-                                <select
-                                    value={filters.status ?? ''}
-                                    onChange={(e) =>
-                                        setFilters((prev) => ({
-                                            ...prev,
-                                            status: e.target.value === '' ? undefined : (e.target.value as 'active' | 'deleted'),
-                                            page: 1,
-                                        }))
-                                    }
-                                    className="rounded-xl px-4 py-3 text-sm outline-none"
-                                    style={{
-                                        border: '1px solid var(--border-default)',
-                                        background: 'var(--bg-surface)',
-                                        color: 'var(--text-primary)',
-                                        fontFamily: 'var(--font-sans)',
-                                        colorScheme: 'dark',
-                                    }}
-                                >
-                                    <option value="">All status</option>
-                                    <option value="active">Active</option>
-                                    <option value="deleted">Deleted</option>
-                                </select>
+                            <DataTableDateRangeFilter
+                                dateFrom={filters.date_from}
+                                dateTo={filters.date_to}
+                                onChange={(range) =>
+                                    setFilters((prev) => ({
+                                        ...prev,
+                                        date_from: range.dateFrom,
+                                        date_to: range.dateTo,
+                                        page: 1,
+                                    }))
+                                }
+                            />
 
-                                {/* Zone type filter */}
-                                <select
-                                    value={filters.zone_type ?? ''}
-                                    onChange={(e) =>
-                                        setFilters((prev) => ({
-                                            ...prev,
-                                            zone_type: e.target.value === '' ? undefined : (e.target.value as ZoneType),
-                                            page: 1,
-                                        }))
-                                    }
-                                    className="rounded-xl px-4 py-3 text-sm outline-none"
-                                    style={{
-                                        border: '1px solid var(--border-default)',
-                                        background: 'var(--bg-surface)',
-                                        color: 'var(--text-primary)',
-                                        fontFamily: 'var(--font-sans)',
-                                        colorScheme: 'dark',
-                                    }}
-                                >
-                                    <option value="">All types</option>
-                                    {ZONE_TYPES.map((type) => (
-                                        <option key={type} value={type}>
-                                            {ZONE_TYPE_LABELS[type]}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                {/* Date range */}
-                                <DataTableDateRangeFilter
-                                    dateFrom={filters.date_from}
-                                    dateTo={filters.date_to}
-                                    onChange={(range) =>
-                                        setFilters((prev) => ({
-                                            ...prev,
-                                            date_from: range.dateFrom,
-                                            date_to: range.dateTo,
-                                            page: 1,
-                                        }))
-                                    }
-                                />
-
-                                <div className="hidden h-8 w-px sm:block" style={{ background: 'var(--border-subtle)' }} />
-
-                                {/* Export */}
-                                <ExportButton onExport={handleExport} isExporting={isPendingExport} />
-                            </div>
+                            <ExportButton onExport={handleExport} isExporting={isPendingExport} />
                         </div>
                     </div>
 

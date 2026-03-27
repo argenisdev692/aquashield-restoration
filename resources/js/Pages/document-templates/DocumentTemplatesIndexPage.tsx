@@ -120,106 +120,94 @@ export default function DocumentTemplatesIndexPage(): React.JSX.Element {
 
                     {/* Filters */}
                     <div
-                        className="card flex flex-col gap-4"
-                        style={{ fontFamily: 'var(--font-sans)' }}
+                        className="flex flex-col gap-4 rounded-3xl px-5 py-4 shadow-sm lg:flex-row lg:items-end lg:justify-between"
+                        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', fontFamily: 'var(--font-sans)' }}
                     >
-                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                            {/* Search */}
-                            <div
-                                className="flex flex-1 items-center gap-3 rounded-xl px-4 py-3"
+                        <div
+                            className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-3"
+                            style={{ background: 'var(--bg-surface)' }}
+                        >
+                            <Search
+                                size={16}
+                                style={{ color: 'var(--text-muted)', flexShrink: 0 }}
+                            />
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={handleSearchChange}
+                                placeholder="Search templates…"
+                                className="w-full bg-transparent text-sm outline-none"
                                 style={{
-                                    border: '1px solid var(--border-default)',
-                                    background: 'var(--bg-surface)',
+                                    color: 'var(--text-primary)',
+                                    fontFamily: 'var(--font-sans)',
                                 }}
-                            >
-                                <Search
-                                    size={16}
-                                    style={{ color: 'var(--text-muted)', flexShrink: 0 }}
-                                />
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={handleSearchChange}
-                                    placeholder="Search templates…"
-                                    className="w-full bg-transparent text-sm outline-none"
-                                    style={{
-                                        color: 'var(--text-primary)',
-                                        fontFamily: 'var(--font-sans)',
+                            />
+                            {search !== '' && (
+                                <button
+                                    type="button"
+                                    aria-label="Clear search"
+                                    onClick={() => {
+                                        setSearch('');
+                                        startTransition(() => {
+                                            setFilters((prev) => ({
+                                                ...prev,
+                                                search: undefined,
+                                                page: 1,
+                                            }));
+                                        });
                                     }}
-                                />
-                                {search !== '' && (
-                                    <button
-                                        type="button"
-                                        aria-label="Clear search"
-                                        onClick={() => {
-                                            setSearch('');
-                                            startTransition(() => {
-                                                setFilters((prev) => ({
-                                                    ...prev,
-                                                    search: undefined,
-                                                    page: 1,
-                                                }));
-                                            });
-                                        }}
-                                    >
-                                        <X size={14} style={{ color: 'var(--text-muted)' }} />
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                                {/* Type filter */}
-                                <select
-                                    value={filters.template_type ?? ''}
-                                    onChange={(e) => handleTypeFilter(e.target.value)}
-                                    style={{
-                                        height: '40px',
-                                        padding: '0 12px',
-                                        fontSize: '13px',
-                                        background: 'var(--bg-surface)',
-                                        border: '1px solid var(--border-default)',
-                                        borderRadius: 'var(--radius-md)',
-                                        color: 'var(--text-primary)',
-                                        fontFamily: 'var(--font-sans)',
-                                        colorScheme: 'dark',
-                                        outline: 'none',
-                                        minWidth: '140px',
-                                    }}
-                                    aria-label="Filter by type"
                                 >
-                                    <option value="">All Types</option>
-                                    {DOCUMENT_TEMPLATE_TYPES.map((t) => (
-                                        <option key={t.value} value={t.value}>
-                                            {t.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <X size={14} style={{ color: 'var(--text-muted)' }} />
+                                </button>
+                            )}
+                        </div>
 
-                                <DataTableDateRangeFilter
-                                    dateFrom={filters.date_from}
-                                    dateTo={filters.date_to}
-                                    onChange={(range) =>
-                                        setFilters((prev) => ({
-                                            ...prev,
-                                            date_from: range.dateFrom,
-                                            date_to: range.dateTo,
-                                            page: 1,
-                                        }))
-                                    }
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:items-end">
+                            <select
+                                value={filters.template_type ?? ''}
+                                onChange={(e) => handleTypeFilter(e.target.value)}
+                                style={{
+                                    height: '40px',
+                                    padding: '0 12px',
+                                    fontSize: '13px',
+                                    background: 'var(--bg-surface)',
+                                    border: '1px solid var(--border-default)',
+                                    borderRadius: 'var(--radius-md)',
+                                    color: 'var(--text-primary)',
+                                    fontFamily: 'var(--font-sans)',
+                                    colorScheme: 'dark',
+                                    outline: 'none',
+                                    minWidth: '140px',
+                                }}
+                                aria-label="Filter by type"
+                            >
+                                <option value="">All Types</option>
+                                {DOCUMENT_TEMPLATE_TYPES.map((t) => (
+                                    <option key={t.value} value={t.value}>
+                                        {t.label}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <DataTableDateRangeFilter
+                                dateFrom={filters.date_from}
+                                dateTo={filters.date_to}
+                                onChange={(range) =>
+                                    setFilters((prev) => ({
+                                        ...prev,
+                                        date_from: range.dateFrom,
+                                        date_to: range.dateTo,
+                                        page: 1,
+                                    }))
+                                }
+                            />
+
+                            <PermissionGuard permissions={['READ_DOCUMENT_TEMPLATE']}>
+                                <ExportButton
+                                    onExport={handleExport}
+                                    isExporting={isPendingExport}
                                 />
-
-                                <div
-                                    className="hidden h-8 w-px sm:block"
-                                    style={{ background: 'var(--border-subtle)' }}
-                                />
-
-                                <PermissionGuard permissions={['READ_DOCUMENT_TEMPLATE']}>
-                                    <ExportButton
-                                        onExport={handleExport}
-                                        isExporting={isPendingExport}
-                                    />
-                                </PermissionGuard>
-                            </div>
+                            </PermissionGuard>
                         </div>
                     </div>
 

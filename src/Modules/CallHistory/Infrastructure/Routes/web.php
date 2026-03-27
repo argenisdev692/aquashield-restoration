@@ -8,7 +8,7 @@ use Modules\CallHistory\Infrastructure\Http\Controllers\CallHistoryController;
 
 Route::prefix('call-history')->name('call-history.')->group(function (): void {
     Route::get('/', [CallHistoryController::class, 'index'])->name('index');
-    Route::get('/{uuid}', [CallHistoryController::class, 'show'])->name('show');
+    Route::get('/{uuid}', [CallHistoryController::class, 'show'])->whereUuid('uuid')->name('show');
 
     Route::prefix('data/admin')->name('data.admin.')->group(function (): void {
         Route::get('/list', [CallHistoryController::class, 'data'])->name('list');
