@@ -62,7 +62,7 @@ return [
     'replicate' => [
         'api_token'              => env('REPLICATE_API_TOKEN'),
         'base_url'               => env('REPLICATE_BASE_URL', 'https://api.replicate.com/v1'),
-        'image_model'            => env('REPLICATE_IMAGE_MODEL', 'black-forest-labs/flux-1.1-pro'),
+        'image_model'            => env('REPLICATE_IMAGE_MODEL', 'black-forest-labs/flux-2-pro'),
         'image_aspect_ratio'     => env('REPLICATE_IMAGE_ASPECT_RATIO', '16:9'),
         'image_output_format'    => env('REPLICATE_IMAGE_OUTPUT_FORMAT', 'webp'),
         'image_output_quality'   => (int)  env('REPLICATE_IMAGE_OUTPUT_QUALITY', 85),

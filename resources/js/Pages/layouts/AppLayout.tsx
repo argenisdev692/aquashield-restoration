@@ -219,6 +219,15 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Posts', href: '/posts', icon: <IconPost />, description: 'Editorial content', permission: 'VIEW_POST' },
     ]
   },
+  {
+    label: 'AI',
+    icon: <IconAI />,
+    description: 'AI-powered content generation',
+    permission: 'VIEW_CAMPAIGN',
+    children: [
+      { label: 'Campaigns', href: '/ai-campaigns', icon: <IconAI />, description: 'AI social media campaigns', permission: 'VIEW_CAMPAIGN' },
+    ]
+  },
 ];
 
 function CollapsedNavTooltip({

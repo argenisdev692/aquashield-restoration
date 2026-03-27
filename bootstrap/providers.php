@@ -17,6 +17,7 @@ return [
     Modules\CompanyData\Providers\CompanyDataServiceProvider::class,
     Modules\AI\Providers\AIServiceProvider::class,
     Modules\Blog\Providers\BlogServiceProvider::class,
+    Modules\AICampaigns\Providers\AICampaignsServiceProvider::class,
     Modules\InsuranceCompanies\Providers\InsuranceCompaniesServiceProvider::class,
     Modules\MortgageCompanies\Providers\MortgageCompaniesServiceProvider::class,
     Modules\AllianceCompanies\Providers\AllianceCompaniesServiceProvider::class,
