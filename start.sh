@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script de inicio para Railway - Optimizado para producción
+# Script de inicio para Railway - Optimizado para producción con Supabase
 
 if [ -n "$RAILWAY_PUBLIC_DOMAIN" ]; then
   export APP_URL="https://${RAILWAY_PUBLIC_DOMAIN}"
@@ -11,20 +11,8 @@ fi
 export APP_ENV="production"
 export APP_DEBUG="false"
 
-# Esperar a que la base de datos esté disponible (solo si DB_HOST está configurado)
-if [ -n "$DB_HOST" ] && [ -n "$DB_PORT" ]; then
-  echo "Esperando a la base de datos..."
-  timeout=30
-  while ! nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; do
-    sleep 1
-    timeout=$((timeout - 1))
-    if [ $timeout -le 0 ]; then
-      echo "Timeout esperando base de datos, continuando..."
-      break
-    fi
-  done
-  echo "Base de datos conectada"
-fi
+# Con Supabase no necesitamos esperar a la base de datos (servicio externo)
+echo "Usando Supabase como base de datos externa..."
 
 # Limpiar cachés antes de optimizar
 echo "Limpiando cachés..."
