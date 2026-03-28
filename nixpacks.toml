@@ -3,10 +3,14 @@ nixPkgs = ["nodejs_20", "php85", "php85Extensions.composer", "php85Extensions.do
 
 [phases.build]
 cmds = [
-    "composer install --no-dev --optimize-autoloader",
-    "npm install",
+    "composer install --no-dev --optimize-autoloader --no-interaction",
+    "npm ci --production=false",
     "npm run build"
 ]
+
+[phases.build.cacheOnPaths]
+["node_modules/.cache"] = "node_modules/.cache"
+["vendor"] = "vendor"
 
 [start]
 cmd = "chmod +x start.sh && ./start.sh"
@@ -20,3 +24,4 @@ SESSION_DRIVER = "cookie"
 CACHE_STORE = "redis"
 QUEUE_CONNECTION = "redis"
 VITE_APP_NAME = "AquaShield"
+NODE_ENV = "production"

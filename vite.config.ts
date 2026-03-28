@@ -16,14 +16,20 @@ export default defineConfig({
     ],
     build: {
         assetsInlineLimit: 4096,
+        sourcemap: false,
+        minify: 'esbuild',
         rollupOptions: {
             output: {
                 manualChunks: {
                     vendor: ['react', 'react-dom'],
                     inertia: ['@inertiajs/react'],
+                    ui: ['@radix-ui', 'lucide-react', 'class-variance-authority'],
                 },
             },
         },
+    },
+    define: {
+        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
     },
     server: {
         host: '0.0.0.0',
