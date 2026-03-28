@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "php", "phpPackages.composer", "phpPackages.dom", "phpPackages.fileinfo", "phpPackages.gd", "phpPackages.exif", "phpPackages.mbstring", "phpPackages.pcntl", "phpPackages.pdo", "phpPackages.pdo_pgsql", "phpPackages.pdo_sqlite", "phpPackages.sqlite3", "phpPackages.tokenizer", "phpPackages.xml", "phpPackages.curl", "phpPackages.zip", "phpPackages.bcmath", "phpPackages.intl", "phpPackages.ctype", "phpPackages.filter", "phpPackages.hash", "phpPackages.json", "phpPackages.openssl", "phpPackages.session", "phpPackages.simplexml", "phpPackages.sodium", "phpPackages.xmlwriter", "phpPackages.redis", "netcat", "redis"]
+nixPkgs = ["nodejs_20", "php", "composer", "netcat", "redis"]
 
 [phases.build]
 cmds = [
