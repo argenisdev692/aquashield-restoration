@@ -1,6 +1,5 @@
 [build]
-dockerComposeFile = "compose.yaml"
-dockerComposeService = "laravel.test"
+builder = "nixpacks"
 
 [deploy]
 healthcheckPath = "/api/health"

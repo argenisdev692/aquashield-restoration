@@ -19,6 +19,6 @@ Route::prefix('data')->group(function (): void {
         Route::get('/{uuid}', [AdminCampaignController::class, 'show'])->name('ai-campaigns.data.show')->whereUuid('uuid')->middleware('permission:VIEW_CAMPAIGN');
         Route::put('/{uuid}', [AdminCampaignController::class, 'update'])->name('ai-campaigns.data.update')->whereUuid('uuid')->middleware('permission:UPDATE_CAMPAIGN');
         Route::delete('/{uuid}', [AdminCampaignController::class, 'destroy'])->name('ai-campaigns.data.destroy')->whereUuid('uuid')->middleware('permission:DELETE_CAMPAIGN');
-        Route::patch('/{uuid}/restore', [AdminCampaignController::class, 'restore'])->name('ai-campaigns.data.restore')->whereUuid('uuid')->middleware('permission:DELETE_CAMPAIGN');
+        Route::patch('/{uuid}/restore', [AdminCampaignController::class, 'restore'])->name('ai-campaigns.data.restore')->whereUuid('uuid')->middleware('permission:RESTORE_CAMPAIGN');
     });
 });

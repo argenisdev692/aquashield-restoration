@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\AICampaigns\Infrastructure\Persistence\Eloquent\Seeders;
+namespace Modules\Blog\Infrastructure\Persistence\Eloquent\Seeders;
 
 use Illuminate\Database\Seeder;
 use Ramsey\Uuid\Uuid;
@@ -10,18 +10,18 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
-final class CampaignPermissionsSeeder extends Seeder
+final class BlogCategoryPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $permissions = [
-            'VIEW_CAMPAIGN',
-            'CREATE_CAMPAIGN',
-            'UPDATE_CAMPAIGN',
-            'DELETE_CAMPAIGN',
-            'RESTORE_CAMPAIGN',
+            'VIEW_BLOG_CATEGORY',
+            'CREATE_BLOG_CATEGORY',
+            'UPDATE_BLOG_CATEGORY',
+            'DELETE_BLOG_CATEGORY',
+            'RESTORE_BLOG_CATEGORY',
         ];
 
         foreach ($permissions as $permission) {

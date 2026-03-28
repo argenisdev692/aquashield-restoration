@@ -19,6 +19,11 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * BlogCategoryExportController — Handles blog category data exports.
  *
  * Follows hexagonal architecture by injecting repository and handler.
+ *
+ * @OA\Tag(
+ *     name="Blog Categories",
+ *     description="Blog category management endpoints"
+ * )
  */
 final class BlogCategoryExportController
 {
@@ -28,6 +33,22 @@ final class BlogCategoryExportController
     ) {
     }
 
+    /**
+     * Export blog categories to Excel or PDF.
+     *
+     * @OA\Get(
+     *     path="/blog-categories/data/admin/export",
+     *     tags={"Blog Categories"},
+     *     summary="Export blog categories",
+     *     description="Export blog categories list to Excel (default) or PDF format",
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="format", in="query", required=false, description="Export format", @OA\Schema(type="string", enum={"excel","pdf"}, default="excel")),
+     *     @OA\Parameter(name="search", in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="File download"),
+     *     @OA\Response(response=401, description="Unauthenticated"),
+     *     @OA\Response(response=403, description="Forbidden")
+     * )
+     */
     public function __invoke(Request $request): Response|BinaryFileResponse
     {
         $filters = BlogCategoryFilterDTO::from($request->all());

@@ -21,6 +21,7 @@ final class PostPermissionsSeeder extends Seeder
             'CREATE_POST',
             'UPDATE_POST',
             'DELETE_POST',
+            'RESTORE_POST',
         ];
 
         foreach ($permissions as $permission) {
