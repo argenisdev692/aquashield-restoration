@@ -9,8 +9,8 @@ cmds = [
 ]
 
 [phases.build.cacheOnPaths]
-["node_modules/.cache"] = "node_modules/.cache"
-["vendor"] = "vendor"
+"node_modules/.cache" = "node_modules/.cache"
+"vendor" = "vendor"
 
 [start]
 cmd = "chmod +x start.sh && ./start.sh"
