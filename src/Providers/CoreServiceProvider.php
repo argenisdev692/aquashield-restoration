@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Shared\Domain\Ports\StoragePort;
 use Shared\Infrastructure\Observability\HealthCheck\DatabaseHealthCheck;
 use Shared\Infrastructure\Observability\HealthCheck\HealthCheckAggregator;
 use Shared\Infrastructure\Resilience\CircuitBreaker\CircuitBreakerInterface;
@@ -16,6 +17,7 @@ use Shared\Infrastructure\Audit\SpatieAuditAdapter;
 use Shared\Infrastructure\Resilience\RateLimiter\CustomRateLimiter;
 use Shared\Infrastructure\Export\ExportInterface;
 use Shared\Infrastructure\Export\LaravelExportAdapter;
+use Shared\Infrastructure\Storage\R2StorageAdapter;
 
 final class CoreServiceProvider extends ServiceProvider
 {
@@ -34,6 +36,7 @@ final class CoreServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(CircuitBreakerInterface::class, RedisCircuitBreaker::class);
+        $this->app->bind(StoragePort::class, R2StorageAdapter::class);
         $this->app->bind(TransactionInterface::class, DatabaseTransaction::class);
         $this->app->bind(AuditInterface::class, SpatieAuditAdapter::class);
         $this->app->bind(ExportInterface::class, LaravelExportAdapter::class);

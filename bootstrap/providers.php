@@ -42,4 +42,5 @@ return [
     Src\Modules\FilesEsx\Providers\FilesEsxServiceProvider::class,
     Src\Modules\Customers\Providers\CustomersServiceProvider::class,
     Src\Modules\Properties\Providers\PropertiesServiceProvider::class,
+    Src\Modules\Claims\Providers\ClaimsServiceProvider::class,
 ];

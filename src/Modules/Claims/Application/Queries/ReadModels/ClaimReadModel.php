@@ -1,0 +1,90 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Src\Modules\Claims\Application\Queries\ReadModels;
+
+/**
+ * @OA\Schema(
+ *     schema="ClaimReadModel",
+ *     @OA\Property(property="uuid", type="string", format="uuid"),
+ *     @OA\Property(property="claim_number", type="string", nullable=true),
+ *     @OA\Property(property="claim_internal_id", type="string"),
+ *     @OA\Property(property="policy_number", type="string"),
+ *     @OA\Property(property="date_of_loss", type="string", nullable=true),
+ *     @OA\Property(property="description_of_loss", type="string", nullable=true),
+ *     @OA\Property(property="number_of_floors", type="integer", nullable=true),
+ *     @OA\Property(property="claim_date", type="string", nullable=true),
+ *     @OA\Property(property="work_date", type="string", nullable=true),
+ *     @OA\Property(property="damage_description", type="string", nullable=true),
+ *     @OA\Property(property="scope_of_work", type="string", nullable=true),
+ *     @OA\Property(property="customer_reviewed", type="boolean", nullable=true),
+ *     @OA\Property(property="property_id", type="integer"),
+ *     @OA\Property(property="property_address", type="string", nullable=true),
+ *     @OA\Property(property="customers", type="array", @OA\Items(type="object",
+ *         @OA\Property(property="id", type="integer"),
+ *         @OA\Property(property="uuid", type="string"),
+ *         @OA\Property(property="full_name", type="string"),
+ *         @OA\Property(property="email", type="string", nullable=true),
+ *         @OA\Property(property="cell_phone", type="string", nullable=true),
+ *         @OA\Property(property="home_phone", type="string", nullable=true)
+ *     )),
+ *     @OA\Property(property="type_damage_id", type="integer"),
+ *     @OA\Property(property="type_damage_name", type="string", nullable=true),
+ *     @OA\Property(property="claim_status_id", type="integer"),
+ *     @OA\Property(property="claim_status_name", type="string", nullable=true),
+ *     @OA\Property(property="claim_status_color", type="string", nullable=true),
+ *     @OA\Property(property="user_id_ref_by", type="integer"),
+ *     @OA\Property(property="referred_by_name", type="string", nullable=true),
+ *     @OA\Property(property="causes_of_loss", type="array", @OA\Items(type="object")),
+ *     @OA\Property(property="service_requests", type="array", @OA\Items(type="object")),
+ *     @OA\Property(property="insurance_company_assignment", type="object", nullable=true),
+ *     @OA\Property(property="public_company_assignment", type="object", nullable=true),
+ *     @OA\Property(property="insurance_adjuster_assignment", type="object", nullable=true),
+ *     @OA\Property(property="public_adjuster_assignment", type="object", nullable=true),
+ *     @OA\Property(property="claim_alliance", type="object", nullable=true),
+ *     @OA\Property(property="status", type="string", enum={"Active","Suspended"}),
+ *     @OA\Property(property="created_at", type="string"),
+ *     @OA\Property(property="updated_at", type="string"),
+ *     @OA\Property(property="deleted_at", type="string", nullable=true)
+ * )
+ */
+final class ClaimReadModel
+{
+    public function __construct(
+        public string $uuid,
+        public ?string $claimNumber,
+        public string $claimInternalId,
+        public string $policyNumber,
+        public ?string $dateOfLoss,
+        public ?string $descriptionOfLoss,
+        public ?int $numberOfFloors,
+        public ?string $claimDate,
+        public ?string $workDate,
+        public ?string $damageDescription,
+        public ?string $scopeOfWork,
+        public ?bool $customerReviewed,
+        public int $propertyId,
+        public ?string $propertyAddress,
+        public array $customers,
+        public int $typeDamageId,
+        public ?string $typeDamageName,
+        public int $claimStatusId,
+        public ?string $claimStatusName,
+        public ?string $claimStatusColor,
+        public int $userIdRefBy,
+        public ?string $referredByName,
+        public int $signaturePathId,
+        public array $causesOfLoss,
+        public array $serviceRequests,
+        public ?array $insuranceCompanyAssignment,
+        public ?array $publicCompanyAssignment,
+        public ?array $insuranceAdjusterAssignment,
+        public ?array $publicAdjusterAssignment,
+        public ?array $claimAlliance,
+        public string $status,
+        public string $createdAt,
+        public string $updatedAt,
+        public ?string $deletedAt,
+    ) {}
+}

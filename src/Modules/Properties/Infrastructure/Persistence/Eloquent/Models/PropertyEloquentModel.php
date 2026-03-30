@@ -6,9 +6,11 @@ namespace Src\Modules\Properties\Infrastructure\Persistence\Eloquent\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Src\Modules\Claims\Infrastructure\Persistence\Eloquent\Models\ClaimEloquentModel;
 use Src\Modules\Customers\Infrastructure\Persistence\Eloquent\Models\CustomerEloquentModel;
 
 final class PropertyEloquentModel extends Model
@@ -59,5 +61,11 @@ final class PropertyEloquentModel extends Model
             ->using(CustomerPropertyEloquentModel::class)
             ->withPivot('role')
             ->withTimestamps();
+    }
+
+    /** @return HasMany<ClaimEloquentModel, $this> */
+    public function claims(): HasMany
+    {
+        return $this->hasMany(ClaimEloquentModel::class, 'property_id');
     }
 }

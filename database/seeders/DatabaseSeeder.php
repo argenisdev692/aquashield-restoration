@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Database\Seeders\CallHistoryPermissionsSeeder;
+use Database\Seeders\ClaimsPermissionsSeeder;
 use Database\Seeders\ClaimStatusPermissionsSeeder;
 use Database\Seeders\CustomerPermissionsSeeder;
 use Database\Seeders\DocumentTemplateAdjusterPermissionsSeeder;
@@ -97,5 +98,8 @@ class DatabaseSeeder extends Seeder
 
         // DOCUMENT TEMPLATE ALLIANCES - Call Permissions Seeder
         $this->call(DocumentTemplateAlliancePermissionsSeeder::class);
+
+        // CLAIMS - Call Claims Permissions Seeder
+        $this->call(ClaimsPermissionsSeeder::class);
     }
 }

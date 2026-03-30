@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Src\Modules\Claims\Infrastructure\Persistence\Eloquent\Models\PublicCompanyAssignmentEloquentModel;
 
 final class PublicCompanyEloquentModel extends Model
 {
@@ -45,6 +47,14 @@ final class PublicCompanyEloquentModel extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(UserEloquentModel::class, 'user_id');
+    }
+
+    /**
+     * @return HasMany<PublicCompanyAssignmentEloquentModel, $this>
+     */
+    public function claimAssignments(): HasMany
+    {
+        return $this->hasMany(PublicCompanyAssignmentEloquentModel::class, 'public_company_id');
     }
 
     public function scopeSearch(Builder $query, ?string $search): Builder

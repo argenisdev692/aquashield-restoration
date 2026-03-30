@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
+use Src\Modules\Claims\Infrastructure\Persistence\Eloquent\Models\ClaimAgreementAllianceEloquentModel;
+use Src\Modules\Claims\Infrastructure\Persistence\Eloquent\Models\ClaimAllianceEloquentModel;
 use Src\Modules\DocumentTemplateAlliances\Infrastructure\Persistence\Eloquent\Models\DocumentTemplateAllianceEloquentModel;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -59,5 +61,25 @@ final class AllianceCompanyEloquentModel extends Model
     public function documentTemplateAlliances(): HasMany
     {
         return $this->hasMany(DocumentTemplateAllianceEloquentModel::class, 'alliance_company_id');
+    }
+
+    /**
+     * Claim alliances linking claims to this alliance company.
+     *
+     * @return HasMany<ClaimAllianceEloquentModel, $this>
+     */
+    public function claimAlliances(): HasMany
+    {
+        return $this->hasMany(ClaimAllianceEloquentModel::class, 'alliance_company_id');
+    }
+
+    /**
+     * Claim agreement alliances generated for this alliance company.
+     *
+     * @return HasMany<ClaimAgreementAllianceEloquentModel, $this>
+     */
+    public function claimAgreementAlliances(): HasMany
+    {
+        return $this->hasMany(ClaimAgreementAllianceEloquentModel::class, 'alliance_company_id');
     }
 }
