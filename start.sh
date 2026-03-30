@@ -17,6 +17,10 @@ php artisan migrate --force
 # Eliminar hot file para que Laravel no apunte al dev server
 rm -f public/hot
 
+# Descubrir paquetes (no se ejecutó en build por --no-scripts)
+echo "Descubriendo paquetes..."
+php artisan package:discover --ansi
+
 # Optimizar la aplicación para producción
 echo "Optimizando aplicación..."
 php artisan config:cache

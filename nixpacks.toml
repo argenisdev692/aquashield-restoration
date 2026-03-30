@@ -4,7 +4,7 @@ nixPkgs = ["nodejs_20", "php85Packages.composer", "netcat"]
 
 [phases.build]
 cmds = [
-    "composer install --no-dev --optimize-autoloader",
+    "composer install --no-dev --optimize-autoloader --no-scripts",
     "npm install",
     "npm run build"
 ]
