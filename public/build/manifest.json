@@ -1,0 +1,32 @@
+{
+  "_inertia-NllWTLmC.js": {
+    "file": "assets/inertia-NllWTLmC.js",
+    "name": "inertia"
+  },
+  "_vendor-l0sNRNKZ.js": {
+    "file": "assets/vendor-l0sNRNKZ.js",
+    "name": "vendor"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-BNRNKqx5.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/app.tsx": {
+    "file": "assets/app-DirtdTDN.js",
+    "name": "app",
+    "src": "resources/js/app.tsx",
+    "isEntry": true,
+    "imports": [
+      "_inertia-NllWTLmC.js"
+    ],
+    "css": [
+      "assets/app-Dd-8fP5R.css",
+      "assets/app-BNRNKqx5.css"
+    ]
+  }
+}
