@@ -14,6 +14,9 @@ export default defineConfig({
         react(),
     ],
     build: {
+        outDir: 'public/build',
+        emptyOutDir: true,
+        copyPublicDir: false,
         assetsInlineLimit: 4096,
         rollupOptions: {
             output: {
