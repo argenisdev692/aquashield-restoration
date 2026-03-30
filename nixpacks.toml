@@ -1,6 +1,6 @@
 [phases.setup]
 nixpkgsArchive = "4baae86cb222a0864a80a3c09775dff50c73ebe9"
-nixPkgs = ["nodejs_20", "php85", "php85Extensions.composer", "php85Extensions.dom", "php85Extensions.fileinfo", "php85Extensions.gd", "php85Extensions.mbstring", "php85Extensions.pdo", "php85Extensions.pdo_pgsql", "php85Extensions.pdo_sqlite", "php85Extensions.sqlite3", "php85Extensions.tokenizer", "php85Extensions.xml", "php85Extensions.curl", "php85Extensions.zip", "php85Extensions.bcmath", "php85Extensions.intl", "php85Extensions.ctype", "php85Extensions.filter", "php85Extensions.hash", "php85Extensions.json", "php85Extensions.openssl", "php85Extensions.session", "php85Extensions.simplexml", "php85Extensions.sodium", "php85Extensions.xmlwriter", "netcat"]
+nixPkgs = ["nodejs_20", "netcat"]
 
 [phases.build]
 cmds = [
@@ -13,6 +13,7 @@ cmds = [
 cmd = "chmod +x start.sh && ./start.sh"
 
 [variables]
+NIXPACKS_PHP_VERSION = "8.5"
 APP_ENV = "production"
 APP_DEBUG = "false"
 APP_URL = "https://${RAILWAY_PUBLIC_DOMAIN}"
