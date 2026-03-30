@@ -1,6 +1,6 @@
 [phases.setup]
 nixpkgsArchive = "4baae86cb222a0864a80a3c09775dff50c73ebe9"
-nixPkgs = ["nodejs_20", "netcat"]
+nixPkgs = ["nodejs_20", "php85Packages.composer", "netcat"]
 
 [phases.build]
 cmds = [
