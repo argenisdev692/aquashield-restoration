@@ -14,6 +14,9 @@ echo "Base de datos conectada"
 echo "Ejecutando migraciones..."
 php artisan migrate --force
 
+# Eliminar hot file para que Laravel no apunte al dev server
+rm -f public/hot
+
 # Optimizar la aplicación para producción
 echo "Optimizando aplicación..."
 php artisan config:cache
