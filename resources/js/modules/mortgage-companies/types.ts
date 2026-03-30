@@ -1,4 +1,5 @@
 export interface MortgageCompany {
+    company_id: number;
     uuid: string;
     mortgage_company_name: string;
     address: string | null;

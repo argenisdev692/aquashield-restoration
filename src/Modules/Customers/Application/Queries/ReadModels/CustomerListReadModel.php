@@ -12,6 +12,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class CustomerListReadModel extends Data
 {
     public function __construct(
+        public int $customerId,
         public string $uuid,
         public string $name,
         public ?string $lastName,

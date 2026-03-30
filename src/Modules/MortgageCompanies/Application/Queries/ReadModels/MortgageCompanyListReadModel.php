@@ -11,6 +11,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 /**
  * @OA\Schema(
  *     schema="MortgageCompanyListReadModel",
+ *     @OA\Property(property="company_id", type="integer"),
  *     @OA\Property(property="uuid", type="string", format="uuid"),
  *     @OA\Property(property="mortgage_company_name", type="string"),
  *     @OA\Property(property="address", type="string", nullable=true),
@@ -28,6 +29,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class MortgageCompanyListReadModel extends Data
 {
     public function __construct(
+        public int $companyId,
         public string $uuid,
         public string $mortgageCompanyName,
         public ?string $address,

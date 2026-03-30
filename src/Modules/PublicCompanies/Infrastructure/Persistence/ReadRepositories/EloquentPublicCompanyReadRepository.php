@@ -19,6 +19,7 @@ final class EloquentPublicCompanyReadRepository implements PublicCompanyReadRepo
         return $this->baseQuery($filters)
             ->paginate($filters->perPage, ['*'], 'page', $filters->page)
             ->through(static fn (PublicCompanyEloquentModel $company): PublicCompanyListReadModel => new PublicCompanyListReadModel(
+                companyId: (int) $company->id,
                 uuid: $company->uuid,
                 publicCompanyName: $company->public_company_name,
                 address: $company->address,
@@ -80,6 +81,7 @@ final class EloquentPublicCompanyReadRepository implements PublicCompanyReadRepo
         return PublicCompanyEloquentModel::query()
             ->withTrashed()
             ->select([
+                'id',
                 'uuid',
                 'public_company_name',
                 'address',

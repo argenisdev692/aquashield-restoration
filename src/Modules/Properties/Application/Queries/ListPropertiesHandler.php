@@ -17,6 +17,7 @@ final class ListPropertiesHandler
         $query = PropertyEloquentModel::query()
             ->withTrashed()
             ->select([
+                'id',
                 'uuid',
                 'property_address',
                 'property_address_2',
@@ -46,6 +47,7 @@ final class ListPropertiesHandler
         return $query
             ->paginate($filters->perPage, ['*'], 'page', $filters->page)
             ->through(static fn (PropertyEloquentModel $m): PropertyListReadModel => new PropertyListReadModel(
+                propertyId: (int) $m->id,
                 uuid: $m->uuid,
                 propertyAddress: $m->property_address,
                 propertyAddress2: $m->property_address_2,

@@ -14,6 +14,7 @@ export interface Customer {
 }
 
 export interface CustomerListItem {
+    customer_id: number;
     uuid: string;
     name: string;
     last_name: string | null;

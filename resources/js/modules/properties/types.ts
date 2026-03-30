@@ -9,6 +9,7 @@ export interface PropertyCustomer {
 }
 
 export interface PropertyListItem {
+    property_id: number;
     uuid: string;
     property_address: string;
     property_address_2: string | null;

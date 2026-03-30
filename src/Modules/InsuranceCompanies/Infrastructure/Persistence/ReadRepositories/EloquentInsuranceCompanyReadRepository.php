@@ -19,6 +19,7 @@ final class EloquentInsuranceCompanyReadRepository implements InsuranceCompanyRe
         return $this->baseQuery($filters)
             ->paginate($filters->perPage, ['*'], 'page', $filters->page)
             ->through(static fn (InsuranceCompanyEloquentModel $company): InsuranceCompanyListReadModel => new InsuranceCompanyListReadModel(
+                companyId: (int) $company->id,
                 uuid: $company->uuid,
                 insuranceCompanyName: $company->insurance_company_name,
                 address: $company->address,
@@ -77,6 +78,7 @@ final class EloquentInsuranceCompanyReadRepository implements InsuranceCompanyRe
         return InsuranceCompanyEloquentModel::query()
             ->withTrashed()
             ->select([
+                'id',
                 'uuid',
                 'insurance_company_name',
                 'address',

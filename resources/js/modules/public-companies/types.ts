@@ -1,4 +1,5 @@
 export interface PublicCompany {
+    company_id: number;
     uuid: string;
     public_company_name: string;
     address: string | null;

@@ -17,6 +17,7 @@ final class ListCustomersHandler
         $query = CustomerEloquentModel::query()
             ->withTrashed()
             ->select([
+                'customers.id',
                 'customers.uuid',
                 'customers.name',
                 'customers.last_name',
@@ -47,6 +48,7 @@ final class ListCustomersHandler
         return $query
             ->paginate($filters->perPage, ['*'], 'page', $filters->page)
             ->through(static fn (CustomerEloquentModel $model): CustomerListReadModel => new CustomerListReadModel(
+                customerId: (int) $model->id,
                 uuid: $model->uuid,
                 name: $model->name,
                 lastName: $model->last_name,

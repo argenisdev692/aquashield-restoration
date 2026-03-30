@@ -1,4 +1,5 @@
 export interface AllianceCompany {
+    company_id: number;
     uuid: string;
     alliance_company_name: string;
     address: string | null;

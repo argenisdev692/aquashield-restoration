@@ -12,6 +12,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class PropertyListReadModel extends Data
 {
     public function __construct(
+        public int $propertyId,
         public string $uuid,
         public string $propertyAddress,
         public ?string $propertyAddress2,

@@ -8,7 +8,7 @@
     "name": "vendor"
   },
   "resources/css/app.css": {
-    "file": "assets/app-BNRNKqx5.css",
+    "file": "assets/app-Bg8Zsr0m.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -17,7 +17,7 @@
     ]
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-DirtdTDN.js",
+    "file": "assets/app-Dja9GJEk.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
@@ -26,7 +26,7 @@
     ],
     "css": [
       "assets/app-Dd-8fP5R.css",
-      "assets/app-BNRNKqx5.css"
+      "assets/app-Bg8Zsr0m.css"
     ]
   }
 }

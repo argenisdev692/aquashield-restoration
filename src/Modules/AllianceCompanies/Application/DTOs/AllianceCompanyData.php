@@ -12,6 +12,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class AllianceCompanyData extends Data
 {
     public function __construct(
+        public int $companyId,
         public string $uuid,
         public string $allianceCompanyName,
         public ?string $address,

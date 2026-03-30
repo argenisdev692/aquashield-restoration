@@ -1,4 +1,5 @@
 export interface InsuranceCompany {
+    company_id: number;
     uuid: string;
     insurance_company_name: string;
     address: string | null;

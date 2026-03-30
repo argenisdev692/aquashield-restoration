@@ -19,6 +19,7 @@ final class EloquentMortgageCompanyReadRepository implements MortgageCompanyRead
         return $this->baseQuery($filters)
             ->paginate($filters->perPage, ['*'], 'page', $filters->page)
             ->through(static fn (MortgageCompanyEloquentModel $model): MortgageCompanyListReadModel => new MortgageCompanyListReadModel(
+                companyId: (int) $model->id,
                 uuid: $model->uuid,
                 mortgageCompanyName: $model->mortgage_company_name,
                 address: $model->address,
@@ -77,6 +78,7 @@ final class EloquentMortgageCompanyReadRepository implements MortgageCompanyRead
         return MortgageCompanyEloquentModel::query()
             ->withTrashed()
             ->select([
+                'id',
                 'uuid',
                 'mortgage_company_name',
                 'address',

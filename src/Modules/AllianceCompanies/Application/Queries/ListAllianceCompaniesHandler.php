@@ -16,6 +16,7 @@ final class ListAllianceCompaniesHandler
         $query = AllianceCompanyEloquentModel::query()
             ->withTrashed()
             ->select([
+                'id',
                 'uuid',
                 'alliance_company_name',
                 'address',
@@ -46,6 +47,7 @@ final class ListAllianceCompaniesHandler
         return $query
             ->paginate($filters->perPage, ['*'], 'page', $filters->page)
             ->through(static fn (AllianceCompanyEloquentModel $allianceCompany): AllianceCompanyData => AllianceCompanyData::from([
+                'companyId' => (int) $allianceCompany->id,
                 'uuid' => $allianceCompany->uuid,
                 'allianceCompanyName' => $allianceCompany->alliance_company_name,
                 'address' => $allianceCompany->address,

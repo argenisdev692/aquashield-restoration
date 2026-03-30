@@ -65,6 +65,23 @@
     --deleted-row-bg: color-mix(in srgb, var(--accent-error) 8%, var(--bg-card));
     --deleted-row-border: color-mix(in srgb, var(--accent-error) 25%, transparent);
     --deleted-row-opacity: 0.65;
+
+    /* ── Wizard tokens ── */
+    --wizard-step-done: var(--accent-success);
+    --wizard-step-active: var(--accent-primary);
+    --wizard-step-pending: var(--border-default);
+    --wizard-step-bg-done: color-mix(in srgb, var(--accent-success) 15%, var(--bg-card));
+    --wizard-step-bg-active: color-mix(in srgb, var(--accent-primary) 18%, var(--bg-card));
+    --wizard-step-bg-pending: var(--bg-card);
+    --wizard-connector: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+    --wizard-connector-done: var(--accent-success);
+    --wizard-panel-bg: var(--bg-elevated);
+    --wizard-panel-border: var(--border-default);
+
+    /* ── Map tokens ── */
+    --map-container-height: 240px;
+    --map-border-radius: var(--radius-lg);
+    --map-border: var(--border-default);
 }
 
 /* ── Light Mode override if needed (Default is Dark) ── */
