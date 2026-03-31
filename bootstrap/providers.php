@@ -43,4 +43,5 @@ return [
     Src\Modules\Customers\Providers\CustomersServiceProvider::class,
     Src\Modules\Properties\Providers\PropertiesServiceProvider::class,
     Src\Modules\Claims\Providers\ClaimsServiceProvider::class,
+    Src\Modules\ScopeSheets\Providers\ScopeSheetsServiceProvider::class,
 ];

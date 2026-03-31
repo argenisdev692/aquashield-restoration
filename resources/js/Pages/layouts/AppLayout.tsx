@@ -67,6 +67,7 @@ import {
   Contact,
   House,
   Database,
+  ClipboardList,
 } from 'lucide-react';
 
 const icSize = 18;
@@ -153,6 +154,7 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { label: 'New Claim', href: '/claims/create', icon: <FileText size={icSize} />, description: 'Create a new claim', permission: 'CREATE_CLAIM' },
       { label: 'All Claims', href: '/claims', icon: <Layers size={icSize} />, description: 'View and manage claims', permission: 'VIEW_CLAIM' },
+      { label: 'Scope Sheets', href: '/scope-sheets', icon: <ClipboardList size={icSize} />, description: 'Damage zone scope sheets', permission: 'VIEW_SCOPE_SHEET' },
     ],
   },
   { 

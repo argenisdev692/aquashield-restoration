@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import type { Claim } from '@/modules/claims/types';
+import { ScopeSheetClaimWidget } from '@/pages/scope-sheets/components/ScopeSheetClaimWidget';
 
 interface ClaimShowPageProps {
     claim: { data: Claim };
@@ -715,9 +716,12 @@ export default function ClaimShowPage(): React.JSX.Element {
                                         key={doc.key}
                                         doc={doc}
                                         index={idx}
-                                        isLast={idx === docs.length - 1}
+                                        isLast={false}
                                     />
                                 ))}
+
+                                {/* Scope Sheet widget — live query */}
+                                <ScopeSheetClaimWidget claimId={c.id} />
                             </div>
                         </motion.div>
                     )}

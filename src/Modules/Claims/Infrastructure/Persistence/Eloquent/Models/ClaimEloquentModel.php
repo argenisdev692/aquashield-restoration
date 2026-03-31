@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Src\Modules\ScopeSheets\Infrastructure\Persistence\Eloquent\Models\ScopeSheetEloquentModel;
 use Modules\AllianceCompanies\Infrastructure\Persistence\Eloquent\Models\AllianceCompanyEloquentModel;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
 use Spatie\Activitylog\LogOptions;
@@ -143,6 +144,12 @@ final class ClaimEloquentModel extends Model
     public function claimAgreementAlliances(): HasMany
     {
         return $this->hasMany(ClaimAgreementAllianceEloquentModel::class, 'claim_id');
+    }
+
+    /** @return HasMany<ScopeSheetEloquentModel, $this> */
+    public function scopeSheets(): HasMany
+    {
+        return $this->hasMany(ScopeSheetEloquentModel::class, 'claim_id');
     }
 
     /** @return BelongsToMany<CauseOfLossEloquentModel, $this> */

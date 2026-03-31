@@ -52,6 +52,7 @@ namespace Src\Modules\Claims\Application\Queries\ReadModels;
 final class ClaimReadModel
 {
     public function __construct(
+        public int $id,
         public string $uuid,
         public ?string $claimNumber,
         public string $claimInternalId,

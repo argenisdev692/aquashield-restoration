@@ -31,6 +31,7 @@ export interface ClaimAlliance {
 }
 
 export interface Claim {
+    id: number;
     uuid: string;
     claim_number: string | null;
     claim_internal_id: string;

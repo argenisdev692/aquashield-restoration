@@ -174,6 +174,7 @@ final class EloquentClaimReadRepository implements ClaimReadRepository
         }
 
         return new ClaimReadModel(
+            id: (int) $model->id,
             uuid: $model->uuid,
             claimNumber: $model->claim_number,
             claimInternalId: $model->claim_internal_id,

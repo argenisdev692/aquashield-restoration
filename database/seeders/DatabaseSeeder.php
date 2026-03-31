@@ -9,6 +9,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Database\Seeders\CallHistoryPermissionsSeeder;
 use Database\Seeders\ClaimsPermissionsSeeder;
+use Database\Seeders\ScopeSheetPermissionsSeeder;
 use Database\Seeders\ClaimStatusPermissionsSeeder;
 use Database\Seeders\CustomerPermissionsSeeder;
 use Database\Seeders\DocumentTemplateAdjusterPermissionsSeeder;
@@ -101,5 +102,8 @@ class DatabaseSeeder extends Seeder
 
         // CLAIMS - Call Claims Permissions Seeder
         $this->call(ClaimsPermissionsSeeder::class);
+
+        // SCOPE SHEETS - Call Scope Sheet Permissions Seeder
+        $this->call(ScopeSheetPermissionsSeeder::class);
     }
 }
