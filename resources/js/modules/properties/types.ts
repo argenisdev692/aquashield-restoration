@@ -17,6 +17,8 @@ export interface PropertyListItem {
     property_city: string | null;
     property_postal_code: string | null;
     property_country: string | null;
+    property_latitude: string | null;
+    property_longitude: string | null;
     created_at: string;
     deleted_at: string | null;
 }

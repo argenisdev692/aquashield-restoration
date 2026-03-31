@@ -122,7 +122,7 @@ export function Step3ClaimInfo({ onValidChange }: Step3ClaimInfoProps): React.JS
                 <div style={fieldStyle}>
                     <label htmlFor="policy_number" style={labelStyle}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <Hash size={12} /> Policy Number *
+                            <Hash size={12} /> Policy Number <span style={{ color: 'var(--accent-error)', marginLeft: 2 }}>*</span>
                         </span>
                     </label>
                     <input
@@ -159,7 +159,7 @@ export function Step3ClaimInfo({ onValidChange }: Step3ClaimInfoProps): React.JS
                 <div style={fieldStyle}>
                     <label htmlFor="type_damage_id" style={labelStyle}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <FileText size={12} /> Type of Damage *
+                            <FileText size={12} /> Type of Damage <span style={{ color: 'var(--accent-error)', marginLeft: 2 }}>*</span>
                         </span>
                     </label>
                     <select
@@ -179,7 +179,7 @@ export function Step3ClaimInfo({ onValidChange }: Step3ClaimInfoProps): React.JS
                 <div style={fieldStyle}>
                     <label htmlFor="claim_status" style={labelStyle}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <FileText size={12} /> Claim Status *
+                            <FileText size={12} /> Claim Status <span style={{ color: 'var(--accent-error)', marginLeft: 2 }}>*</span>
                         </span>
                     </label>
                     <select

@@ -125,7 +125,6 @@ export function ClaimWizard({ mode }: ClaimWizardProps): React.JSX.Element {
                 borderRadius: 'var(--radius-lg)',
                 border: '1px solid var(--border-default)',
                 overflow: 'hidden',
-                maxWidth: 800,
                 width: '100%',
                 margin: '0 auto',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
@@ -134,35 +133,111 @@ export function ClaimWizard({ mode }: ClaimWizardProps): React.JSX.Element {
             {/* Header */}
             <div
                 style={{
-                    padding: '20px 24px 16px',
                     borderBottom: '1px solid var(--border-subtle)',
                     background: 'var(--bg-elevated)',
+                    overflow: 'hidden',
                 }}
             >
-                <h2
+                {/* Title row */}
+                <div
                     style={{
-                        margin: '0 0 16px',
-                        fontSize: 20,
-                        fontWeight: 800,
-                        color: 'var(--text-primary)',
-                        fontFamily: 'var(--font-sans)',
-                        letterSpacing: '-0.01em',
+                        padding: '20px 28px 16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 16,
                     }}
                 >
-                    {mode === 'edit' ? 'Edit Claim' : 'New Claim'}
-                    <span
-                        style={{
-                            marginLeft: 10,
-                            fontSize: 12,
-                            fontWeight: 500,
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        {/* Icon badge */}
+                        <div style={{
+                            width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+                            background: 'color-mix(in srgb, var(--accent-primary) 18%, var(--bg-card))',
+                            border: '1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <span style={{ fontSize: 16 }}>📋</span>
+                        </div>
+                        <div>
+                            <h2 style={{
+                                margin: 0,
+                                fontSize: 18,
+                                fontWeight: 800,
+                                color: 'var(--text-primary)',
+                                fontFamily: 'var(--font-sans)',
+                                letterSpacing: '-0.01em',
+                                lineHeight: 1.2,
+                            }}>
+                                {mode === 'edit' ? 'Edit Claim' : 'New Claim'}
+                            </h2>
+                            <p style={{
+                                margin: '2px 0 0',
+                                fontSize: 12,
+                                color: 'var(--text-muted)',
+                                fontFamily: 'var(--font-sans)',
+                            }}>
+                                Complete all steps to {mode === 'edit' ? 'update' : 'create'} the claim
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Step counter pill */}
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0,
+                    }}>
+                        <div style={{
+                            padding: '6px 14px',
+                            borderRadius: 999,
+                            background: 'color-mix(in srgb, var(--accent-primary) 14%, var(--bg-card))',
+                            border: '1px solid color-mix(in srgb, var(--accent-primary) 28%, transparent)',
+                            display: 'flex', alignItems: 'center', gap: 6,
+                        }}>
+                            <span style={{
+                                fontSize: 13, fontWeight: 700,
+                                color: 'var(--accent-primary)',
+                                fontFamily: 'var(--font-sans)',
+                            }}>
+                                {step}
+                            </span>
+                            <span style={{
+                                fontSize: 12, color: 'var(--text-muted)',
+                                fontFamily: 'var(--font-sans)',
+                            }}>
+                                / 6
+                            </span>
+                        </div>
+                        {/* Percentage */}
+                        <span style={{
+                            fontSize: 11, fontWeight: 600,
                             color: 'var(--text-muted)',
-                            verticalAlign: 'middle',
-                        }}
-                    >
-                        Step {step} of 6
-                    </span>
-                </h2>
-                <WizardStepper currentStep={step} onStepClick={handleStepClick} />
+                            fontFamily: 'var(--font-sans)',
+                        }}>
+                            {Math.round(((step - 1) / 5) * 100)}%
+                        </span>
+                    </div>
+                </div>
+
+                {/* Progress bar */}
+                <div style={{
+                    height: 3,
+                    background: 'color-mix(in srgb, var(--accent-primary) 12%, transparent)',
+                    position: 'relative',
+                    margin: '0 0 2px',
+                }}>
+                    <div style={{
+                        position: 'absolute', left: 0, top: 0, bottom: 0,
+                        width: `${((step - 1) / 5) * 100}%`,
+                        background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))',
+                        borderRadius: '0 2px 2px 0',
+                        transition: 'width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                        boxShadow: '0 0 8px color-mix(in srgb, var(--accent-primary) 60%, transparent)',
+                    }} />
+                </div>
+
+                {/* Stepper */}
+                <div style={{ padding: '18px 20px 20px' }}>
+                    <WizardStepper currentStep={step} onStepClick={handleStepClick} />
+                </div>
             </div>
 
             {/* Step content */}

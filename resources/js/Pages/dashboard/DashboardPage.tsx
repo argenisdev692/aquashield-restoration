@@ -253,7 +253,9 @@ function KanbanBoard(): React.JSX.Element {
   const [dragSourceCol, setDragSourceCol] = React.useState<KanbanColumnId | null>(null);
   const [dragOverCol, setDragOverCol] = React.useState<KanbanColumnId | null>(null);
 
-  function handleDragStart(task: KanbanTask, sourceColId: KanbanColumnId): void {
+  function handleDragStart(e: React.DragEvent, task: KanbanTask, sourceColId: KanbanColumnId): void {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', task.id);
     setDraggedTask(task);
     setDragSourceCol(sourceColId);
   }
@@ -358,7 +360,7 @@ function KanbanBoard(): React.JSX.Element {
                   <div
                     key={task.id}
                     draggable
-                    onDragStart={() => handleDragStart(task, column.id)}
+                    onDragStart={(e) => handleDragStart(e, task, column.id)}
                     onDragEnd={handleDragEnd}
                     className="cursor-grab rounded-lg p-3.5 transition-all duration-150 active:cursor-grabbing active:scale-[0.97]"
                     style={{

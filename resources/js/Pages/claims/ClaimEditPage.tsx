@@ -73,7 +73,6 @@ export default function ClaimEditPage(): React.JSX.Element {
             <div
                 style={{
                     padding: '32px 24px',
-                    maxWidth: 900,
                     margin: '0 auto',
                     width: '100%',
                     fontFamily: 'var(--font-sans)',

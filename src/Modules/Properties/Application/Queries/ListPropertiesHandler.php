@@ -25,6 +25,8 @@ final class ListPropertiesHandler
                 'property_city',
                 'property_postal_code',
                 'property_country',
+                'property_latitude',
+                'property_longitude',
                 'created_at',
                 'deleted_at',
             ])
@@ -55,6 +57,8 @@ final class ListPropertiesHandler
                 propertyCity: $m->property_city,
                 propertyPostalCode: $m->property_postal_code,
                 propertyCountry: $m->property_country,
+                propertyLatitude: $m->property_latitude,
+                propertyLongitude: $m->property_longitude,
                 createdAt: $m->created_at?->toIso8601String() ?? '',
                 deletedAt: $m->deleted_at?->toIso8601String(),
             ));

@@ -20,6 +20,8 @@ final class PropertyListReadModel extends Data
         public ?string $propertyCity,
         public ?string $propertyPostalCode,
         public ?string $propertyCountry,
+        public ?string $propertyLatitude,
+        public ?string $propertyLongitude,
         public string $createdAt,
         public ?string $deletedAt = null,
     ) {}

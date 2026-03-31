@@ -113,7 +113,9 @@ export default function KanbanPage(): React.JSX.Element {
   const [dragOverCol, setDragOverCol] = React.useState<KanbanColumnId | null>(null);
 
   /** ── Drag Handlers ── */
-  function handleDragStart(task: KanbanTask, sourceColId: KanbanColumnId): void {
+  function handleDragStart(e: React.DragEvent, task: KanbanTask, sourceColId: KanbanColumnId): void {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', task.id);
     setDraggedTask(task);
     setDragSourceCol(sourceColId);
   }
@@ -247,7 +249,7 @@ export default function KanbanPage(): React.JSX.Element {
                     <div
                       key={task.id}
                       draggable
-                      onDragStart={() => handleDragStart(task, column.id)}
+                      onDragStart={(e) => handleDragStart(e, task, column.id)}
                       onDragEnd={handleDragEnd}
                       className="cursor-grab rounded-lg p-3.5 transition-all duration-150 active:cursor-grabbing active:scale-[0.97]"
                       style={{
