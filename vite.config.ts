@@ -9,14 +9,12 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
+            buildDirectory: 'build',
         }),
         tailwindcss(),
         react(),
     ],
     build: {
-        outDir: 'public/build',
-        emptyOutDir: true,
-        copyPublicDir: false,
         assetsInlineLimit: 4096,
         rollupOptions: {
             output: {
