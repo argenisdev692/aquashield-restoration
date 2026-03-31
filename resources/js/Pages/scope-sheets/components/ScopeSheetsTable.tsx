@@ -372,7 +372,7 @@ export function ScopeSheetsTable({ data, isPending, rowSelection, onRowSelection
                                 style={{
                                     borderBottom: '1px solid var(--border-subtle)',
                                     background: isDeleted ? 'var(--deleted-row-bg)' : idx % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-elevated)',
-                                    opacity: isDeleted ? Number('var(--deleted-row-opacity)') || 0.65 : 1,
+                                    opacity: isDeleted ? 'var(--deleted-row-opacity)' : 1,
                                     borderLeft: isDeleted ? '3px solid var(--deleted-row-border)' : '3px solid transparent',
                                     transition: 'background 0.15s ease',
                                 }}

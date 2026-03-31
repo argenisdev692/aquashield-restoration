@@ -736,21 +736,20 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapsed }: { onC
   return (
     <>
       {/* Logo + close arrow (arrow only visible on mobile) */}
-      <div className={`flex h-[60px] items-center justify-between shrink-0 ${collapsed ? 'px-3' : 'px-5'}`}
-        style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-        <div className={`flex min-w-0 flex-1 items-center ${collapsed ? 'justify-center' : 'justify-start'}`}>
-        <div className="dashboard-brand-shell dashboard-brand-shell--sidebar">
-        {!collapsed ? (
-        <Link href="/dashboard" prefetch className="dashboard-brand-shell dashboard-brand-shell--sidebar" aria-label="Go to dashboard">
-        <img
-          src="/img/Logo PNG-WHITE.png"
-          alt="AquaShield CRM"
-            className="dashboard-brand-logo dashboard-brand-logo--sidebar"
+      <div
+        className={`flex h-[60px] shrink-0 items-center ${collapsed ? 'justify-start px-3' : 'justify-between px-5'}`}
+        style={{ borderBottom: '1px solid var(--border-subtle)' }}
+      >
+        {/* Logo — visible only when expanded */}
+        {!collapsed && (
+          <Link href="/dashboard" prefetch aria-label="Go to dashboard" className="flex items-center">
+            <img
+              src="/img/Logo PNG-WHITE.png"
+              alt="AquaShield CRM"
+              className="dashboard-brand-logo dashboard-brand-logo--sidebar"
             />
-            </Link>
-            ) : null}
-          </div>
-        </div>
+          </Link>
+        )}
 
         {/* Close arrow — only rendered in mobile drawer */}
         {onClose && (

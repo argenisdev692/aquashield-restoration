@@ -110,14 +110,14 @@ function PhotoGrid({ photos, onView }: {
                     <div
                         style={{
                             position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end',
-                            background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)',
+                            background: 'linear-gradient(to top, color-mix(in srgb, var(--bg-void) 60%, transparent) 0%, transparent 50%)',
                             padding: '8px',
                             opacity: 0, transition: 'opacity 0.2s ease',
                         }}
                         onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.opacity = '0'; }}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#fff', fontSize: 11, fontFamily: 'var(--font-sans)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-primary)', fontSize: 11, fontFamily: 'var(--font-sans)' }}>
                             <Eye size={12} />
                             {p.caption ?? `Photo ${idx + 1}`}
                         </div>

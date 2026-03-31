@@ -57,23 +57,8 @@ export default function ClaimsIndexPage(): React.JSX.Element {
                         <PermissionGuard permissions={['CREATE_CLAIM']}>
                             <Link
                                 href="/claims/create"
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 7,
-                                    padding: '0 16px',
-                                    height: 36,
-                                    borderRadius: 'var(--radius-md)',
-                                    background: 'var(--accent-primary)',
-                                    color: '#fff',
-                                    fontSize: 13,
-                                    fontWeight: 700,
-                                    textDecoration: 'none',
-                                    fontFamily: 'var(--font-sans)',
-                                    letterSpacing: '0.02em',
-                                    whiteSpace: 'nowrap',
-                                    transition: 'opacity 0.15s ease',
-                                }}
+                                className="btn-modern btn-modern-primary"
+                                style={{ textDecoration: 'none', whiteSpace: 'nowrap' }}
                             >
                                 <Plus size={14} /> New Claim
                             </Link>

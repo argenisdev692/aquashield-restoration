@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Images, LayoutGrid, Info, Loader2 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { ScopeSheetPresentationsSection } from './form/ScopeSheetPresentationsSection';
 import { ScopeSheetZonesSection } from './form/ScopeSheetZonesSection';
 import type { ScopeSheetFormData, ScopeSheetPresentation, ScopeSheetZone } from '@/modules/scope-sheets/types';
+import type { PaginatedResponse } from '@/types/api';
 
 // ── Claim search ───────────────────────────────────────────────────────────────
 
@@ -16,7 +17,7 @@ interface ClaimOption {
     claim_internal_id: string;
     property_address: string | null;
 }
-interface PaginatedClaims { data: ClaimOption[] }
+type PaginatedClaims = PaginatedResponse<ClaimOption>;
 
 function useClaimSearch(search: string) {
     return useQuery<PaginatedClaims, Error>({
@@ -27,6 +28,7 @@ function useClaimSearch(search: string) {
             });
             return data;
         },
+        placeholderData: keepPreviousData,
         staleTime: 1000 * 30,
         enabled: true,
     });
@@ -337,7 +339,7 @@ export function ScopeSheetForm({
                                                 background: 'var(--bg-elevated)',
                                                 border: '1px solid var(--border-default)',
                                                 borderRadius: 'var(--radius-lg)',
-                                                boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                                                boxShadow: '0 8px 32px color-mix(in srgb, var(--bg-void) 30%, transparent)',
                                                 maxHeight: 260,
                                                 overflowY: 'auto',
                                             }}

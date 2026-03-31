@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ScopeSheet, ScopeSheetFilters, PaginatedScopeSheetResponse } from '../types';
 
 export function useScopeSheet(uuid: string | null) {
@@ -28,6 +28,7 @@ export function useScopeSheetByClaim(claimId: number | null) {
             return data;
         },
         enabled: claimId !== null && claimId > 0,
+        placeholderData: keepPreviousData,
         staleTime: 1000 * 60 * 2,
     });
 }

@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { LayoutGrid, Plus, Search } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { ZoneCard } from './ZoneCard';
 import type { ScopeSheetZone } from '@/modules/scope-sheets/types';
+import type { PaginatedResponse } from '@/types/api';
 
 interface ZoneCatalogItem {
     id: number;
@@ -13,9 +14,7 @@ interface ZoneCatalogItem {
     zone_type: string;
 }
 
-interface PaginatedZoneCatalog {
-    data: ZoneCatalogItem[];
-}
+type PaginatedZoneCatalog = PaginatedResponse<ZoneCatalogItem>;
 
 function useZoneCatalog(search: string) {
     return useQuery<PaginatedZoneCatalog, Error>({
@@ -26,6 +25,7 @@ function useZoneCatalog(search: string) {
             });
             return data;
         },
+        placeholderData: keepPreviousData,
         staleTime: 1000 * 60 * 5,
     });
 }
@@ -238,7 +238,7 @@ export function ScopeSheetZonesSection({ zones, onChange }: Props): React.JSX.El
                             background: 'var(--bg-elevated)',
                             border: '1px solid var(--border-default)',
                             borderRadius: 'var(--radius-lg)',
-                            boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
+                            boxShadow: '0 12px 40px color-mix(in srgb, var(--bg-void) 35%, transparent)',
                             overflow: 'hidden',
                             maxHeight: 340,
                             display: 'flex',

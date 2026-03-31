@@ -307,7 +307,7 @@ export function ZoneCard({
                                                                     justifyContent: 'flex-end',
                                                                     gap: 4,
                                                                     padding: '4px 6px',
-                                                                    background: 'rgba(0,0,0,0.55)',
+                                                                    background: 'color-mix(in srgb, var(--bg-void) 55%, transparent)',
                                                                 }}
                                                             >
                                                                 <button type="button" aria-label="Move photo left" onClick={(e) => { e.stopPropagation(); handleMovePhoto(pIdx, pIdx - 1); }} disabled={pIdx === 0} style={reorderBtnStyle}>
@@ -385,7 +385,7 @@ const reorderBtnStyle: React.CSSProperties = {
     height: 20,
     borderRadius: 'var(--radius-sm)',
     border: '1px solid var(--border-default)',
-    background: 'rgba(0,0,0,0.5)',
+    background: 'color-mix(in srgb, var(--bg-void) 50%, transparent)',
     color: 'var(--text-secondary)',
     cursor: 'pointer',
 };

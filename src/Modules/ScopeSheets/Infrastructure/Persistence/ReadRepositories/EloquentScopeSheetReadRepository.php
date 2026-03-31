@@ -21,11 +21,7 @@ final class EloquentScopeSheetReadRepository implements ScopeSheetReadRepository
                 'generatedByUser:id,uuid,name',
             ])
             ->withCount(['presentations', 'zones'])
-            ->when($filters->status === 'deleted', fn ($q) => $q->onlyTrashed())
-            ->when(
-                $filters->status !== null && $filters->status !== 'deleted',
-                fn ($q) => $q->whereNull('deleted_at'),
-            )
+            ->byStatus($filters->status)
             ->search($filters->search)
             ->inDateRange($filters->dateFrom, $filters->dateTo)
             ->when($filters->claimId, fn ($q, $id) => $q->where('claim_id', $id))

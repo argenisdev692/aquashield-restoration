@@ -11,112 +11,9 @@ import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { useScopeSheets } from '@/modules/scope-sheets/hooks/useScopeSheets';
 import { useDeleteScopeSheet, useRestoreScopeSheet, useBulkDeleteScopeSheets } from '@/modules/scope-sheets/hooks/useScopeSheetMutations';
 import { ScopeSheetsTable } from './components/ScopeSheetsTable';
+import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
+import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
 import type { ScopeSheetFilters, ScopeSheetListItem } from '@/modules/scope-sheets/types';
-
-// ─── Delete/Restore Confirm Modals ────────────────────────────────────────────
-
-interface ConfirmModalProps {
-    open: boolean;
-    title: string;
-    message: string;
-    confirmLabel: string;
-    confirmColor: string;
-    onConfirm: () => void;
-    onCancel: () => void;
-    isPending: boolean;
-}
-
-function ConfirmModal({ open, title, message, confirmLabel, confirmColor, onConfirm, onCancel, isPending }: ConfirmModalProps): React.JSX.Element {
-    const confirmRef = React.useRef<HTMLButtonElement | null>(null);
-
-    React.useEffect(() => {
-        if (open) {
-            setTimeout(() => confirmRef.current?.focus(), 50);
-        }
-    }, [open]);
-
-    React.useEffect(() => {
-        if (!open) return;
-        function onKey(e: KeyboardEvent): void {
-            if (e.key === 'Escape') onCancel();
-        }
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-    }, [open, onCancel]);
-
-    return (
-        <AnimatePresence>
-            {open && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.18 }}
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="confirm-title"
-                    style={{
-                        position: 'fixed', inset: 0, zIndex: 9000,
-                        background: 'rgba(0,0,0,0.6)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        padding: 24,
-                    }}
-                    onClick={onCancel}
-                >
-                    <motion.div
-                        initial={{ scale: 0.92, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.92, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            background: 'var(--bg-card)',
-                            border: '1px solid var(--border-default)',
-                            borderRadius: 'var(--radius-lg)',
-                            padding: '24px 28px',
-                            maxWidth: 420,
-                            width: '100%',
-                            fontFamily: 'var(--font-sans)',
-                        }}
-                    >
-                        <h3 id="confirm-title" style={{ margin: '0 0 8px', fontSize: 17, fontWeight: 800, color: 'var(--text-primary)' }}>{title}</h3>
-                        <p style={{ margin: '0 0 24px', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{message}</p>
-                        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-                            <button
-                                type="button"
-                                onClick={onCancel}
-                                style={{
-                                    padding: '8px 18px', borderRadius: 'var(--radius-md)',
-                                    border: '1px solid var(--border-default)', background: 'transparent',
-                                    color: 'var(--text-muted)', fontSize: 13, fontWeight: 600,
-                                    fontFamily: 'var(--font-sans)', cursor: 'pointer',
-                                }}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                ref={confirmRef}
-                                type="button"
-                                onClick={onConfirm}
-                                disabled={isPending}
-                                style={{
-                                    padding: '8px 18px', borderRadius: 'var(--radius-md)',
-                                    border: 'none',
-                                    background: confirmColor,
-                                    color: '#fff', fontSize: 13, fontWeight: 700,
-                                    fontFamily: 'var(--font-sans)', cursor: isPending ? 'not-allowed' : 'pointer',
-                                    opacity: isPending ? 0.7 : 1,
-                                }}
-                            >
-                                {isPending ? 'Processing…' : confirmLabel}
-                            </button>
-                        </div>
-                    </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>
-    );
-}
 
 // ─── Sliding Paginator (5 pages around current) ───────────────────────────────
 
@@ -488,24 +385,19 @@ export default function ScopeSheetsIndexPage(): React.JSX.Element {
                 </div>
 
                 {/* ── Delete modal ── */}
-                <ConfirmModal
+                <DeleteConfirmModal
                     open={pendingDelete !== null}
-                    title="Delete Scope Sheet"
-                    message={`Are you sure you want to delete the scope sheet for claim "${pendingDelete?.claim_number ?? pendingDelete?.claim_internal_id ?? ''}"? This can be restored later.`}
-                    confirmLabel="Delete"
-                    confirmColor="var(--accent-error)"
+                    entityLabel={pendingDelete?.claim_number ?? pendingDelete?.claim_internal_id ?? ''}
                     onConfirm={handleConfirmDelete}
                     onCancel={() => setPendingDelete(null)}
-                    isPending={deleteMutation.isPending}
+                    isDeleting={deleteMutation.isPending}
                 />
 
                 {/* ── Restore modal ── */}
-                <ConfirmModal
-                    open={pendingRestore !== null}
-                    title="Restore Scope Sheet"
-                    message={`Restore the scope sheet for claim "${pendingRestore?.claim_number ?? pendingRestore?.claim_internal_id ?? ''}"?`}
-                    confirmLabel="Restore"
-                    confirmColor="var(--accent-success)"
+                <RestoreConfirmModal
+                    isOpen={pendingRestore !== null}
+                    entityLabel="scope sheet"
+                    entityName={pendingRestore?.claim_number ?? pendingRestore?.claim_internal_id ?? ''}
                     onConfirm={handleConfirmRestore}
                     onCancel={() => setPendingRestore(null)}
                     isPending={restoreMutation.isPending}

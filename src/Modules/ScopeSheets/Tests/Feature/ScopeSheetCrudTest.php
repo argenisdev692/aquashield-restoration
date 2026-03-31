@@ -193,4 +193,44 @@ final class ScopeSheetCrudTest extends TestCase
             ->assertStatus(200)
             ->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     }
+
+    public function test_generate_pdf_document_returns_pdf_response(): void
+    {
+        $user = $this->createPermissionedUser();
+        $claim = \Src\Modules\Claims\Infrastructure\Persistence\Eloquent\Models\ClaimEloquentModel::factory()->create();
+        $uuid = Uuid::uuid4()->toString();
+
+        \Src\Modules\ScopeSheets\Infrastructure\Persistence\Eloquent\Models\ScopeSheetEloquentModel::create([
+            'uuid' => $uuid,
+            'claim_id' => $claim->id,
+            'generated_by' => $user->id,
+            'scope_sheet_description' => 'PDF test scope sheet',
+        ]);
+
+        $this->app->instance(\Shared\Domain\Ports\StoragePort::class, new class implements \Shared\Domain\Ports\StoragePort {
+            public function download(string $path): string
+            {
+                return '';
+            }
+
+            public function put(string $path, string $contents): void
+            {
+            }
+
+            public function getUrl(string $path): string
+            {
+                return 'https://example.test/' . ltrim($path, '/');
+            }
+
+            public function temporaryUrl(string $path, \DateTimeInterface $expiration): string
+            {
+                return 'https://example.test/' . ltrim($path, '/');
+            }
+        });
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson("/api/scope-sheets/admin/{$uuid}/generate-pdf")
+            ->assertStatus(200)
+            ->assertHeader('Content-Type', 'application/pdf');
+    }
 }

@@ -1,3 +1,5 @@
+import type { PaginatedResponse } from '@/types/api';
+
 // ─── Scope Sheet Domain Types ─────────────────────────────────────────────────
 
 export interface ScopeSheetPresentation {
@@ -81,15 +83,7 @@ export interface ScopeSheetFilters {
     per_page?: number;
 }
 
-export interface PaginatedScopeSheetResponse {
-    data: ScopeSheetListItem[];
-    meta: {
-        currentPage: number;
-        lastPage: number;
-        perPage: number;
-        total: number;
-    };
-}
+export type PaginatedScopeSheetResponse = PaginatedResponse<ScopeSheetListItem>;
 
 // ─── Form types ────────────────────────────────────────────────────────────────
 

@@ -40,7 +40,7 @@ export function PhotoViewModal({ open, src, caption, onClose }: PhotoViewModalPr
                         position: 'fixed',
                         inset: 0,
                         zIndex: 9999,
-                        background: 'rgba(0,0,0,0.88)',
+                        background: 'color-mix(in srgb, var(--bg-void) 88%, transparent)',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
@@ -108,7 +108,7 @@ export function PhotoViewModal({ open, src, caption, onClose }: PhotoViewModalPr
                             transform: `scale(${zoom})`,
                             transition: 'transform 0.2s ease',
                             borderRadius: 'var(--radius-lg)',
-                            boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+                            boxShadow: '0 20px 60px color-mix(in srgb, var(--bg-void) 60%, transparent)',
                         }}
                     />
 

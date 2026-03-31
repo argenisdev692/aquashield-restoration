@@ -41,7 +41,7 @@ final class ScopeSheetExportController extends Controller
             'claimId'   => $validated['claim_id'] ?? null,
         ]);
 
-        $format = $request->query('format', 'excel');
+        $format = $validated['format'] ?? 'excel';
 
         return match ($format) {
             'pdf'   => (new ScopeSheetPdfExport($filters))->stream(),

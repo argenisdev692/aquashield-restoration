@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Infrastructure\Storage;
 
+use DateTimeInterface;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Shared\Domain\Ports\StoragePort;
@@ -36,6 +37,23 @@ final class R2StorageAdapter implements StoragePort
         );
     }
 
+    public function put(string $path, string $contents): void
+    {
+        $this->circuitBreaker->execute(
+            serviceName: 'r2.shared.storage.put',
+            action: static function () use ($path, $contents): void {
+                $stored = Storage::disk(self::DISK)->put($path, $contents);
+
+                if (! $stored) {
+                    throw new RuntimeException("Failed to store file at [{$path}].");
+                }
+            },
+            fallback: static function (): never {
+                throw new RuntimeException('Shared storage write is temporarily unavailable.');
+            },
+        );
+    }
+
     public function getUrl(string $path): string
     {
         return $this->circuitBreaker->execute(
@@ -43,6 +61,17 @@ final class R2StorageAdapter implements StoragePort
             action: static fn () => Storage::disk(self::DISK)->url($path),
             fallback: static function (): never {
                 throw new RuntimeException('Shared storage URL resolution is temporarily unavailable.');
+            },
+        );
+    }
+
+    public function temporaryUrl(string $path, DateTimeInterface $expiration): string
+    {
+        return $this->circuitBreaker->execute(
+            serviceName: 'r2.shared.storage.temporary-url',
+            action: static fn () => Storage::disk(self::DISK)->temporaryUrl($path, $expiration),
+            fallback: static function (): never {
+                throw new RuntimeException('Shared storage temporary URL resolution is temporarily unavailable.');
             },
         );
     }

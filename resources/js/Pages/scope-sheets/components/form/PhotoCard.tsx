@@ -43,10 +43,10 @@ export function PhotoCard({
                     : '1px solid var(--border-default)',
                 background: 'var(--bg-card)',
                 boxShadow: isDragging
-                    ? '0 12px 40px rgba(0,181,226,0.25)'
+                    ? '0 12px 40px color-mix(in srgb, var(--accent-primary) 25%, transparent)'
                     : hovered
-                        ? '0 4px 20px rgba(0,0,0,0.3)'
-                        : '0 2px 8px rgba(0,0,0,0.15)',
+                        ? '0 4px 20px color-mix(in srgb, var(--bg-void) 30%, transparent)'
+                        : '0 2px 8px color-mix(in srgb, var(--bg-void) 15%, transparent)',
                 transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
                 aspectRatio: '4/3',
                 cursor: 'grab',
@@ -67,12 +67,12 @@ export function PhotoCard({
                         width: 28,
                         height: 28,
                         borderRadius: 'var(--radius-sm)',
-                        background: 'rgba(0,0,0,0.55)',
+                        background: 'color-mix(in srgb, var(--bg-void) 55%, transparent)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'grab',
-                        color: 'rgba(255,255,255,0.8)',
+                        color: 'var(--text-primary)',
                     }}
                 >
                     <GripVertical size={14} />
@@ -98,7 +98,7 @@ export function PhotoCard({
                 style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.0) 50%)',
+                    background: 'linear-gradient(to top, color-mix(in srgb, var(--bg-void) 75%, transparent) 0%, transparent 50%)',
                     opacity: hovered ? 1 : 0,
                     transition: 'opacity 0.2s ease',
                     display: 'flex',
@@ -114,7 +114,7 @@ export function PhotoCard({
                         style={{
                             fontSize: 11,
                             fontWeight: 600,
-                            color: 'rgba(255,255,255,0.85)',
+                            color: 'var(--text-primary)',
                             fontFamily: 'var(--font-sans)',
                             textTransform: 'uppercase',
                             letterSpacing: '0.06em',
@@ -160,7 +160,7 @@ function ActionBtn({ icon, label, color, onClick }: ActionBtnProps): React.JSX.E
                 padding: '4px 10px',
                 borderRadius: 'var(--radius-sm)',
                 border: `1px solid color-mix(in srgb, ${color} 40%, transparent)`,
-                background: `color-mix(in srgb, ${color} 18%, rgba(0,0,0,0.5))`,
+                background: `color-mix(in srgb, ${color} 18%, var(--bg-void))`,
                 color,
                 fontSize: 11,
                 fontWeight: 700,
