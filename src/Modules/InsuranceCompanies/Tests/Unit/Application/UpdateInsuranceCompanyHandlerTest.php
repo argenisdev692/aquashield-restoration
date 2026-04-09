@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Modules\InsuranceCompanies\Tests\Unit\Application;
+
 use Modules\InsuranceCompanies\Application\Commands\UpdateInsuranceCompanyHandler;
 use Modules\InsuranceCompanies\Application\DTOs\UpdateInsuranceCompanyData;
 use Modules\InsuranceCompanies\Domain\Entities\InsuranceCompany;
