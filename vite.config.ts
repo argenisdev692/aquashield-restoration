@@ -14,17 +14,7 @@ export default defineConfig({
         tailwindcss(),
         react(),
     ],
-    build: {
-        assetsInlineLimit: 4096,
-        rollupOptions: {
-            output: {
-                manualChunks: {
-                    vendor: ['react', 'react-dom'],
-                    inertia: ['@inertiajs/react'],
-                },
-            },
-        },
-    },
+    
     server: {
         watch: { ignored: ['**/storage/framework/views/**'] },
     },
