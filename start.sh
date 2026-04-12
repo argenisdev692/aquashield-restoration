@@ -1,7 +1,7 @@
 #!/bin/bash
 # ──────────────────────────────────────────────
 # Railway App Service start script
-# Runs migrations, caches config, starts server
+# Runs at RUNTIME (not build time)
 # ──────────────────────────────────────────────
 set -e
 
@@ -17,6 +17,9 @@ if [ $RETRIES -eq 0 ]; then
     echo "WARNING: Could not connect to DB, continuing anyway..."
 fi
 
+echo "==> Discovering packages..."
+php artisan package:discover --ansi
+
 echo "==> Running migrations..."
 php artisan migrate --force
 
@@ -26,6 +29,8 @@ rm -f public/hot
 echo "==> Caching configuration..."
 php artisan config:cache
 php artisan route:cache
+php artisan view:cache
+php artisan event:cache
 
 echo "==> Creating storage symlink..."
 php artisan storage:link --force 2>/dev/null || true

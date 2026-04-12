@@ -35,12 +35,9 @@ nixPkgs = [
 
 [phases.build]
 cmds = [
-    "composer install --no-dev --optimize-autoloader",
-    "npm ci --prefer-offline",
-    "npm run build",
-    "php artisan package:discover --ansi",
-    "php artisan event:cache",
-    "php artisan view:cache"
+    "composer install --no-dev --optimize-autoloader --no-scripts",
+    "npm ci",
+    "npm run build"
 ]
 
 [start]
