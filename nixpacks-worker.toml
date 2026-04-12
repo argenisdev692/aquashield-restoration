@@ -1,0 +1,40 @@
+# ──────────────────────────────────────────────
+# Nixpacks config — Worker Service (Horizon)
+# ──────────────────────────────────────────────
+
+[phases.setup]
+nixPkgs = [
+    "php85",
+    "php85Extensions.composer",
+    "php85Extensions.dom",
+    "php85Extensions.fileinfo",
+    "php85Extensions.gd",
+    "php85Extensions.exif",
+    "php85Extensions.mbstring",
+    "php85Extensions.pcntl",
+    "php85Extensions.pdo",
+    "php85Extensions.pdo_pgsql",
+    "php85Extensions.tokenizer",
+    "php85Extensions.xml",
+    "php85Extensions.curl",
+    "php85Extensions.zip",
+    "php85Extensions.bcmath",
+    "php85Extensions.intl",
+    "php85Extensions.redis",
+    "php85Extensions.sodium",
+    "netcat"
+]
+
+[phases.build]
+cmds = [
+    "composer install --no-dev --optimize-autoloader"
+]
+
+[start]
+cmd = "chmod +x run-worker.sh && ./run-worker.sh"
+
+[variables]
+APP_ENV = "production"
+APP_DEBUG = "false"
+QUEUE_CONNECTION = "redis"
+CACHE_STORE = "redis"

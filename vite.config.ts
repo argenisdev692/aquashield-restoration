@@ -7,7 +7,7 @@ export default defineConfig({
     envPrefix: ['VITE_', 'PUBLIC_'],
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            input: ['resources/js/app.tsx'],
             refresh: true,
             buildDirectory: 'build',
         }),

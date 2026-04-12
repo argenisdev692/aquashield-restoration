@@ -1,0 +1,51 @@
+# ──────────────────────────────────────────────
+# Nixpacks config — AquaShield CRM (App Service)
+# PHP 8.5 + Node 20 + Vite build + nginx + php-fpm
+# ──────────────────────────────────────────────
+
+[phases.setup]
+nixPkgs = [
+    "nodejs_20",
+    "php85",
+    "php85Extensions.composer",
+    "php85Extensions.dom",
+    "php85Extensions.fileinfo",
+    "php85Extensions.gd",
+    "php85Extensions.exif",
+    "php85Extensions.mbstring",
+    "php85Extensions.pcntl",
+    "php85Extensions.pdo",
+    "php85Extensions.pdo_pgsql",
+    "php85Extensions.pdo_sqlite",
+    "php85Extensions.sqlite3",
+    "php85Extensions.tokenizer",
+    "php85Extensions.xml",
+    "php85Extensions.curl",
+    "php85Extensions.zip",
+    "php85Extensions.bcmath",
+    "php85Extensions.intl",
+    "php85Extensions.ctype",
+    "php85Extensions.filter",
+    "php85Extensions.session",
+    "php85Extensions.simplexml",
+    "php85Extensions.sodium",
+    "php85Extensions.redis",
+    "netcat"
+]
+
+[phases.build]
+cmds = [
+    "composer install --no-dev --optimize-autoloader",
+    "npm ci --prefer-offline",
+    "npm run build",
+    "php artisan package:discover --ansi",
+    "php artisan event:cache",
+    "php artisan view:cache"
+]
+
+[start]
+cmd = "chmod +x start.sh && ./start.sh"
+
+[variables]
+NIXPACKS_PHP_VERSION = "8.5"
+IS_LARAVEL = "yes"
