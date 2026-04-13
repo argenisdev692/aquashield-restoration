@@ -1,32 +1,22 @@
 {
-  "_inertia-DAZJKtnx.js": {
-    "file": "assets/inertia-DAZJKtnx.js",
+  "_inertia-NllWTLmC.js": {
+    "file": "assets/inertia-NllWTLmC.js",
     "name": "inertia"
   },
   "_vendor-l0sNRNKZ.js": {
     "file": "assets/vendor-l0sNRNKZ.js",
     "name": "vendor"
   },
-  "resources/css/app.css": {
-    "file": "assets/app-onPE2TdZ.css",
-    "src": "resources/css/app.css",
-    "isEntry": true,
-    "name": "app",
-    "names": [
-      "app.css"
-    ]
-  },
   "resources/js/app.tsx": {
-    "file": "assets/app-CF3cvjzA.js",
+    "file": "assets/app-CvZFdxQJ.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
     "imports": [
-      "_inertia-DAZJKtnx.js"
+      "_inertia-NllWTLmC.js"
     ],
     "css": [
-      "assets/app-Dd-8fP5R.css",
-      "assets/app-onPE2TdZ.css"
+      "assets/app-B1kyCqnT.css"
     ]
   }
 }
