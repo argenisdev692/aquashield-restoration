@@ -9,7 +9,7 @@ export default defineConfig({
         laravel({
             input: ['resources/js/app.tsx'],
             refresh: true,
-            buildDirectory: 'build',
+            buildDirectory: 'public/build',
         }),
         tailwindcss(),
         react(),
