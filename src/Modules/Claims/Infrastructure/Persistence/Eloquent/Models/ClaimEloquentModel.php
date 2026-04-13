@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Src\Modules\Invoices\Infrastructure\Persistence\Eloquent\Models\InvoiceEloquentModel;
 use Src\Modules\ScopeSheets\Infrastructure\Persistence\Eloquent\Models\ScopeSheetEloquentModel;
 use Modules\AllianceCompanies\Infrastructure\Persistence\Eloquent\Models\AllianceCompanyEloquentModel;
 use Modules\Users\Infrastructure\Persistence\Eloquent\Models\UserEloquentModel;
@@ -183,6 +184,12 @@ final class ClaimEloquentModel extends Model
             'claim_id',
             'alliance_company_id',
         )->withPivot('assignment_date')->withTimestamps();
+    }
+
+    /** @return HasMany<InvoiceEloquentModel, $this> */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(InvoiceEloquentModel::class, 'claim_id');
     }
 
     public function scopeSearch(Builder $query, ?string $search): Builder

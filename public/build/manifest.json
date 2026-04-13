@@ -7,17 +7,8 @@
     "file": "assets/vendor-l0sNRNKZ.js",
     "name": "vendor"
   },
-  "resources/css/app.css": {
-    "file": "assets/app-IvH3HpDl.css",
-    "src": "resources/css/app.css",
-    "isEntry": true,
-    "name": "app",
-    "names": [
-      "app.css"
-    ]
-  },
   "resources/js/app.tsx": {
-    "file": "assets/app-BOnGLoH8.js",
+    "file": "assets/app-D8WcoHQK.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
@@ -25,8 +16,7 @@
       "_inertia-NllWTLmC.js"
     ],
     "css": [
-      "assets/app-Dd-8fP5R.css",
-      "assets/app-IvH3HpDl.css"
+      "assets/app-B1kyCqnT.css"
     ]
   }
 }

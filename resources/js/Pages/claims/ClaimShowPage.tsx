@@ -3,13 +3,14 @@ import { usePage, Link } from '@inertiajs/react';
 import {
     Pencil, ArrowLeft, MapPin, Users, Building2, FileText, Layers,
     LayoutGrid, BookOpen, ShieldCheck, Handshake, ClipboardList,
-    CheckCircle2, Clock, GitMerge, ChevronRight,
+    CheckCircle2, Clock, GitMerge, ChevronRight, Receipt,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import type { Claim } from '@/modules/claims/types';
 import { ScopeSheetClaimWidget } from '@/pages/scope-sheets/components/ScopeSheetClaimWidget';
+import { InvoiceClaimTimeline } from './components/InvoiceClaimTimeline';
 
 interface ClaimShowPageProps {
     claim: { data: Claim };
@@ -365,7 +366,7 @@ function TimelineCard({ doc, index, isLast }: TimelineCardProps): React.JSX.Elem
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 
-type TabKey = 'overview' | 'documents';
+type TabKey = 'overview' | 'documents' | 'invoices';
 
 interface TabProps {
     id: TabKey;
@@ -515,6 +516,13 @@ export default function ClaimShowPage(): React.JSX.Element {
                         icon={<BookOpen size={14} />}
                         active={activeTab === 'documents'}
                         onClick={() => setActiveTab('documents')}
+                    />
+                    <Tab
+                        id="invoices"
+                        label="Invoices"
+                        icon={<Receipt size={14} />}
+                        active={activeTab === 'invoices'}
+                        onClick={() => setActiveTab('invoices')}
                     />
                     {/* Doc availability counter */}
                     <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', padding: '0 12px', gap: 6 }}>
@@ -723,6 +731,20 @@ export default function ClaimShowPage(): React.JSX.Element {
                                 {/* Scope Sheet widget — live query */}
                                 <ScopeSheetClaimWidget claimId={c.id} />
                             </div>
+                        </motion.div>
+                    )}
+                    {activeTab === 'invoices' && (
+                        <motion.div
+                            key="invoices"
+                            id="panel-invoices"
+                            role="tabpanel"
+                            aria-labelledby="tab-invoices"
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <InvoiceClaimTimeline claimId={c.id} />
                         </motion.div>
                     )}
                 </AnimatePresence>

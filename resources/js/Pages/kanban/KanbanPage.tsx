@@ -256,6 +256,7 @@ export default function KanbanPage(): React.JSX.Element {
                         background: 'var(--bg-surface)',
                         border: '1px solid var(--border-subtle)',
                         opacity: draggedTask?.id === task.id ? 0.4 : 1,
+                        userSelect: 'none',
                       }}
                     >
                       {/* Task ID + Priority */}
