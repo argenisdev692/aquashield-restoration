@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Head, Link, useRemember } from '@inertiajs/react';
 import type { RowSelectionState } from '@tanstack/react-table';
-import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
-import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { ExportButton } from '@/common/export/ExportButton';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { usePublicCompanies } from '@/modules/public-companies/hooks/usePublicCompanies';
 import { usePublicCompanyMutations } from '@/modules/public-companies/hooks/usePublicCompanyMutations';
@@ -34,8 +34,7 @@ export default function PublicCompaniesIndexPage(): React.JSX.Element {
     const meta = data?.meta ?? DEFAULT_META;
     const { deletePublicCompany, restorePublicCompany } = usePublicCompanyMutations();
 
-    function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
-        const value = event.target.value;
+    function handleSearchChange(value: string): void {
         setSearch(value);
 
         startSearchTransition(() => {
@@ -120,58 +119,35 @@ export default function PublicCompaniesIndexPage(): React.JSX.Element {
                         </PermissionGuard>
                     </div>
 
-                    <div className="flex flex-col gap-4 rounded-2xl border p-4 shadow-sm sm:p-5" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}>
-                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                            <div className="flex w-full items-center gap-3 rounded-xl border px-4 py-3 lg:max-w-xl" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-app)' }}>
-                                <Search size={18} style={{ color: 'var(--text-disabled)' }} />
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={handleSearchChange}
-                                    placeholder="Search by company, email, phone or address"
-                                    className="w-full bg-transparent text-sm outline-none"
-                                    style={{ color: 'var(--text-primary)' }}
-                                />
-                            </div>
-
-                            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-end">
-                                <DataTableDateRangeFilter
-                                    dateFrom={filters.date_from}
-                                    dateTo={filters.date_to}
-                                    onChange={(range) => setFilters((previous) => ({
-                                        ...previous,
-                                        date_from: range.dateFrom,
-                                        date_to: range.dateTo,
-                                        page: 1,
-                                    }))}
-                                />
-
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-disabled)' }}>
-                                        Status
-                                    </label>
-                                    <select
-                                        value={filters.status ?? ''}
-                                        onChange={(event) => setFilters((previous) => ({
-                                            ...previous,
-                                            status: event.target.value === '' ? undefined : (event.target.value as 'active' | 'deleted'),
-                                            page: 1,
-                                        }))}
-                                        className="h-9 rounded-lg border px-3 text-sm outline-none"
-                                        style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}
-                                    >
-                                        <option value="">All statuses</option>
-                                        <option value="active">Active</option>
-                                        <option value="deleted">Deleted</option>
-                                    </select>
-                                </div>
-
-                                <div className="flex items-end">
-                                    <ExportButton onExport={handleExport} isExporting={isPendingExport} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <CrudFilterBar
+                        searchValue={search}
+                        onSearchChange={handleSearchChange}
+                        searchPlaceholder="Search by company, email, phone or address"
+                        searchAriaLabel="Search public companies"
+                        statusValue={filters.status ?? ''}
+                        onStatusChange={(value) => {
+                            startSearchTransition(() => {
+                                setFilters((previous) => ({
+                                    ...previous,
+                                    status: value === '' ? undefined : value as 'active' | 'deleted',
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        dateFrom={filters.date_from}
+                        dateTo={filters.date_to}
+                        onDateRangeChange={(range) => {
+                            startSearchTransition(() => {
+                                setFilters((previous) => ({
+                                    ...previous,
+                                    date_from: range.dateFrom,
+                                    date_to: range.dateTo,
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        actions={<ExportButton onExport={handleExport} isExporting={isPendingExport} />}
+                    />
 
                     <div className="overflow-hidden rounded-2xl border shadow-xl" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}>
                         <PublicCompaniesTable

@@ -6,6 +6,7 @@ namespace Src\Modules\Appointments\Application\Commands;
 
 use Src\Modules\Appointments\Application\DTOs\StoreAppointmentData;
 use Src\Modules\Appointments\Domain\Entities\Appointment;
+use Src\Modules\Appointments\Domain\Ports\AppointmentMailerPort;
 use Src\Modules\Appointments\Domain\Ports\AppointmentRepositoryPort;
 use Src\Modules\Appointments\Domain\ValueObjects\AppointmentId;
 
@@ -13,6 +14,7 @@ final class CreateAppointmentHandler
 {
     public function __construct(
         private readonly AppointmentRepositoryPort $repository,
+        private readonly AppointmentMailerPort $mailer,
     ) {}
 
     public function handle(StoreAppointmentData $data): string
@@ -51,6 +53,10 @@ final class CreateAppointmentHandler
         );
 
         $this->repository->save($appointment);
+
+        if ($appointment->inspectionStatus() === 'Confirmed') {
+            $this->mailer->sendConfirmed($appointment);
+        }
 
         return $id->toString();
     }

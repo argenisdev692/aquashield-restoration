@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Head, Link, useRemember } from '@inertiajs/react';
 import type { RowSelectionState } from '@tanstack/react-table';
-import { ChevronLeft, ChevronRight, MapPin, Plus, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, Plus } from 'lucide-react';
 import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
-import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import { ExportButton } from '@/common/export/ExportButton';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { useZones } from '@/modules/zones/hooks/useZones';
 import {
@@ -57,8 +57,7 @@ export default function ZonesIndexPage(): React.JSX.Element {
             state.filter((z) => z.uuid !== deletedUuid),
     );
 
-    function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
-        const value = event.target.value;
+    function handleSearchChange(value: string): void {
         setSearch(value);
         startTransition(() => {
             setFilters((prev) => ({
@@ -159,91 +158,55 @@ export default function ZonesIndexPage(): React.JSX.Element {
                     </div>
 
                     {/* ── Toolbar / Filters ── */}
-                    <div
-                        className="flex flex-col gap-4 rounded-3xl px-5 py-4 shadow-sm lg:flex-row lg:items-end lg:justify-between"
-                        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', fontFamily: 'var(--font-sans)' }}
-                    >
-                        <div
-                            className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-3"
-                            style={{ background: 'var(--bg-surface)' }}
-                        >
-                            <Search size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={handleSearchChange}
-                                placeholder="Search zones by name, code or description…"
-                                className="w-full bg-transparent text-sm outline-none"
-                                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:items-end">
-                            <select
-                                value={filters.status ?? ''}
-                                onChange={(e) =>
-                                    setFilters((prev) => ({
-                                        ...prev,
-                                        status: e.target.value === '' ? undefined : (e.target.value as 'active' | 'deleted'),
-                                        page: 1,
-                                    }))
-                                }
-                                className="rounded-xl px-4 py-3 text-sm outline-none"
-                                style={{
-                                    border: '1px solid var(--border-default)',
-                                    background: 'var(--bg-surface)',
-                                    color: 'var(--text-primary)',
-                                    fontFamily: 'var(--font-sans)',
-                                    colorScheme: 'dark',
-                                }}
-                            >
-                                <option value="">All status</option>
-                                <option value="active">Active</option>
-                                <option value="deleted">Deleted</option>
-                            </select>
-
-                            <select
-                                value={filters.zone_type ?? ''}
-                                onChange={(e) =>
-                                    setFilters((prev) => ({
-                                        ...prev,
-                                        zone_type: e.target.value === '' ? undefined : (e.target.value as ZoneType),
-                                        page: 1,
-                                    }))
-                                }
-                                className="rounded-xl px-4 py-3 text-sm outline-none"
-                                style={{
-                                    border: '1px solid var(--border-default)',
-                                    background: 'var(--bg-surface)',
-                                    color: 'var(--text-primary)',
-                                    fontFamily: 'var(--font-sans)',
-                                    colorScheme: 'dark',
-                                }}
-                            >
-                                <option value="">All types</option>
-                                {ZONE_TYPES.map((type) => (
-                                    <option key={type} value={type}>
-                                        {ZONE_TYPE_LABELS[type]}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <DataTableDateRangeFilter
-                                dateFrom={filters.date_from}
-                                dateTo={filters.date_to}
-                                onChange={(range) =>
-                                    setFilters((prev) => ({
-                                        ...prev,
-                                        date_from: range.dateFrom,
-                                        date_to: range.dateTo,
-                                        page: 1,
-                                    }))
-                                }
-                            />
-
-                            <ExportButton onExport={handleExport} isExporting={isPendingExport} />
-                        </div>
-                    </div>
+                    <CrudFilterBar
+                        searchValue={search}
+                        onSearchChange={handleSearchChange}
+                        searchPlaceholder="Search zones by name, code or description…"
+                        searchAriaLabel="Search zones"
+                        statusValue={filters.status ?? ''}
+                        onStatusChange={(value) => {
+                            startTransition(() => {
+                                setFilters((prev) => ({
+                                    ...prev,
+                                    status: value === '' ? undefined : value as 'active' | 'deleted',
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        selects={[
+                            {
+                                value: filters.zone_type ?? '',
+                                onChange: (value) => {
+                                    startTransition(() => {
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            zone_type: value === '' ? undefined : value as ZoneType,
+                                            page: 1,
+                                        }));
+                                    });
+                                },
+                                options: [
+                                    { value: '', label: 'All Types' },
+                                    ...ZONE_TYPES.map((type) => ({ value: type, label: ZONE_TYPE_LABELS[type] })),
+                                ],
+                                ariaLabel: 'Filter by zone type',
+                                label: 'Zone Type',
+                            },
+                        ]}
+                        dateFrom={filters.date_from}
+                        dateTo={filters.date_to}
+                        onDateRangeChange={(range) => {
+                            startTransition(() => {
+                                setFilters((prev) => ({
+                                    ...prev,
+                                    date_from: range.dateFrom,
+                                    date_to: range.dateTo,
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        actions={<ExportButton onExport={handleExport} isExporting={isPendingExport} />}
+                    />
 
                     {/* ── Bulk Actions ── */}
                     <DataTableBulkActions

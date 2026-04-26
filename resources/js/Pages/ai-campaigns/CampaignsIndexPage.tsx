@@ -8,12 +8,12 @@ import {
   Facebook,
   Image,
   Instagram,
-  Search,
   Trash2,
   RotateCcw,
   ExternalLink,
 } from 'lucide-react';
 import AppLayout from '@/pages/layouts/AppLayout';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
 import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
@@ -57,8 +57,7 @@ export default function CampaignsIndexPage(): React.JSX.Element {
     [rowSelection],
   );
 
-  function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    const value = event.target.value;
+  function handleSearchChange(value: string): void {
     setSearch(value);
     startSearchTransition(() => {
       setFilters((prev) => ({ ...prev, search: value || undefined, page: 1 }));
@@ -116,55 +115,44 @@ export default function CampaignsIndexPage(): React.JSX.Element {
           </div>
 
           {/* ── Filters ── */}
-          <div
-            className="flex flex-col gap-4 rounded-3xl px-5 py-4 shadow-sm lg:flex-row lg:items-end lg:justify-between"
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}
-          >
-            <div className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-3" style={{ background: 'var(--bg-surface)' }}>
-              <Search size={18} style={{ color: 'var(--text-disabled)' }} />
-              <input
-                type="text"
-                value={search}
-                onChange={handleSearchChange}
-                placeholder="Search by title, niche or caption…"
-                className="w-full bg-transparent text-sm outline-none"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}
-              />
-            </div>
-
-            <div className="flex flex-wrap items-end gap-3">
-              <label className="flex flex-col gap-2 text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-                Status
-                <select
-                  value={filters.status ?? ''}
-                  onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value as CampaignFilters['status'], page: 1 }))}
-                  className="h-10 rounded-xl border px-3 text-sm outline-none"
-                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)', color: 'var(--text-primary)' }}
-                >
-                  <option value="">All</option>
-                  <option value="draft">Draft</option>
-                  <option value="generated">Generated</option>
-                  <option value="published">Published</option>
-                  <option value="deleted">Deleted</option>
-                </select>
-              </label>
-
-              <label className="flex flex-col gap-2 text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-                Platform
-                <select
-                  value={filters.platform ?? ''}
-                  onChange={(e) => setFilters((p) => ({ ...p, platform: e.target.value as CampaignFilters['platform'], page: 1 }))}
-                  className="h-10 rounded-xl border px-3 text-sm outline-none"
-                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)', color: 'var(--text-primary)' }}
-                >
-                  <option value="">All Platforms</option>
-                  <option value="tiktok">TikTok</option>
-                  <option value="instagram">Instagram</option>
-                  <option value="facebook">Facebook</option>
-                </select>
-              </label>
-            </div>
-          </div>
+          <CrudFilterBar
+            searchValue={search}
+            onSearchChange={handleSearchChange}
+            searchPlaceholder="Search by title, niche or caption…"
+            searchAriaLabel="Search AI campaigns"
+            statusValue={filters.status ?? ''}
+            statusOptions={[
+              { value: '', label: 'All Status' },
+              { value: 'draft', label: 'Draft' },
+              { value: 'generated', label: 'Generated' },
+              { value: 'published', label: 'Published' },
+              { value: 'deleted', label: 'Deleted' },
+            ]}
+            onStatusChange={(value) => {
+              startSearchTransition(() => {
+                setFilters((p) => ({ ...p, status: value as CampaignFilters['status'], page: 1 }));
+              });
+            }}
+            selects={[
+              {
+                value: filters.platform ?? '',
+                onChange: (value) => {
+                  startSearchTransition(() => {
+                    setFilters((p) => ({ ...p, platform: value as CampaignFilters['platform'], page: 1 }));
+                  });
+                },
+                options: [
+                  { value: '', label: 'All Platforms' },
+                  { value: 'tiktok', label: 'TikTok' },
+                  { value: 'instagram', label: 'Instagram' },
+                  { value: 'facebook', label: 'Facebook' },
+                ],
+                ariaLabel: 'Filter by campaign platform',
+                label: 'Platform',
+                minWidth: 170,
+              },
+            ]}
+          />
 
           {/* ── Bulk Actions ── */}
           <DataTableBulkActions

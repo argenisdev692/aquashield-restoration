@@ -2,6 +2,23 @@ import { router } from "@inertiajs/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AppointmentFormData } from "../types";
 
+function getCsrfToken(): string {
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]');
+    return meta?.content ?? "";
+}
+
+async function readErrorMessage(response: Response, fallback: string): Promise<string> {
+    try {
+        const body = (await response.json()) as { message?: string };
+        if (typeof body.message === "string" && body.message.length > 0) {
+            return body.message;
+        }
+    } catch {
+        // ignore
+    }
+    return fallback;
+}
+
 export function useCreateAppointment() {
     const queryClient = useQueryClient();
 
@@ -11,12 +28,14 @@ export function useCreateAppointment() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": getCsrfToken(),
+                    Accept: "application/json",
                 },
                 body: JSON.stringify(data),
             });
 
             if (!response.ok) {
-                throw new Error("Failed to create appointment.");
+                throw new Error(await readErrorMessage(response, "Failed to create appointment."));
             }
 
             return response.json() as Promise<{ uuid: string; message: string }>;
@@ -37,12 +56,14 @@ export function useUpdateAppointment() {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": getCsrfToken(),
+                    Accept: "application/json",
                 },
                 body: JSON.stringify(data),
             });
 
             if (!response.ok) {
-                throw new Error("Failed to update appointment.");
+                throw new Error(await readErrorMessage(response, "Failed to update appointment."));
             }
         },
         onSuccess: async () => {
@@ -59,10 +80,14 @@ export function useDeleteAppointment() {
         mutationFn: async (uuid) => {
             const response = await fetch(`/appointments/data/admin/${uuid}`, {
                 method: "DELETE",
+                headers: {
+                    "X-CSRF-TOKEN": getCsrfToken(),
+                    Accept: "application/json",
+                },
             });
 
             if (!response.ok) {
-                throw new Error("Failed to delete appointment.");
+                throw new Error(await readErrorMessage(response, "Failed to delete appointment."));
             }
         },
         onSuccess: async () => {
@@ -78,10 +103,14 @@ export function useRestoreAppointment() {
         mutationFn: async (uuid) => {
             const response = await fetch(`/appointments/data/admin/${uuid}/restore`, {
                 method: "PATCH",
+                headers: {
+                    "X-CSRF-TOKEN": getCsrfToken(),
+                    Accept: "application/json",
+                },
             });
 
             if (!response.ok) {
-                throw new Error("Failed to restore appointment.");
+                throw new Error(await readErrorMessage(response, "Failed to restore appointment."));
             }
         },
         onSuccess: async () => {
@@ -99,12 +128,14 @@ export function useBulkDeleteAppointments() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": getCsrfToken(),
+                    Accept: "application/json",
                 },
                 body: JSON.stringify({ uuids }),
             });
 
             if (!response.ok) {
-                throw new Error("Failed to bulk delete appointments.");
+                throw new Error(await readErrorMessage(response, "Failed to bulk delete appointments."));
             }
         },
         onSuccess: async () => {

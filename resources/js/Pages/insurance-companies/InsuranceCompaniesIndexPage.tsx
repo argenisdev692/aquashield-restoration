@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Head, Link, useRemember } from '@inertiajs/react';
 import type { RowSelectionState } from '@tanstack/react-table';
-import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { useInsuranceCompanies } from '@/modules/insurance-companies/hooks/useInsuranceCompanies';
@@ -11,8 +11,8 @@ import InsuranceCompaniesTable from './components/InsuranceCompaniesTable';
 import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
-import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import { ExportButton } from '@/common/export/ExportButton';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 
 type OptimisticInsuranceCompaniesAction =
     | { type: 'delete'; uuid: string; removeFromList: boolean }
@@ -85,8 +85,7 @@ export default function InsuranceCompaniesIndexPage(): React.JSX.Element {
         bulkDeleteInsuranceCompanies,
     } = useInsuranceCompanyMutations();
 
-    function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
-        const value = event.target.value;
+    function handleSearchChange(value: string): void {
         setSearch(value);
 
         startSearchTransition(() => {
@@ -242,67 +241,35 @@ export default function InsuranceCompaniesIndexPage(): React.JSX.Element {
                         </PermissionGuard>
                     </div>
 
-                    <div className="flex flex-col items-center gap-3 rounded-2xl border px-5 py-4 shadow-sm sm:flex-row" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}>
-                        <div className="group flex w-full flex-1 items-center gap-3">
-                            <Search size={18} style={{ color: 'var(--text-disabled)' }} />
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={handleSearchChange}
-                                placeholder="Search by name, email, phone or address..."
-                                className="flex-1 bg-transparent text-sm outline-none"
-                                style={{ color: 'var(--text-primary)' }}
-                            />
-                        </div>
-
-                        <div className="flex w-full items-center gap-4 sm:w-auto">
-                            <div className="hidden h-6 w-px sm:block" style={{ background: 'var(--border-subtle)' }} />
-
-                            <DataTableDateRangeFilter
-                                dateFrom={filters.date_from}
-                                dateTo={filters.date_to}
-                                onChange={(range) => {
-                                    startSearchTransition(() => {
-                                        setFilters((previous) => ({
-                                            ...previous,
-                                            date_from: range.dateFrom,
-                                            date_to: range.dateTo,
-                                            page: 1,
-                                        }));
-                                    });
-                                }}
-                            />
-
-                            <div className="hidden h-6 w-px sm:block" style={{ background: 'var(--border-subtle)' }} />
-
-                            <select
-                                value={filters.status ?? 'all'}
-                                onChange={(event) => {
-                                    startSearchTransition(() => {
-                                        setFilters((previous) => ({
-                                            ...previous,
-                                            status: mapStatusValue(event.target.value),
-                                            page: 1,
-                                        }));
-                                    });
-                                }}
-                                className="rounded-lg border px-3 py-2 text-sm outline-none"
-                                style={{
-                                    borderColor: 'var(--border-default)',
-                                    background: 'var(--bg-card)',
-                                    color: 'var(--text-primary)',
-                                }}
-                            >
-                                <option value="all">All Status</option>
-                                <option value="active">Active</option>
-                                <option value="deleted">Deleted</option>
-                            </select>
-
-                            <div className="hidden h-6 w-px sm:block" style={{ background: 'var(--border-subtle)' }} />
-
-                            <ExportButton onExport={handleExport} isExporting={isPendingExport} />
-                        </div>
-                    </div>
+                    <CrudFilterBar
+                        searchValue={search}
+                        onSearchChange={handleSearchChange}
+                        searchPlaceholder="Search by name, email, phone or address..."
+                        searchAriaLabel="Search insurance companies"
+                        statusValue={filters.status ?? ''}
+                        onStatusChange={(value) => {
+                            startSearchTransition(() => {
+                                setFilters((previous) => ({
+                                    ...previous,
+                                    status: mapStatusValue(value === '' ? 'all' : value),
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        dateFrom={filters.date_from}
+                        dateTo={filters.date_to}
+                        onDateRangeChange={(range) => {
+                            startSearchTransition(() => {
+                                setFilters((previous) => ({
+                                    ...previous,
+                                    date_from: range.dateFrom,
+                                    date_to: range.dateTo,
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        actions={<ExportButton onExport={handleExport} isExporting={isPendingExport} />}
+                    />
 
                     {selectedActiveUuids.length > 0 && (
                         <PermissionGuard permissions={['DELETE_INSURANCE_COMPANY']}>

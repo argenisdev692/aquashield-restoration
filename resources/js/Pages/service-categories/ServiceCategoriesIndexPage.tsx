@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Head, Link, useRemember } from '@inertiajs/react';
 import type { RowSelectionState } from '@tanstack/react-table';
-import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { ExportButton } from '@/common/export/ExportButton';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
-import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import {
     useBulkDeleteServiceCategories,
     useDeleteServiceCategory,
@@ -38,8 +38,7 @@ export default function ServiceCategoriesIndexPage(): React.JSX.Element {
     const meta = data?.meta ?? { current_page: 1, last_page: 1, per_page: 15, total: 0 };
     const selectedCount = Object.values(rowSelection).filter(Boolean).length;
 
-    function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
-        const value = event.target.value;
+    function handleSearchChange(value: string): void {
         setSearch(value);
         startTransition(() => {
             setFilters((current) => ({ ...current, search: value === '' ? undefined : value, page: 1 }));
@@ -103,8 +102,6 @@ export default function ServiceCategoriesIndexPage(): React.JSX.Element {
                             </p>
                         </div>
 
-                        <ExportButton onExport={handleExport} isExporting={isPendingExport} />
-
                         <Link
                             href="/service-categories/create"
                             className="btn-primary inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold"
@@ -115,59 +112,35 @@ export default function ServiceCategoriesIndexPage(): React.JSX.Element {
                     </div>
 
                     <div className="card flex flex-col gap-4" style={{ fontFamily: 'var(--font-sans)' }}>
-                        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                            <div
-                                className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-3"
-                                style={{ background: 'var(--bg-surface)' }}
-                            >
-                                <Search size={16} style={{ color: 'var(--text-muted)' }} />
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={handleSearchChange}
-                                    placeholder="Search service categories..."
-                                    className="w-full bg-transparent text-sm outline-none"
-                                    style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:items-end">
-                                <select
-                                    value={filters.status ?? ''}
-                                    onChange={(e) =>
-                                        setFilters((current) => ({
-                                            ...current,
-                                            status: e.target.value === '' ? undefined : (e.target.value as 'active' | 'deleted'),
-                                            page: 1,
-                                        }))
-                                    }
-                                    className="rounded-xl px-4 py-3 text-sm outline-none"
-                                    style={{
-                                        border: '1px solid var(--border-default)',
-                                        background: 'var(--bg-surface)',
-                                        color: 'var(--text-primary)',
-                                        fontFamily: 'var(--font-sans)',
-                                    }}
-                                >
-                                    <option value="">All status</option>
-                                    <option value="active">Active</option>
-                                    <option value="deleted">Deleted</option>
-                                </select>
-
-                                <DataTableDateRangeFilter
-                                    dateFrom={filters.date_from}
-                                    dateTo={filters.date_to}
-                                    onChange={(range) =>
-                                        setFilters((current) => ({
-                                            ...current,
-                                            date_from: range.dateFrom,
-                                            date_to: range.dateTo,
-                                            page: 1,
-                                        }))
-                                    }
-                                />
-                            </div>
-                        </div>
+                        <CrudFilterBar
+                            searchValue={search}
+                            onSearchChange={handleSearchChange}
+                            searchPlaceholder="Search service categories..."
+                            searchAriaLabel="Search service categories"
+                            statusValue={filters.status ?? ''}
+                            onStatusChange={(value) => {
+                                startTransition(() => {
+                                    setFilters((current) => ({
+                                        ...current,
+                                        status: value === '' ? undefined : (value as 'active' | 'deleted'),
+                                        page: 1,
+                                    }));
+                                });
+                            }}
+                            dateFrom={filters.date_from}
+                            dateTo={filters.date_to}
+                            onDateRangeChange={(range) => {
+                                startTransition(() => {
+                                    setFilters((current) => ({
+                                        ...current,
+                                        date_from: range.dateFrom,
+                                        date_to: range.dateTo,
+                                        page: 1,
+                                    }));
+                                });
+                            }}
+                            actions={<ExportButton onExport={handleExport} isExporting={isPendingExport} />}
+                        />
 
                         {selectedCount > 0 && (
                             <DataTableBulkActions

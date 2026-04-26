@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Head, Link, useRemember } from '@inertiajs/react';
 import type { RowSelectionState } from '@tanstack/react-table';
-import { ChevronLeft, ChevronRight, FileText, Plus, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Plus } from 'lucide-react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { useFilesEsx } from '@/modules/files-esx/hooks/useFilesEsx';
@@ -10,8 +10,8 @@ import type { FileEsx, FileEsxFilters } from '@/modules/files-esx/types';
 import FilesEsxTable from './components/FilesEsxTable';
 import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
-import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import { ExportButton } from '@/common/export/ExportButton';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 
 type OptimisticFilesEsxAction =
     | { type: 'delete'; uuid: string }
@@ -51,8 +51,7 @@ export default function FilesEsxIndexPage(): React.JSX.Element {
 
     const { deleteFileEsx, bulkDeleteFilesEsx } = useFileEsxMutations();
 
-    function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
-        const value = event.target.value;
+    function handleSearchChange(value: string): void {
         setSearch(value);
 
         startSearchTransition(() => {
@@ -178,47 +177,29 @@ export default function FilesEsxIndexPage(): React.JSX.Element {
                     </div>
 
                     {/* Filters */}
-                    <div
-                        className="flex flex-col items-center gap-3 rounded-2xl border px-5 py-4 shadow-sm sm:flex-row"
-                        style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}
-                    >
-                        <div className="group flex w-full flex-1 items-center gap-3">
-                            <Search size={18} style={{ color: 'var(--text-disabled)' }} />
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={handleSearchChange}
-                                placeholder="Search by file name, path or uploader..."
-                                className="flex-1 bg-transparent text-sm outline-none"
-                                style={{ color: 'var(--text-primary)' }}
-                            />
-                        </div>
-
-                        <div className="flex w-full items-center gap-4 sm:w-auto">
-                            <div className="hidden h-6 w-px sm:block" style={{ background: 'var(--border-subtle)' }} />
-
-                            <DataTableDateRangeFilter
-                                dateFrom={filters.date_from}
-                                dateTo={filters.date_to}
-                                onChange={(range) => {
-                                    startSearchTransition(() => {
-                                        setFilters((previous) => ({
-                                            ...previous,
-                                            date_from: range.dateFrom,
-                                            date_to: range.dateTo,
-                                            page: 1,
-                                        }));
-                                    });
-                                }}
-                            />
-
-                            <div className="hidden h-6 w-px sm:block" style={{ background: 'var(--border-subtle)' }} />
-
+                    <CrudFilterBar
+                        searchValue={search}
+                        onSearchChange={handleSearchChange}
+                        searchPlaceholder="Search by file name, path or uploader..."
+                        searchAriaLabel="Search files ESX"
+                        dateFrom={filters.date_from}
+                        dateTo={filters.date_to}
+                        onDateRangeChange={(range) => {
+                            startSearchTransition(() => {
+                                setFilters((previous) => ({
+                                    ...previous,
+                                    date_from: range.dateFrom,
+                                    date_to: range.dateTo,
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        actions={(
                             <PermissionGuard permissions={['VIEW_FILES_ESX']}>
                                 <ExportButton onExport={handleExport} isExporting={isPendingExport} />
                             </PermissionGuard>
-                        </div>
-                    </div>
+                        )}
+                    />
 
                     {/* Bulk Actions */}
                     {selectedUuids.length > 0 && (

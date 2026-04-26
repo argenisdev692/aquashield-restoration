@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Head, Link, useRemember } from '@inertiajs/react';
-import { Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import AppLayout from '@/pages/layouts/AppLayout';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { useInvoices } from '@/modules/invoices/hooks/useInvoices';
@@ -10,8 +10,8 @@ import InvoicesTable from './components/InvoicesTable';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
 import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
-import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import { ExportButton } from '@/common/export/ExportButton';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 import type { RowSelectionState } from '@tanstack/react-table';
 
 const INV_STATUSES: { value: InvoiceStatus | ''; label: string }[] = [
@@ -22,12 +22,6 @@ const INV_STATUSES: { value: InvoiceStatus | ''; label: string }[] = [
     { value: 'cancelled', label: 'Cancelled' },
     { value: 'print_pdf', label: 'Print PDF' },
 ];
-
-const selectSx: React.CSSProperties = {
-    height: 36, padding: '0 10px', borderRadius: 'var(--radius-md)',
-    border: '1px solid var(--border-default)', background: 'var(--bg-card)',
-    color: 'var(--text-primary)', fontSize: 13, fontFamily: 'var(--font-sans)', outline: 'none', cursor: 'pointer',
-};
 
 export default function InvoicesIndexPage(): React.JSX.Element {
     const [filters, setFilters] = useRemember<InvoiceFilters>({ page: 1, per_page: 15 }, 'invoices-filters');
@@ -46,10 +40,9 @@ export default function InvoicesIndexPage(): React.JSX.Element {
     const restoreInvoice = useRestoreInvoice();
     const bulkDelete = useBulkDeleteInvoices();
 
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const v = e.target.value;
-        setSearch(v);
-        startSearchTransition(() => setFilters((p) => ({ ...p, search: v || undefined, page: 1 })));
+    const handleSearchChange = (value: string): void => {
+        setSearch(value);
+        startSearchTransition(() => setFilters((p) => ({ ...p, search: value || undefined, page: 1 })));
     };
 
     const handleExport = (format: 'excel' | 'pdf') => {
@@ -81,32 +74,59 @@ export default function InvoicesIndexPage(): React.JSX.Element {
                             </p>
                         </div>
                         <PermissionGuard permissions={['CREATE_INVOICE']}>
-                            <Link href="/invoices/create" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 'var(--radius-lg)', background: 'var(--accent-primary)', color: '#fff', fontWeight: 700, fontSize: 13, fontFamily: 'var(--font-sans)', textDecoration: 'none' }}>
+                            <Link href="/invoices/create" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 'var(--radius-lg)', background: 'var(--accent-primary)', color: 'var(--color-white)', fontWeight: 700, fontSize: 13, fontFamily: 'var(--font-sans)', textDecoration: 'none' }}>
                                 <Plus size={16} /> New Invoice
                             </Link>
                         </PermissionGuard>
                     </div>
 
-                    {/* Toolbar */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: '14px 18px', background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)' }}>
-                        <div style={{ display: 'flex', flex: 1, minWidth: 180, alignItems: 'center', gap: 8 }}>
-                            <Search size={14} style={{ color: 'var(--text-disabled)', flexShrink: 0 }} />
-                            <input type="text" value={search} onChange={handleSearchChange} placeholder="Search invoices…" style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }} />
-                        </div>
-                        <div style={{ width: 1, height: 24, background: 'var(--border-subtle)' }} />
-                        <select value={filters.status ?? ''} onChange={(e) => setFilters((p) => ({ ...p, status: (e.target.value as 'active' | 'deleted') || undefined, page: 1 }))} style={selectSx} aria-label="Row status filter">
-                            <option value="">All Status</option>
-                            <option value="active">Active</option>
-                            <option value="deleted">Deleted</option>
-                        </select>
-                        <select value={filters.invoice_status ?? ''} onChange={(e) => setFilters((p) => ({ ...p, invoice_status: (e.target.value as InvoiceStatus) || undefined, page: 1 }))} style={selectSx} aria-label="Invoice status filter">
-                            {INV_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                        </select>
-                        <div style={{ width: 1, height: 24, background: 'var(--border-subtle)' }} />
-                        <DataTableDateRangeFilter dateFrom={filters.date_from} dateTo={filters.date_to} onChange={(r) => setFilters((p) => ({ ...p, date_from: r.dateFrom, date_to: r.dateTo, page: 1 }))} />
-                        <div style={{ width: 1, height: 24, background: 'var(--border-subtle)' }} />
-                        <ExportButton onExport={handleExport} isExporting={isPendingExport} />
-                    </div>
+                    <CrudFilterBar
+                        searchValue={search}
+                        onSearchChange={handleSearchChange}
+                        searchPlaceholder="Search invoices…"
+                        searchAriaLabel="Search invoices"
+                        statusValue={filters.status ?? ''}
+                        onStatusChange={(value) => {
+                            startSearchTransition(() => {
+                                setFilters((p) => ({
+                                    ...p,
+                                    status: value === '' ? undefined : value as 'active' | 'deleted',
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        selects={[
+                            {
+                                value: filters.invoice_status ?? '',
+                                onChange: (value) => {
+                                    startSearchTransition(() => {
+                                        setFilters((p) => ({
+                                            ...p,
+                                            invoice_status: value === '' ? undefined : value as InvoiceStatus,
+                                            page: 1,
+                                        }));
+                                    });
+                                },
+                                options: INV_STATUSES,
+                                ariaLabel: 'Invoice status filter',
+                                label: 'Invoice Status',
+                                minWidth: 160,
+                            },
+                        ]}
+                        dateFrom={filters.date_from}
+                        dateTo={filters.date_to}
+                        onDateRangeChange={(range) => {
+                            startSearchTransition(() => {
+                                setFilters((p) => ({
+                                    ...p,
+                                    date_from: range.dateFrom,
+                                    date_to: range.dateTo,
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        actions={<ExportButton onExport={handleExport} isExporting={isPendingExport} />}
+                    />
 
                     <DataTableBulkActions count={Object.keys(rowSelection).length} onDelete={async () => { const uuids = Object.keys(rowSelection).filter((k) => rowSelection[k]); if (uuids.length) { await bulkDelete.mutateAsync(uuids); setRowSelection({}); } }} isDeleting={bulkDelete.isPending} />
 
@@ -131,7 +151,7 @@ export default function InvoicesIndexPage(): React.JSX.Element {
                                         <ChevronLeft size={14} />
                                     </button>
                                     {Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map((p) => (
-                                        <button key={p} onClick={() => setFilters((prev) => ({ ...prev, page: p }))} style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', background: p === meta.currentPage ? 'var(--accent-primary)' : 'var(--bg-card)', color: p === meta.currentPage ? '#fff' : 'var(--text-muted)', cursor: 'pointer', fontSize: 12, fontWeight: p === meta.currentPage ? 700 : 400 }}>
+                                        <button key={p} onClick={() => setFilters((prev) => ({ ...prev, page: p }))} style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', background: p === meta.currentPage ? 'var(--accent-primary)' : 'var(--bg-card)', color: p === meta.currentPage ? 'var(--color-white)' : 'var(--text-muted)', cursor: 'pointer', fontSize: 12, fontWeight: p === meta.currentPage ? 700 : 400 }}>
                                             {p}
                                         </button>
                                     ))}

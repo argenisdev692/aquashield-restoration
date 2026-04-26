@@ -7,11 +7,11 @@ import ProductsTable from "./components/ProductsTable";
 import { DeleteConfirmModal } from "@/shadcn/DeleteConfirmModal";
 import { RestoreConfirmModal } from "@/shadcn/RestoreConfirmModal";
 import { DataTableBulkActions } from "@/shadcn/DataTableBulkActions";
-import { DataTableDateRangeFilter } from "@/common/data-table/DataTableDateRangeFilter";
 import { ExportButton } from "@/common/export/ExportButton";
+import { CrudFilterBar } from "@/common/filters/CrudFilterBar";
 import type { ProductFilters } from "@/modules/products/types";
 import type { RowSelectionState } from "@tanstack/react-table";
-import { Search, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 export default function ProductsIndexPage(): React.JSX.Element {
     const [filters, setFilters] = useRemember<ProductFilters>(
@@ -44,8 +44,7 @@ export default function ProductsIndexPage(): React.JSX.Element {
     const deleteProduct = useDeleteProduct();
     const restoreProduct = useRestoreProduct();
 
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
+    const handleSearchChange = (value: string): void => {
         setSearch(value);
         startSearchTransition(() => {
             setFilters((prev) => ({
@@ -132,65 +131,47 @@ export default function ProductsIndexPage(): React.JSX.Element {
                         </div>
                         <Link
                             href="/products/create"
-                            className="bg-(--accent-primary) text-white font-bold py-2.5 px-6 rounded-xl hover:scale-[1.03] active:scale-[0.97] transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                            className="flex items-center gap-2 rounded-xl px-6 py-2.5 font-bold shadow-lg transition-all hover:scale-[1.03] active:scale-[0.97]"
+                            style={{
+                                background: "var(--accent-primary)",
+                                color: "var(--color-white)",
+                                boxShadow: "0 10px 24px color-mix(in srgb, var(--accent-primary) 24%, transparent)",
+                            }}
                         >
                             <Plus size={18} />
                             <span>New Product</span>
                         </Link>
                     </div>
 
-                    <div className="flex flex-col items-center gap-3 rounded-2xl px-5 py-4 sm:flex-row glass-morphism border border-(--border-default) shadow-sm bg-(--bg-card)/50">
-                        <div className="flex flex-1 items-center gap-3 w-full group">
-                            <Search size={18} className="text-(--text-disabled) group-focus-within:text-(--accent-primary) transition-colors" />
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={handleSearchChange}
-                                placeholder="Search products..."
-                                className="flex-1 bg-transparent text-sm outline-none placeholder:text-(--text-disabled) text-(--text-primary)"
-                            />
-                        </div>
-
-                        <div className="flex w-full items-center gap-4 sm:w-auto">
-                            <DataTableDateRangeFilter
-                                dateFrom={filters.dateFrom}
-                                dateTo={filters.dateTo}
-                                onChange={(range) =>
-                                    setFilters((p) => ({
-                                        ...p,
-                                        dateFrom: range.dateFrom,
-                                        dateTo: range.dateTo,
-                                        page: 1,
-                                    }))
-                                }
-                            />
-
-                            <select
-                                value={filters.status || "all"}
-                                onChange={(e) =>
-                                    setFilters((p) => ({
-                                        ...p,
-                                        status:
-                                            e.target.value === "all"
-                                                ? undefined
-                                                : e.target.value,
-                                        page: 1,
-                                    }))
-                                }
-                                className="px-3 py-2 rounded-lg text-sm outline-none bg-(--bg-subtle) text-(--text-primary) border border-(--border-default)"
-                            >
-                                <option value="all">All Status</option>
-                                <option value="active">Active</option>
-                                <option value="deleted">Deleted</option>
-                            </select>
-
-                            <div className="h-8 w-px bg-(--border-subtle) hidden sm:block" />
-                            <ExportButton
-                                onExport={handleExport}
-                                isExporting={isPendingExport}
-                            />
-                        </div>
-                    </div>
+                    <CrudFilterBar
+                        searchValue={search}
+                        onSearchChange={handleSearchChange}
+                        searchPlaceholder="Search products..."
+                        searchAriaLabel="Search products"
+                        statusValue={filters.status ?? ""}
+                        onStatusChange={(value) => {
+                            startSearchTransition(() => {
+                                setFilters((p) => ({
+                                    ...p,
+                                    status: value === "" ? undefined : value,
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        dateFrom={filters.dateFrom}
+                        dateTo={filters.dateTo}
+                        onDateRangeChange={(range) => {
+                            startSearchTransition(() => {
+                                setFilters((p) => ({
+                                    ...p,
+                                    dateFrom: range.dateFrom,
+                                    dateTo: range.dateTo,
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        actions={<ExportButton onExport={handleExport} isExporting={isPendingExport} />}
+                    />
 
                     <DataTableBulkActions
                         count={Object.keys(rowSelection).length}

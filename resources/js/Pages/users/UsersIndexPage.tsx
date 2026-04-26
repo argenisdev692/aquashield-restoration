@@ -9,10 +9,10 @@ import UsersTable from './components/UsersTable';
 import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
-import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import { ExportButton } from '@/common/export/ExportButton';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 import type { UserFilters, UserListItem } from '@/modules/users/types';
-import { Search, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 
 type OptimisticUsersAction =
   | { type: 'delete'; uuid: string; removeFromList: boolean }
@@ -102,8 +102,7 @@ export default function UsersIndexPage(): React.JSX.Element {
   }
 
   // ── Search Change ──
-  function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>): void {
-    const value = e.target.value;
+  function handleSearchChange(value: string): void {
     setSearch(value);
     
     startSearchTransition(() => {
@@ -246,64 +245,35 @@ export default function UsersIndexPage(): React.JSX.Element {
         </div>
 
         {/* ── Filters Bar ── */}
-        <div className="flex flex-col items-center gap-3 rounded-2xl px-5 py-4 sm:flex-row glass-morphism border border-(--border-default) shadow-sm">
-          <div className="flex flex-1 items-center gap-3 w-full group">
-            <Search size={18} className="text-(--text-disabled) group-focus-within:text-(--accent-primary) transition-colors" />
-            <input
-              type="text"
-              value={search}
-              onChange={handleSearchChange}
-              placeholder="Filter by name, email or identity..."
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-(--text-disabled) text-(--text-primary)"
-            />
-          </div>
-
-          <div className="flex w-full items-center gap-4 sm:w-auto">
-            <div className="h-6 w-px bg-(--border-subtle) hidden sm:block" />
-
-            <DataTableDateRangeFilter
-              dateFrom={filters.date_from}
-              dateTo={filters.date_to}
-              onChange={(range) => {
-                startSearchTransition(() => {
-                  setFilters(p => ({ 
-                    ...p, 
-                    date_from: range.dateFrom, 
-                    date_to: range.dateTo, 
-                    page: 1 
-                  }));
-                });
-              }}
-            />
-
-            <div className="h-6 w-px bg-(--border-subtle) hidden sm:block" />
-
-            <select
-              value={filters.status || "all"}
-              onChange={(e) => {
-                startSearchTransition(() => {
-                  setFilters((p) => ({
-                    ...p,
-                    status: mapStatusValue(e.target.value),
-                    page: 1,
-                  }));
-                });
-              }}
-              className="px-3 py-2 rounded-lg text-sm outline-none bg-(--bg-subtle) text-(--text-primary) border border-(--border-default)"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="deleted">Deleted</option>
-            </select>
-
-            <div className="h-8 w-px bg-(--border-subtle) hidden sm:block" />
-
-            <ExportButton 
-              onExport={handleExport} 
-              isExporting={isPendingExport} 
-            />
-          </div>
-        </div>
+        <CrudFilterBar
+          searchValue={search}
+          onSearchChange={handleSearchChange}
+          searchPlaceholder="Filter by name, email or identity..."
+          searchAriaLabel="Search users"
+          statusValue={filters.status ?? ''}
+          onStatusChange={(value) => {
+            startSearchTransition(() => {
+              setFilters((p) => ({
+                ...p,
+                status: mapStatusValue(value === '' ? 'all' : value),
+                page: 1,
+              }));
+            });
+          }}
+          dateFrom={filters.date_from}
+          dateTo={filters.date_to}
+          onDateRangeChange={(range) => {
+            startSearchTransition(() => {
+              setFilters(p => ({ 
+                ...p, 
+                date_from: range.dateFrom, 
+                date_to: range.dateTo, 
+                page: 1 
+              }));
+            });
+          }}
+          actions={<ExportButton onExport={handleExport} isExporting={isPendingExport} />}
+        />
 
         {/* ── Bulk Actions Bar ── */}
         {selectedActiveUuids.length > 0 && (

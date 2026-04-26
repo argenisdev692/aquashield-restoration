@@ -15,8 +15,6 @@ import {
     PhoneOutgoing,
     Calendar,
     Clock,
-    Filter,
-    Search,
     ChevronLeft,
     ChevronRight,
     RefreshCw,
@@ -30,6 +28,7 @@ import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
 import { ExportButton } from '@/common/export/ExportButton';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 import {
     useCallHistoryList,
     useDeleteCallHistory,
@@ -187,7 +186,7 @@ export default function CallHistoryIndexPage(): React.JSX.Element {
                             <PermissionGuard permissions={['VIEW_CALL_HISTORY']}>
                                 <button
                                     onClick={() => router.visit(`/call-history/${call.uuid}`)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-black/5"
+                                    className="flex h-8 w-8 items-center justify-center rounded-lg transition-opacity hover:opacity-80"
                                     style={{ color: 'var(--text-muted)' }}
                                     title="View"
                                 >
@@ -199,7 +198,7 @@ export default function CallHistoryIndexPage(): React.JSX.Element {
                                 <PermissionGuard permissions={['DELETE_CALL_HISTORY']}>
                                     <button
                                         onClick={() => setPendingDelete(call)}
-                                        className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-red-500/10"
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg transition-opacity hover:opacity-80"
                                         style={{ color: 'var(--error)' }}
                                         title="Delete"
                                     >
@@ -210,7 +209,7 @@ export default function CallHistoryIndexPage(): React.JSX.Element {
                                 <PermissionGuard permissions={['RESTORE_CALL_HISTORY']}>
                                     <button
                                         onClick={() => setPendingRestore(call)}
-                                        className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-green-500/10"
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg transition-opacity hover:opacity-80"
                                         style={{ color: 'var(--success)' }}
                                         title="Restore"
                                     >
@@ -364,81 +363,55 @@ export default function CallHistoryIndexPage(): React.JSX.Element {
                         </PermissionGuard>
                     </div>
 
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                        <div className="flex flex-1 flex-wrap items-center gap-3">
-                            <div
-                                className="flex flex-1 items-center gap-3 rounded-xl border px-4 py-2.5"
-                                style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}
-                            >
-                                <Search size={16} style={{ color: 'var(--text-muted)' }} />
-                                <input
-                                    type="text"
-                                    placeholder="Search calls..."
-                                    value={filters.search}
-                                    onChange={(e) => handleSearchChange(e.target.value)}
-                                    className="flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-disabled)]"
-                                    style={{ color: 'var(--text-primary)' }}
-                                />
-                            </div>
-
-                            <div
-                                className="flex items-center gap-3 rounded-xl border px-4 py-2.5"
-                                style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}
-                            >
-                                <Filter size={16} style={{ color: 'var(--text-muted)' }} />
-                                <select
-                                    value={filters.status}
-                                    onChange={(e) => handleFilterChange('status', e.target.value)}
-                                    className="bg-transparent text-sm outline-none"
-                                    style={{ color: 'var(--text-primary)' }}
-                                >
-                                    <option value="">All Status</option>
-                                    <option value="registered">Registered</option>
-                                    <option value="ongoing">Ongoing</option>
-                                    <option value="ended">Ended</option>
-                                    <option value="error">Error</option>
-                                </select>
-                            </div>
-
-                            <div
-                                className="flex items-center gap-3 rounded-xl border px-4 py-2.5"
-                                style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}
-                            >
-                                <select
-                                    value={filters.direction}
-                                    onChange={(e) => handleFilterChange('direction', e.target.value)}
-                                    className="bg-transparent text-sm outline-none"
-                                    style={{ color: 'var(--text-primary)' }}
-                                >
-                                    <option value="">All Directions</option>
-                                    <option value="inbound">Inbound</option>
-                                    <option value="outbound">Outbound</option>
-                                </select>
-                            </div>
-
-                            <div
-                                className="flex items-center gap-3 rounded-xl border px-4 py-2.5"
-                                style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}
-                            >
-                                <select
-                                    value={filters.callType}
-                                    onChange={(e) => handleFilterChange('callType', e.target.value)}
-                                    className="bg-transparent text-sm outline-none"
-                                    style={{ color: 'var(--text-primary)' }}
-                                >
-                                    <option value="">All Types</option>
-                                    <option value="lead">Lead</option>
-                                    <option value="appointment">Appointment</option>
-                                    <option value="support">Support</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-
-                            <div className="hidden h-6 w-px sm:block" style={{ background: 'var(--border-subtle)' }} />
-
-                            <ExportButton onExport={handleExport} isExporting={isPendingExport} />
-                        </div>
-                    </div>
+                    <CrudFilterBar
+                        searchValue={filters.search ?? ''}
+                        onSearchChange={handleSearchChange}
+                        searchPlaceholder="Search calls..."
+                        searchAriaLabel="Search call history"
+                        statusValue={filters.status ?? ''}
+                        statusOptions={[
+                            { value: '', label: 'All Status' },
+                            { value: 'registered', label: 'Registered' },
+                            { value: 'ongoing', label: 'Ongoing' },
+                            { value: 'ended', label: 'Ended' },
+                            { value: 'error', label: 'Error' },
+                        ]}
+                        onStatusChange={(value) => handleFilterChange('status', value)}
+                        selects={[
+                            {
+                                value: filters.direction ?? '',
+                                onChange: (value) => handleFilterChange('direction', value),
+                                options: [
+                                    { value: '', label: 'All Directions' },
+                                    { value: 'inbound', label: 'Inbound' },
+                                    { value: 'outbound', label: 'Outbound' },
+                                ],
+                                ariaLabel: 'Filter by call direction',
+                                label: 'Direction',
+                                minWidth: 160,
+                            },
+                            {
+                                value: filters.callType ?? '',
+                                onChange: (value) => handleFilterChange('callType', value),
+                                options: [
+                                    { value: '', label: 'All Types' },
+                                    { value: 'lead', label: 'Lead' },
+                                    { value: 'appointment', label: 'Appointment' },
+                                    { value: 'support', label: 'Support' },
+                                    { value: 'other', label: 'Other' },
+                                ],
+                                ariaLabel: 'Filter by call type',
+                                label: 'Type',
+                                minWidth: 150,
+                            },
+                        ]}
+                        dateFrom={filters.dateFrom}
+                        dateTo={filters.dateTo}
+                        onDateRangeChange={(range) => {
+                            setFilters((prev) => ({ ...prev, dateFrom: range.dateFrom ?? '', dateTo: range.dateTo ?? '', page: 1 }));
+                        }}
+                        actions={<ExportButton onExport={handleExport} isExporting={isPendingExport} />}
+                    />
 
                     {selectedActiveUuids.length > 0 && (
                         <PermissionGuard permissions={['DELETE_CALL_HISTORY']}>

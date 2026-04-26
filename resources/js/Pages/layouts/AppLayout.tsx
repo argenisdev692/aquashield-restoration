@@ -204,6 +204,7 @@ const NAV_ITEMS: NavItem[] = [
     description: 'Inbound leads and support requests',
     children: [
       { label: 'Appointments', href: '/appointments', icon: <IconAppointment />, description: 'Manage appointment leads', permission: ['READ_APPOINTMENT', 'CREATE_APPOINTMENT', 'UPDATE_APPOINTMENT', 'DELETE_APPOINTMENT', 'RESTORE_APPOINTMENT'] },
+      { label: 'Appointment Calendar', href: '/appointments/calendar', icon: <CalendarRange size={icSize} />, description: 'Calendar with drag-and-drop scheduling', permission: ['READ_APPOINTMENT', 'UPDATE_APPOINTMENT'] },
       { label: 'Contact Supports', href: '/contact-supports', icon: <IconContactSupport />, description: 'Manage support contact requests', permission: ['READ_CONTACT_SUPPORT', 'CREATE_CONTACT_SUPPORT', 'UPDATE_CONTACT_SUPPORT', 'DELETE_CONTACT_SUPPORT', 'RESTORE_CONTACT_SUPPORT'] },
       { label: 'Service Requests', href: '/service-requests', icon: <FileText />, description: 'Manage service request intake', permission: ['READ_SERVICE_REQUEST', 'CREATE_SERVICE_REQUEST', 'UPDATE_SERVICE_REQUEST', 'DELETE_SERVICE_REQUEST', 'RESTORE_SERVICE_REQUEST'] },
     ]

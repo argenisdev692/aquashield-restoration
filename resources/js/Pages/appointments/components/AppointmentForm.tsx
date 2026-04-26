@@ -8,8 +8,8 @@ interface AppointmentFormProps {
     onCancel: () => void;
 }
 
-const INSPECTION_STATUS_OPTIONS = ["Pending", "Scheduled", "Completed", "Canceled"];
-const STATUS_LEAD_OPTIONS = ["New", "Contacted", "Qualified", "Closed", "Lost"];
+const INSPECTION_STATUS_OPTIONS = ["Pending", "Confirmed", "Declined", "Completed"];
+const STATUS_LEAD_OPTIONS = ["New", "Called", "Pending", "Declined"];
 
 export default function AppointmentForm({
     initialData,

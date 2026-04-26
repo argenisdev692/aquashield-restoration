@@ -10,21 +10,29 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use RuntimeException;
 use Shared\Infrastructure\Export\SimpleTableExportResponder;
+use Illuminate\Http\Request;
 use Src\Modules\Appointments\Application\Commands\BulkDeleteAppointmentHandler;
 use Src\Modules\Appointments\Application\Commands\CreateAppointmentHandler;
 use Src\Modules\Appointments\Application\Commands\DeleteAppointmentHandler;
+use Src\Modules\Appointments\Application\Commands\RescheduleAppointmentHandler;
 use Src\Modules\Appointments\Application\Commands\RestoreAppointmentHandler;
 use Src\Modules\Appointments\Application\Commands\UpdateAppointmentHandler;
+use Src\Modules\Appointments\Application\Commands\UpdateAppointmentStatusHandler;
 use Src\Modules\Appointments\Application\DTOs\AppointmentFilterData;
 use Src\Modules\Appointments\Application\DTOs\BulkDeleteAppointmentData;
+use Src\Modules\Appointments\Application\DTOs\RescheduleAppointmentData;
 use Src\Modules\Appointments\Application\DTOs\StoreAppointmentData;
 use Src\Modules\Appointments\Application\DTOs\UpdateAppointmentData;
+use Src\Modules\Appointments\Application\DTOs\UpdateAppointmentStatusData;
 use Src\Modules\Appointments\Application\Queries\GetAppointmentHandler;
 use Src\Modules\Appointments\Application\Queries\ListAppointmentsHandler;
+use Src\Modules\Appointments\Application\Queries\ListCalendarEventsHandler;
 use Src\Modules\Appointments\Infrastructure\Http\Requests\BulkDeleteAppointmentRequest;
 use Src\Modules\Appointments\Infrastructure\Http\Requests\ExportAppointmentRequest;
+use Src\Modules\Appointments\Infrastructure\Http\Requests\RescheduleAppointmentRequest;
 use Src\Modules\Appointments\Infrastructure\Http\Requests\StoreAppointmentRequest;
 use Src\Modules\Appointments\Infrastructure\Http\Requests\UpdateAppointmentRequest;
+use Src\Modules\Appointments\Infrastructure\Http\Requests\UpdateAppointmentStatusRequest;
 use Src\Modules\Appointments\Infrastructure\Persistence\Eloquent\Models\AppointmentEloquentModel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -126,6 +134,38 @@ final class AppointmentController extends Controller
             'message' => "Successfully deleted {$deletedCount} appointment record(s).",
             'deleted_count' => $deletedCount,
         ]);
+    }
+
+    public function calendarEvents(Request $request, ListCalendarEventsHandler $handler): JsonResponse
+    {
+        $events = $handler->handle(
+            start: $request->query('start') !== null ? (string) $request->query('start') : null,
+            end: $request->query('end') !== null ? (string) $request->query('end') : null,
+        );
+
+        return response()->json($events);
+    }
+
+    public function reschedule(string $uuid, RescheduleAppointmentRequest $request, RescheduleAppointmentHandler $handler): JsonResponse
+    {
+        try {
+            $handler->handle($uuid, RescheduleAppointmentData::from($request->validated()));
+        } catch (RuntimeException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json(['message' => 'Appointment rescheduled successfully.']);
+    }
+
+    public function updateStatus(string $uuid, UpdateAppointmentStatusRequest $request, UpdateAppointmentStatusHandler $handler): JsonResponse
+    {
+        try {
+            $handler->handle($uuid, UpdateAppointmentStatusData::from($request->validated()));
+        } catch (RuntimeException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json(['message' => 'Appointment status updated successfully.']);
     }
 
     private function buildExportQuery(AppointmentFilterData $filters): Builder

@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { Head, Link, useRemember } from '@inertiajs/react';
 import type { RowSelectionState } from '@tanstack/react-table';
-import { ChevronLeft, ChevronRight, FolderPlus, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FolderPlus } from 'lucide-react';
 import AppLayout from '@/pages/layouts/AppLayout';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
@@ -35,8 +36,7 @@ export default function BlogCategoriesIndexPage(): React.JSX.Element {
     [categories, rowSelection],
   );
 
-  function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    const value = event.target.value;
+  function handleSearchChange(value: string): void {
     setSearch(value);
 
     startSearchTransition(() => {
@@ -107,80 +107,31 @@ export default function BlogCategoriesIndexPage(): React.JSX.Element {
             </Link>
           </div>
 
-          <div
-            className="flex flex-col gap-4 rounded-3xl px-5 py-4 shadow-sm lg:flex-row lg:items-end lg:justify-between"
-            style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-default)',
-              fontFamily: 'var(--font-sans)',
+          <CrudFilterBar
+            searchValue={search}
+            onSearchChange={handleSearchChange}
+            searchPlaceholder="Search by name or description"
+            searchAriaLabel="Search blog categories"
+            statusValue={filters.status || ''}
+            onStatusChange={(value) => {
+              startSearchTransition(() => {
+                setFilters((previous) => ({ ...previous, status: value as BlogCategoryFilters['status'], page: 1 }));
+              });
             }}
-          >
-            <div className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-3" style={{ background: 'var(--bg-surface)' }}>
-              <Search size={18} style={{ color: 'var(--text-disabled)' }} />
-              <input
-                type="text"
-                value={search}
-                onChange={handleSearchChange}
-                placeholder="Search by name or description"
-                className="w-full bg-transparent text-sm outline-none"
-                style={{ color: 'var(--text-primary)' }}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:items-end">
-              <label className="flex flex-col gap-2 text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-                Status
-                <select
-                  value={filters.status || ''}
-                  onChange={(event) => setFilters((previous) => ({ ...previous, status: event.target.value as BlogCategoryFilters['status'], page: 1 }))}
-                  className="h-10 rounded-xl border px-3 text-sm outline-none"
-                  style={{
-                    background: 'var(--bg-surface)',
-                    borderColor: 'var(--border-default)',
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  <option value="">All</option>
-                  <option value="active">Active</option>
-                  <option value="deleted">Deleted</option>
-                </select>
-              </label>
-
-              <label className="flex flex-col gap-2 text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-                From
-                <input
-                  type="date"
-                  value={filters.date_from || ''}
-                  onChange={(event) => setFilters((previous) => ({ ...previous, date_from: event.target.value || undefined, page: 1 }))}
-                  className="h-10 rounded-xl border px-3 text-sm outline-none"
-                  style={{
-                    background: 'var(--bg-surface)',
-                    borderColor: 'var(--border-default)',
-                    color: 'var(--text-primary)',
-                  }}
-                />
-              </label>
-
-              <label className="flex flex-col gap-2 text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-                To
-                <input
-                  type="date"
-                  value={filters.date_to || ''}
-                  onChange={(event) => setFilters((previous) => ({ ...previous, date_to: event.target.value || undefined, page: 1 }))}
-                  className="h-10 rounded-xl border px-3 text-sm outline-none"
-                  style={{
-                    background: 'var(--bg-surface)',
-                    borderColor: 'var(--border-default)',
-                    color: 'var(--text-primary)',
-                  }}
-                />
-              </label>
-
-              <div className="flex items-end">
-                <ExportButton onExport={handleExport} isExporting={isPendingExport} />
-              </div>
-            </div>
-          </div>
+            dateFrom={filters.date_from}
+            dateTo={filters.date_to}
+            onDateRangeChange={(range) => {
+              startSearchTransition(() => {
+                setFilters((previous) => ({
+                  ...previous,
+                  date_from: range.dateFrom,
+                  date_to: range.dateTo,
+                  page: 1,
+                }));
+              });
+            }}
+            actions={<ExportButton onExport={handleExport} isExporting={isPendingExport} />}
+          />
 
           <DataTableBulkActions
             count={selectedUuids.length}

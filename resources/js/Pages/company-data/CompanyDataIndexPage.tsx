@@ -7,8 +7,8 @@ import { useCompanyDataMutations } from '@/modules/company-data/hooks/useCompany
 import type { CompanyDataFilters } from '@/modules/company-data/types';
 import CompanyDataTable from './components/CompanyDataTable';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
-import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import { ExportButton } from '@/common/export/ExportButton';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 
 // ══════════════════════════════════════════════════════════════
 // Icons
@@ -18,7 +18,6 @@ const ic = {
   stroke: 'currentColor', strokeWidth: 2,
   strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
 };
-const IconSearch = () => <svg {...ic} width={14} height={14}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
 const IconChevLeft = () => <svg {...ic} width={14} height={14}><polyline points="15 18 9 12 15 6"/></svg>;
 const IconChevRight = () => <svg {...ic} width={14} height={14}><polyline points="9 18 15 12 9 6"/></svg>;
 
@@ -32,7 +31,6 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
   
   const [isPendingExport, startExportTransition] = React.useTransition();
   const [, startSearchTransition] = React.useTransition();
-  const [, startFilterTransition] = React.useTransition();
 
   // ── Export function ──
   async function handleExport(format: 'excel' | 'pdf'): Promise<void> {
@@ -55,8 +53,7 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
   const meta = data?.meta ?? { currentPage: 1, lastPage: 1, perPage: 15, total: 0 };
 
   // ── Search change ──
-  function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>): void {
-    const value = e.target.value;
+  function handleSearchChange(value: string): void {
     setSearch(value);
     
     startSearchTransition(() => {
@@ -102,50 +99,32 @@ export default function CompanyDataIndexPage(): React.JSX.Element {
         </div>
 
         {/* ── Search bar ── */}
-        <div className="card mb-4 flex flex-col items-center gap-3 px-4 py-3 sm:flex-row">
-          <div className="flex flex-1 items-center gap-3 w-full">
-            <span style={{ color: 'var(--text-secondary)' }}><IconSearch /></span>
-            <input
-              type="text"
-              value={search}
-              onChange={handleSearchChange}
-              placeholder="Search companies..."
-              className="flex-1 bg-transparent text-sm outline-none"
-              style={{
-                color: 'var(--text-primary)',
-                fontFamily: 'var(--font-sans)',
-              }}
-            />
-          </div>
-
-          <div className="flex w-full items-center gap-4 sm:w-auto">
-            <div className="h-8 w-px hidden sm:block" style={{ background: 'var(--border-subtle)' }} />
-            
-            <DataTableDateRangeFilter
-              dateFrom={filters.date_from}
-              dateTo={filters.date_to}
-              onChange={(range: { dateFrom?: string; dateTo?: string }) => {
-                startFilterTransition(() => {
-                  setFilters((p) => ({
-                    ...p,
-                    date_from: range.dateFrom,
-                    date_to: range.dateTo,
-                    page: 1,
-                  }));
-                });
-              }}
-            />
-
-            <div className="h-8 w-px hidden sm:block" style={{ background: 'var(--border-subtle)' }} />
-
+        <CrudFilterBar
+          searchValue={search}
+          onSearchChange={handleSearchChange}
+          searchPlaceholder="Search companies..."
+          searchAriaLabel="Search company profiles"
+          dateFrom={filters.date_from}
+          dateTo={filters.date_to}
+          onDateRangeChange={(range) => {
+            startSearchTransition(() => {
+              setFilters((p) => ({
+                ...p,
+                date_from: range.dateFrom,
+                date_to: range.dateTo,
+                page: 1,
+              }));
+            });
+          }}
+          actions={(
             <PermissionGuard permissions={['VIEW_COMPANY_DATA']}>
               <ExportButton
                 onExport={handleExport}
                 isExporting={isPendingExport}
               />
             </PermissionGuard>
-          </div>
-        </div>
+          )}
+        />
 
         {/* ── Table Card ── */}
         <div className="card">

@@ -8,7 +8,7 @@ use Src\Modules\Appointments\Infrastructure\Http\Controllers\Web\AppointmentPage
 
 Route::middleware(['permission:READ_APPOINTMENT'])->group(function (): void {
     Route::get('/appointments', [AppointmentPageController::class, 'index']);
-    Route::get('/appointments/{uuid}', [AppointmentPageController::class, 'show'])->whereUuid('uuid');
+    Route::get('/appointments/calendar', [AppointmentPageController::class, 'calendar']);
 });
 
 Route::middleware(['permission:CREATE_APPOINTMENT'])->group(function (): void {
@@ -19,10 +19,15 @@ Route::middleware(['permission:UPDATE_APPOINTMENT'])->group(function (): void {
     Route::get('/appointments/{uuid}/edit', [AppointmentPageController::class, 'edit'])->whereUuid('uuid');
 });
 
+Route::middleware(['permission:READ_APPOINTMENT'])->group(function (): void {
+    Route::get('/appointments/{uuid}', [AppointmentPageController::class, 'show'])->whereUuid('uuid');
+});
+
 Route::prefix('/appointments/data/admin')->group(function (): void {
     Route::middleware(['permission:READ_APPOINTMENT'])->group(function (): void {
         Route::get('/', [AppointmentController::class, 'index']);
         Route::get('/export', [AppointmentController::class, 'export']);
+        Route::get('/calendar/events', [AppointmentController::class, 'calendarEvents']);
         Route::get('/{uuid}', [AppointmentController::class, 'show'])->whereUuid('uuid');
     });
 
@@ -32,6 +37,8 @@ Route::prefix('/appointments/data/admin')->group(function (): void {
 
     Route::middleware(['permission:UPDATE_APPOINTMENT'])->group(function (): void {
         Route::put('/{uuid}', [AppointmentController::class, 'update'])->whereUuid('uuid');
+        Route::patch('/{uuid}/reschedule', [AppointmentController::class, 'reschedule'])->whereUuid('uuid');
+        Route::patch('/{uuid}/status', [AppointmentController::class, 'updateStatus'])->whereUuid('uuid');
     });
 
     Route::middleware(['permission:DELETE_APPOINTMENT'])->group(function (): void {

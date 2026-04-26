@@ -398,3 +398,80 @@ gmp-place-autocomplete::part(input):focus {
     border-color: var(--accent-primary) !important;
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 25%, transparent) !important;
 }
+
+/* ── FullCalendar dark theme overrides ── */
+.aq-calendar {
+    --fc-border-color: var(--border-subtle);
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: color-mix(in srgb, var(--bg-overlay) 35%, transparent);
+    --fc-neutral-text-color: var(--text-secondary);
+    --fc-button-bg-color: var(--bg-overlay);
+    --fc-button-border-color: var(--border-default);
+    --fc-button-text-color: var(--text-secondary);
+    --fc-button-hover-bg-color: color-mix(in srgb, var(--accent-primary) 18%, var(--bg-overlay));
+    --fc-button-hover-border-color: var(--border-strong);
+    --fc-button-active-bg-color: var(--accent-primary);
+    --fc-button-active-border-color: var(--accent-primary);
+    --fc-button-active-text-color: #fff;
+    --fc-event-bg-color: var(--accent-primary);
+    --fc-event-border-color: var(--accent-primary);
+    --fc-event-text-color: #ffffff;
+    --fc-today-bg-color: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+    --fc-now-indicator-color: var(--accent-error);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+}
+.aq-calendar .fc-toolbar-title {
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+.aq-calendar .fc-col-header-cell-cushion,
+.aq-calendar .fc-daygrid-day-number,
+.aq-calendar .fc-timegrid-slot-label-cushion {
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+.aq-calendar .fc-daygrid-day-number {
+    padding: 6px 8px;
+}
+.aq-calendar .fc-button {
+    text-transform: none;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    box-shadow: none;
+}
+.aq-calendar .fc-button-primary:focus,
+.aq-calendar .fc-button-primary:not(:disabled):active:focus {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 30%, transparent);
+}
+.aq-calendar .fc-event {
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-width: 1px;
+    cursor: pointer;
+}
+.aq-calendar .fc-event:hover {
+    filter: brightness(1.08);
+}
+.aq-calendar .fc-day-today .fc-daygrid-day-number {
+    color: var(--accent-primary);
+    font-weight: 800;
+}
+.aq-calendar .fc-scrollgrid,
+.aq-calendar .fc-scrollgrid td,
+.aq-calendar .fc-scrollgrid th {
+    border-color: var(--border-subtle);
+}
+.aq-calendar .fc-list,
+.aq-calendar .fc-list-day-cushion {
+    background: transparent;
+}
+.aq-calendar .fc-highlight {
+    background: color-mix(in srgb, var(--accent-primary) 18%, transparent);
+}

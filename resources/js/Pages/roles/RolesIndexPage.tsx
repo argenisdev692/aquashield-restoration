@@ -8,7 +8,8 @@ import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { useRoles } from '@/modules/roles/hooks/useRoles';
 import { useRoleMutations } from '@/modules/roles/hooks/useRoleMutations';
 import type { RoleFilters, RoleListItem } from '@/modules/roles/types';
-import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 export default function RolesIndexPage(): React.JSX.Element {
   const [filters, setFilters] = useRemember<RoleFilters>({ page: 1, per_page: 15 }, 'roles-filters');
@@ -34,8 +35,7 @@ export default function RolesIndexPage(): React.JSX.Element {
     setFilters((previous) => ({ ...previous, page }));
   }
 
-  function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    const value = event.target.value;
+  function handleSearchChange(value: string): void {
     setSearch(value);
     setFilters((previous) => ({ ...previous, search: value || undefined, page: 1 }));
   }
@@ -81,18 +81,12 @@ export default function RolesIndexPage(): React.JSX.Element {
             </PermissionGuard>
           </div>
 
-          <div className="glass-morphism flex flex-col gap-3 rounded-2xl border border-(--border-default) px-5 py-4 shadow-sm sm:flex-row sm:items-center">
-            <div className="group flex w-full flex-1 items-center gap-3">
-              <Search size={18} className="text-(--text-disabled) transition-colors group-focus-within:text-(--accent-primary)" />
-              <input
-                type="text"
-                value={search}
-                onChange={handleSearchChange}
-                placeholder="Search roles..."
-                className="flex-1 bg-transparent text-sm text-(--text-primary) outline-none placeholder:text-(--text-disabled)"
-              />
-            </div>
-          </div>
+          <CrudFilterBar
+            searchValue={search}
+            onSearchChange={handleSearchChange}
+            searchPlaceholder="Search roles..."
+            searchAriaLabel="Search roles"
+          />
 
           <div className="card-modern overflow-hidden border border-(--border-default) shadow-xl">
             <RolesTable

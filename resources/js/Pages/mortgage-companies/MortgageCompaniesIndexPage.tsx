@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Head, Link, useRemember } from '@inertiajs/react';
 import type { RowSelectionState } from '@tanstack/react-table';
-import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { ExportButton } from '@/common/export/ExportButton';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 import { DataTableBulkActions } from '@/shadcn/DataTableBulkActions';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
-import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
 import {
     useBulkDeleteMortgageCompanies,
     useDeleteMortgageCompany,
@@ -46,8 +46,7 @@ export default function MortgageCompaniesIndexPage(): React.JSX.Element {
     const selectedCount = Object.values(rowSelection).filter(Boolean).length;
     const visiblePages = buildVisiblePages(meta.current_page, meta.last_page);
 
-    function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
-        const value = event.target.value;
+    function handleSearchChange(value: string): void {
         setSearch(value);
 
         startTransition(() => {
@@ -110,80 +109,49 @@ export default function MortgageCompaniesIndexPage(): React.JSX.Element {
                         </Link>
                     </div>
 
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <div
-                            className="flex flex-1 items-center gap-2 rounded-xl px-3 py-2"
-                            style={{
-                                background: 'var(--bg-card)',
-                                border: '1px solid var(--border-default)',
-                            }}
-                        >
-                            <Search size={16} style={{ color: 'var(--text-muted)' }} />
-                            <input
-                                type="search"
-                                value={search}
-                                onChange={handleSearchChange}
-                                placeholder="Search by name, email, phone..."
-                                className="flex-1 bg-transparent text-sm outline-none"
-                                style={{ color: 'var(--text-primary)' }}
+                    <CrudFilterBar
+                        searchValue={search}
+                        onSearchChange={handleSearchChange}
+                        searchPlaceholder="Search by name, email, phone..."
+                        searchAriaLabel="Search mortgage companies"
+                        statusValue={filters.status ?? ''}
+                        onStatusChange={(value) => {
+                            startTransition(() => {
+                                setFilters((current) => ({
+                                    ...current,
+                                    status: value === '' ? undefined : value,
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        dateFrom={filters.date_from}
+                        dateTo={filters.date_to}
+                        onDateRangeChange={(range) => {
+                            startTransition(() => {
+                                setFilters((current) => ({
+                                    ...current,
+                                    date_from: range.dateFrom,
+                                    date_to: range.dateTo,
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        actions={(
+                            <ExportButton
+                                onExport={(format) => {
+                                    startExportTransition(() => {
+                                        const params = new URLSearchParams({ format });
+                                        if (filters.search) params.append('search', filters.search);
+                                        if (filters.status) params.append('status', filters.status);
+                                        if (filters.date_from) params.append('date_from', filters.date_from);
+                                        if (filters.date_to) params.append('date_to', filters.date_to);
+                                        window.open(`/mortgage-companies/data/admin/export?${params.toString()}`, '_blank');
+                                    });
+                                }}
+                                isExporting={isPendingExport}
                             />
-                        </div>
-
-                        <DataTableDateRangeFilter
-                            dateFrom={filters.date_from}
-                            dateTo={filters.date_to}
-                            onChange={(range) =>
-                                startTransition(() => {
-                                    setFilters((current) => ({
-                                        ...current,
-                                        date_from: range.dateFrom,
-                                        date_to: range.dateTo,
-                                        page: 1,
-                                    }));
-                                })
-                            }
-                        />
-
-                        <select
-                            value={filters.status ?? 'all'}
-                            onChange={(event) => {
-                                const value = event.target.value;
-                                startTransition(() => {
-                                    setFilters((current) => ({
-                                        ...current,
-                                        status: value === 'all' ? undefined : value,
-                                        page: 1,
-                                    }));
-                                });
-                            }}
-                            className="rounded-xl px-3 py-2 text-sm outline-none"
-                            style={{
-                                background: 'var(--bg-card)',
-                                border: '1px solid var(--border-default)',
-                                color: 'var(--text-primary)',
-                            }}
-                        >
-                            <option value="all">All status</option>
-                            <option value="active">Active</option>
-                            <option value="deleted">Deleted</option>
-                        </select>
-
-                        <div className="h-6 w-px" style={{ background: 'var(--border-subtle)' }} />
-
-                        <ExportButton
-                            onExport={(format) => {
-                                startExportTransition(() => {
-                                    const params = new URLSearchParams({ format });
-                                    if (filters.search) params.append('search', filters.search);
-                                    if (filters.status) params.append('status', filters.status);
-                                    if (filters.date_from) params.append('date_from', filters.date_from);
-                                    if (filters.date_to) params.append('date_to', filters.date_to);
-                                    window.open(`/mortgage-companies/data/admin/export?${params.toString()}`, '_blank');
-                                });
-                            }}
-                            isExporting={isPendingExport}
-                        />
-                    </div>
+                        )}
+                    />
 
                     {selectedCount > 0 ? (
                         <DataTableBulkActions
@@ -229,7 +197,7 @@ export default function MortgageCompaniesIndexPage(): React.JSX.Element {
                                         className="inline-flex h-9 w-9 items-center justify-center rounded-xl p-0 text-sm font-semibold"
                                         style={{
                                             background: page === meta.current_page ? 'var(--accent-primary)' : 'transparent',
-                                            color: page === meta.current_page ? '#fff' : 'var(--text-muted)',
+                                            color: page === meta.current_page ? 'var(--color-white)' : 'var(--text-muted)',
                                         }}
                                     >
                                         {page}

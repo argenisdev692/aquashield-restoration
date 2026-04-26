@@ -95,3 +95,40 @@ export interface PaginatedAppointmentResponse {
         total: number;
     };
 }
+
+export interface AppointmentCalendarEventProps {
+    uuid: string;
+    first_name: string;
+    last_name: string;
+    full_name: string;
+    email: string | null;
+    phone: string | null;
+    address: string;
+    inspection_date: string | null;
+    inspection_time: string | null;
+    inspection_status: string;
+    status_lead: string;
+    notes: string | null;
+    damage_detail: string | null;
+    message: string | null;
+    insurance_property: boolean;
+    latitude: number | null;
+    longitude: number | null;
+}
+
+export interface AppointmentCalendarEvent {
+    id: string;
+    title: string;
+    start: string;
+    end: string;
+    allDay: boolean;
+    backgroundColor: string;
+    borderColor: string;
+    extendedProps: AppointmentCalendarEventProps;
+}
+
+export type AppointmentInspectionStatus =
+    | "Pending"
+    | "Confirmed"
+    | "Declined"
+    | "Completed";

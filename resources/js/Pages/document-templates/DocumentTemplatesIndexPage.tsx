@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Head, Link, useRemember } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Plus, Search, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { ExportButton } from '@/common/export/ExportButton';
-import { DataTableDateRangeFilter } from '@/common/data-table/DataTableDateRangeFilter';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 import { PermissionGuard } from '@/modules/auth/components/PermissionGuard';
 import { useDocumentTemplates } from '@/modules/document-templates/hooks/useDocumentTemplates';
 import { DOCUMENT_TEMPLATE_TYPES } from '@/modules/document-templates/types';
@@ -30,8 +30,7 @@ export default function DocumentTemplatesIndexPage(): React.JSX.Element {
         total: 0,
     };
 
-    function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>): void {
-        const value = e.target.value;
+    function handleSearchChange(value: string): void {
         setSearch(value);
         startTransition(() => {
             setFilters((prev) => ({
@@ -119,97 +118,56 @@ export default function DocumentTemplatesIndexPage(): React.JSX.Element {
                     </div>
 
                     {/* Filters */}
-                    <div
-                        className="flex flex-col gap-4 rounded-3xl px-5 py-4 shadow-sm lg:flex-row lg:items-end lg:justify-between"
-                        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', fontFamily: 'var(--font-sans)' }}
-                    >
-                        <div
-                            className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-3"
-                            style={{ background: 'var(--bg-surface)' }}
-                        >
-                            <Search
-                                size={16}
-                                style={{ color: 'var(--text-muted)', flexShrink: 0 }}
-                            />
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={handleSearchChange}
-                                placeholder="Search templates…"
-                                className="w-full bg-transparent text-sm outline-none"
-                                style={{
-                                    color: 'var(--text-primary)',
-                                    fontFamily: 'var(--font-sans)',
-                                }}
-                            />
-                            {search !== '' && (
-                                <button
-                                    type="button"
-                                    aria-label="Clear search"
-                                    onClick={() => {
-                                        setSearch('');
-                                        startTransition(() => {
-                                            setFilters((prev) => ({
-                                                ...prev,
-                                                search: undefined,
-                                                page: 1,
-                                            }));
-                                        });
-                                    }}
-                                >
-                                    <X size={14} style={{ color: 'var(--text-muted)' }} />
-                                </button>
-                            )}
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:items-end">
-                            <select
-                                value={filters.template_type ?? ''}
-                                onChange={(e) => handleTypeFilter(e.target.value)}
-                                style={{
-                                    height: '40px',
-                                    padding: '0 12px',
-                                    fontSize: '13px',
-                                    background: 'var(--bg-surface)',
-                                    border: '1px solid var(--border-default)',
-                                    borderRadius: 'var(--radius-md)',
-                                    color: 'var(--text-primary)',
-                                    fontFamily: 'var(--font-sans)',
-                                    colorScheme: 'dark',
-                                    outline: 'none',
-                                    minWidth: '140px',
-                                }}
-                                aria-label="Filter by type"
-                            >
-                                <option value="">All Types</option>
-                                {DOCUMENT_TEMPLATE_TYPES.map((t) => (
-                                    <option key={t.value} value={t.value}>
-                                        {t.label}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <DataTableDateRangeFilter
-                                dateFrom={filters.date_from}
-                                dateTo={filters.date_to}
-                                onChange={(range) =>
-                                    setFilters((prev) => ({
-                                        ...prev,
-                                        date_from: range.dateFrom,
-                                        date_to: range.dateTo,
-                                        page: 1,
-                                    }))
-                                }
-                            />
-
+                    <CrudFilterBar
+                        searchValue={search}
+                        onSearchChange={handleSearchChange}
+                        searchPlaceholder="Search templates…"
+                        searchAriaLabel="Search document templates"
+                        selects={[
+                            {
+                                value: filters.template_type ?? '',
+                                onChange: handleTypeFilter,
+                                options: [{ value: '', label: 'All Types' }, ...DOCUMENT_TEMPLATE_TYPES],
+                                ariaLabel: 'Filter by type',
+                                label: 'Type',
+                                minWidth: 160,
+                            },
+                        ]}
+                        dateFrom={filters.date_from}
+                        dateTo={filters.date_to}
+                        onDateRangeChange={(range) => {
+                            startTransition(() => {
+                                setFilters((prev) => ({
+                                    ...prev,
+                                    date_from: range.dateFrom,
+                                    date_to: range.dateTo,
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        hasActiveFilters={search !== '' || filters.template_type !== undefined || filters.date_from !== undefined || filters.date_to !== undefined}
+                        onReset={() => {
+                            setSearch('');
+                            startTransition(() => {
+                                setFilters((prev) => ({
+                                    ...prev,
+                                    search: undefined,
+                                    template_type: undefined,
+                                    date_from: undefined,
+                                    date_to: undefined,
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        actions={(
                             <PermissionGuard permissions={['READ_DOCUMENT_TEMPLATE']}>
                                 <ExportButton
                                     onExport={handleExport}
                                     isExporting={isPendingExport}
                                 />
                             </PermissionGuard>
-                        </div>
-                    </div>
+                        )}
+                    />
 
                     {/* Table */}
                     <div className="card overflow-hidden p-0">

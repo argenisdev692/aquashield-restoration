@@ -1,9 +1,9 @@
 import * as React from "react";
 import { Head, Link, useRemember } from "@inertiajs/react";
 import type { RowSelectionState } from "@tanstack/react-table";
-import { ChevronLeft, ChevronRight, Mail, Plus, Search } from "lucide-react";
-import { DataTableDateRangeFilter } from "@/common/data-table/DataTableDateRangeFilter";
+import { ChevronLeft, ChevronRight, Mail, Plus } from "lucide-react";
 import { ExportButton } from "@/common/export/ExportButton";
+import { CrudFilterBar } from "@/common/filters/CrudFilterBar";
 import { PermissionGuard } from "@/modules/auth/components/PermissionGuard";
 import { useAuthContext } from "@/modules/auth/context/AuthContext";
 import { useBulkDeleteEmailData, useDeleteEmailData, useRestoreEmailData } from "@/modules/email-data/hooks/useEmailDataMutations";
@@ -48,8 +48,7 @@ export default function EmailDataIndexPage(): React.JSX.Element {
     };
     const selectedCount = Object.values(rowSelection).filter(Boolean).length;
 
-    function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>): void {
-        const value = event.target.value;
+    function handleSearchChange(value: string): void {
         setSearch(value);
 
         startTransition(() => {
@@ -61,8 +60,7 @@ export default function EmailDataIndexPage(): React.JSX.Element {
         });
     }
 
-    function handleTypeChange(event: React.ChangeEvent<HTMLInputElement>): void {
-        const value = event.target.value;
+    function handleTypeChange(value: string): void {
         setTypeSearch(value);
 
         startTransition(() => {
@@ -164,92 +162,56 @@ export default function EmailDataIndexPage(): React.JSX.Element {
                         </PermissionGuard>
                     </div>
 
-                    <div className="card flex flex-col gap-4" style={{ fontFamily: "var(--font-sans)" }}>
-                        <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-                            <div
-                                className="flex flex-1 items-center gap-3 rounded-xl px-4 py-3"
-                                style={{
-                                    border: "1px solid var(--border-default)",
-                                    background: "var(--bg-surface)",
-                                }}
-                            >
-                                <Search size={16} style={{ color: "var(--text-muted)" }} />
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={handleSearchChange}
-                                    placeholder="Search email, phone, type or description..."
-                                    className="w-full bg-transparent text-sm outline-none"
-                                    style={{
-                                        color: "var(--text-primary)",
-                                        fontFamily: "var(--font-sans)",
-                                    }}
-                                />
-                            </div>
-
-                            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center xl:w-auto">
-                                <div
-                                    className="flex items-center gap-3 rounded-xl px-4 py-3"
-                                    style={{
-                                        border: "1px solid var(--border-default)",
-                                        background: "var(--bg-surface)",
-                                    }}
-                                >
-                                    <Mail size={16} style={{ color: "var(--text-muted)" }} />
-                                    <input
-                                        type="text"
-                                        value={typeSearch}
-                                        onChange={handleTypeChange}
-                                        placeholder="Filter by type"
-                                        className="w-full bg-transparent text-sm outline-none"
-                                        style={{
-                                            color: "var(--text-primary)",
-                                            fontFamily: "var(--font-sans)",
-                                        }}
-                                    />
-                                </div>
-
-                                <select
-                                    value={filters.status ?? ""}
-                                    onChange={(event) =>
-                                        setFilters((current) => ({
-                                            ...current,
-                                            status: event.target.value === "" ? undefined : event.target.value as "active" | "deleted",
-                                            page: 1,
-                                        }))
-                                    }
-                                    className="rounded-xl px-4 py-3 text-sm outline-none"
-                                    style={{
-                                        border: "1px solid var(--border-default)",
-                                        background: "var(--bg-surface)",
-                                        color: "var(--text-primary)",
-                                        fontFamily: "var(--font-sans)",
-                                    }}
-                                >
-                                    <option value="">All status</option>
-                                    <option value="active">Active</option>
-                                    <option value="deleted">Deleted</option>
-                                </select>
-
-                                <DataTableDateRangeFilter
-                                    dateFrom={filters.date_from}
-                                    dateTo={filters.date_to}
-                                    onChange={(range) =>
-                                        setFilters((current) => ({
-                                            ...current,
-                                            date_from: range.dateFrom,
-                                            date_to: range.dateTo,
-                                            page: 1,
-                                        }))
-                                    }
-                                />
-
-                                <div className="hidden h-8 w-px sm:block" style={{ background: "var(--border-subtle)" }} />
-
-                                <ExportButton onExport={handleExport} isExporting={isPendingExport} />
-                            </div>
+                    <CrudFilterBar
+                        searchValue={search}
+                        onSearchChange={handleSearchChange}
+                        searchPlaceholder="Search email, phone, type or description..."
+                        searchAriaLabel="Search email data"
+                        statusValue={filters.status ?? ""}
+                        onStatusChange={(value) => {
+                            startTransition(() => {
+                                setFilters((current) => ({
+                                    ...current,
+                                    status: value === "" ? undefined : value as "active" | "deleted",
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        dateFrom={filters.date_from}
+                        dateTo={filters.date_to}
+                        onDateRangeChange={(range) => {
+                            startTransition(() => {
+                                setFilters((current) => ({
+                                    ...current,
+                                    date_from: range.dateFrom,
+                                    date_to: range.dateTo,
+                                    page: 1,
+                                }));
+                            });
+                        }}
+                        actions={<ExportButton onExport={handleExport} isExporting={isPendingExport} />}
+                    >
+                        <div
+                            className="flex h-10 min-w-44 items-center gap-3 rounded-lg border px-3"
+                            style={{
+                                borderColor: "var(--border-default)",
+                                background: "var(--bg-surface)",
+                                color: "var(--text-primary)",
+                                fontFamily: "var(--font-sans)",
+                            }}
+                        >
+                            <Mail size={16} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
+                            <input
+                                type="text"
+                                value={typeSearch}
+                                onChange={(event) => handleTypeChange(event.target.value)}
+                                placeholder="Filter by type"
+                                aria-label="Filter email data by type"
+                                className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-(--text-muted)"
+                                style={{ color: "var(--text-primary)", fontFamily: "var(--font-sans)" }}
+                            />
                         </div>
-                    </div>
+                    </CrudFilterBar>
 
                     {canDelete ? (
                         <DataTableBulkActions

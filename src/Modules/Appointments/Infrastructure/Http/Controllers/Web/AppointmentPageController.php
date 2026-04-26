@@ -16,6 +16,11 @@ final class AppointmentPageController extends Controller
         return Inertia::render('appointments/AppointmentsIndexPage');
     }
 
+    public function calendar(): Response
+    {
+        return Inertia::render('appointments/AppointmentCalendarPage');
+    }
+
     public function create(): Response
     {
         return Inertia::render('appointments/AppointmentCreatePage');

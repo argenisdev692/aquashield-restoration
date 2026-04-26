@@ -2,8 +2,8 @@ import * as React from 'react';
 import { Head, Link, useRemember } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Plus, Search, Filter, Download, Trash2, X, ChevronLeft, ChevronRight,
-    FileText, CalendarRange,
+    Plus, Download, Trash2, X, ChevronLeft, ChevronRight,
+    FileText,
 } from 'lucide-react';
 import { type RowSelectionState } from '@tanstack/react-table';
 import AppLayout from '@/pages/layouts/AppLayout';
@@ -14,6 +14,7 @@ import { ScopeSheetsTable } from './components/ScopeSheetsTable';
 import { DeleteConfirmModal } from '@/shadcn/DeleteConfirmModal';
 import { RestoreConfirmModal } from '@/shadcn/RestoreConfirmModal';
 import type { ScopeSheetFilters, ScopeSheetListItem } from '@/modules/scope-sheets/types';
+import { CrudFilterBar } from '@/common/filters/CrudFilterBar';
 
 // ─── Sliding Paginator (5 pages around current) ───────────────────────────────
 
@@ -80,7 +81,6 @@ export default function ScopeSheetsIndexPage(): React.JSX.Element {
     const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
     const [pendingDelete, setPendingDelete] = React.useState<ScopeSheetListItem | null>(null);
     const [pendingRestore, setPendingRestore] = React.useState<ScopeSheetListItem | null>(null);
-    const [showFilters, setShowFilters] = React.useState(false);
     const [, startTransition] = React.useTransition();
 
     const { data, isPending } = useScopeSheets(filters);
@@ -166,30 +166,6 @@ export default function ScopeSheetsIndexPage(): React.JSX.Element {
                             </p>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                            {/* Export buttons */}
-                            <PermissionGuard permissions={['VIEW_SCOPE_SHEET']}>
-                                <button type="button" onClick={() => handleExport('xlsx')} aria-label="Export Excel" style={ghostBtnStyle}>
-                                    <Download size={14} /> Excel
-                                </button>
-                                <button type="button" onClick={() => handleExport('pdf')} aria-label="Export PDF" style={ghostBtnStyle}>
-                                    <FileText size={14} /> PDF
-                                </button>
-                            </PermissionGuard>
-
-                            {/* Filters toggle */}
-                            <button
-                                type="button"
-                                onClick={() => setShowFilters((v) => !v)}
-                                aria-label="Toggle filters"
-                                style={{
-                                    ...ghostBtnStyle,
-                                    borderColor: showFilters ? 'var(--accent-primary)' : 'var(--border-default)',
-                                    color: showFilters ? 'var(--accent-primary)' : 'var(--text-muted)',
-                                }}
-                            >
-                                <Filter size={14} /> Filters
-                            </button>
-
                             <PermissionGuard permissions={['CREATE_SCOPE_SHEET']}>
                                 <Link
                                     href="/scope-sheets/create"
@@ -207,96 +183,31 @@ export default function ScopeSheetsIndexPage(): React.JSX.Element {
                         </div>
                     </div>
 
-                    {/* ── Filters panel ── */}
-                    <AnimatePresence>
-                        {showFilters && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.22 }}
-                                style={{ overflow: 'hidden' }}
-                            >
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                                        gap: 12,
-                                        background: 'var(--bg-card)',
-                                        border: '1px solid var(--border-default)',
-                                        borderRadius: 'var(--radius-lg)',
-                                        padding: '16px 20px',
-                                    }}
-                                >
-                                    {/* Search */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                        <label style={filterLabelStyle}>Search</label>
-                                        <div style={{ position: 'relative' }}>
-                                            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                                            <input
-                                                type="search"
-                                                value={filters.search ?? ''}
-                                                onChange={(e) => updateFilters({ search: e.target.value || undefined })}
-                                                placeholder="Claim number, description…"
-                                                style={{ ...filterInputStyle, paddingLeft: 30 }}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Status */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                        <label style={filterLabelStyle}>Status</label>
-                                        <select
-                                            value={filters.status ?? ''}
-                                            onChange={(e) => updateFilters({ status: (e.target.value as ScopeSheetFilters['status']) || undefined })}
-                                            style={{ ...filterInputStyle, colorScheme: 'dark' }}
-                                            aria-label="Filter by status"
-                                        >
-                                            <option value="">All</option>
-                                            <option value="active">Active</option>
-                                            <option value="deleted">Deleted</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Date from */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                        <label style={filterLabelStyle}><CalendarRange size={12} /> Date From</label>
-                                        <input
-                                            type="date"
-                                            value={filters.date_from ?? ''}
-                                            onChange={(e) => updateFilters({ date_from: e.target.value || undefined })}
-                                            style={{ ...filterInputStyle, colorScheme: 'dark' }}
-                                            aria-label="Filter from date"
-                                        />
-                                    </div>
-
-                                    {/* Date to */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                        <label style={filterLabelStyle}><CalendarRange size={12} /> Date To</label>
-                                        <input
-                                            type="date"
-                                            value={filters.date_to ?? ''}
-                                            onChange={(e) => updateFilters({ date_to: e.target.value || undefined })}
-                                            style={{ ...filterInputStyle, colorScheme: 'dark' }}
-                                            aria-label="Filter to date"
-                                        />
-                                    </div>
-
-                                    {/* Clear */}
-                                    <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                                        <button
-                                            type="button"
-                                            onClick={() => setFilters({ page: 1, per_page: 15 })}
-                                            aria-label="Clear all filters"
-                                            style={ghostBtnStyle}
-                                        >
-                                            <X size={13} /> Clear filters
-                                        </button>
-                                    </div>
+                    <CrudFilterBar
+                        searchValue={filters.search ?? ''}
+                        onSearchChange={(value) => updateFilters({ search: value || undefined })}
+                        searchPlaceholder="Claim number, description…"
+                        searchAriaLabel="Search scope sheets"
+                        statusValue={filters.status ?? ''}
+                        onStatusChange={(value) => updateFilters({ status: (value as ScopeSheetFilters['status']) || undefined })}
+                        dateFrom={filters.date_from}
+                        dateTo={filters.date_to}
+                        onDateRangeChange={(range) => updateFilters({ date_from: range.dateFrom, date_to: range.dateTo })}
+                        hasActiveFilters={filters.search !== undefined || filters.status !== undefined || filters.date_from !== undefined || filters.date_to !== undefined}
+                        onReset={() => setFilters({ page: 1, per_page: filters.per_page ?? 15 })}
+                        actions={(
+                            <PermissionGuard permissions={['VIEW_SCOPE_SHEET']}>
+                                <div className="flex items-center gap-2">
+                                    <button type="button" onClick={() => handleExport('xlsx')} aria-label="Export Excel" style={ghostBtnStyle}>
+                                        <Download size={14} /> Excel
+                                    </button>
+                                    <button type="button" onClick={() => handleExport('pdf')} aria-label="Export PDF" style={ghostBtnStyle}>
+                                        <FileText size={14} /> PDF
+                                    </button>
                                 </div>
-                            </motion.div>
+                            </PermissionGuard>
                         )}
-                    </AnimatePresence>
+                    />
 
                     {/* ── Bulk actions ── */}
                     <AnimatePresence>
@@ -415,12 +326,6 @@ const ghostBtnStyle: React.CSSProperties = {
     fontFamily: 'var(--font-sans)', cursor: 'pointer',
     transition: 'all 0.15s ease',
     textDecoration: 'none',
-};
-
-const filterLabelStyle: React.CSSProperties = {
-    display: 'flex', alignItems: 'center', gap: 5,
-    fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)',
-    fontFamily: 'var(--font-sans)', textTransform: 'uppercase', letterSpacing: '0.06em',
 };
 
 const filterInputStyle: React.CSSProperties = {
